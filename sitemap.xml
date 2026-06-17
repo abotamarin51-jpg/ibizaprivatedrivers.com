@@ -1,112 +1,77 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+<urlset
+      xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+            http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+<!-- created with Free Online Sitemap Generator www.xml-sitemaps.com -->
 
-  <!-- HOME -->
-  <url>
-    <loc>https://www.ibizaprivatedrivers.com/</loc>
-    <lastmod>2025-06-01</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>1.0</priority>
-    <xhtml:link rel="alternate" hreflang="en" href="https://www.ibizaprivatedrivers.com/"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://www.ibizaprivatedrivers.com/es/"/>
-  </url>
 
-  <!-- SERVICES -->
-  <url>
-    <loc>https://www.ibizaprivatedrivers.com/airport-transfers-ibiza/</loc>
-    <lastmod>2025-06-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-    <xhtml:link rel="alternate" hreflang="en" href="https://www.ibizaprivatedrivers.com/airport-transfers-ibiza/"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://www.ibizaprivatedrivers.com/es/traslados-aeropuerto-ibiza/"/>
-  </url>
+<url>
+  <loc>https://ibizaprivatedrivers.com/</loc>
+  <lastmod>2026-06-17T09:30:53+00:00</lastmod>
+  <priority>1.00</priority>
+</url>
+<url>
+  <loc>https://ibizaprivatedrivers.com/ibiza-airport-to-ibiza-town/</loc>
+  <lastmod>2026-06-17T09:30:53+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://ibizaprivatedrivers.com/ibiza-airport-to-santa-eulalia/</loc>
+  <lastmod>2026-06-17T09:30:53+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://ibizaprivatedrivers.com/ibiza-airport-to-san-antonio/</loc>
+  <lastmod>2026-06-17T09:30:53+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://ibizaprivatedrivers.com/ibiza-airport-to-playa-den-bossa/</loc>
+  <lastmod>2026-06-17T09:30:53+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://ibizaprivatedrivers.com/ibiza-airport-to-formentera/</loc>
+  <lastmod>2026-06-17T09:30:53+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://ibizaprivatedrivers.com/airport-transfers/</loc>
+  <lastmod>2026-06-17T09:30:53+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://ibizaprivatedrivers.com/chauffeur-service/</loc>
+  <lastmod>2026-06-17T09:30:53+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://ibizaprivatedrivers.com/villa-transfers/</loc>
+  <lastmod>2026-06-17T09:30:53+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://ibizaprivatedrivers.com/yacht-transfers/</loc>
+  <lastmod>2026-06-17T09:30:53+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://ibizaprivatedrivers.com/contact/</loc>
+  <lastmod>2026-06-17T09:30:53+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://ibizaprivatedrivers.com/legal-notice/</loc>
+  <lastmod>2026-06-17T09:30:53+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://ibizaprivatedrivers.com/privacy/</loc>
+  <lastmod>2026-06-17T09:30:53+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
 
-  <url>
-    <loc>https://www.ibizaprivatedrivers.com/chauffeur-ibiza/</loc>
-    <lastmod>2025-06-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-
-  <url>
-    <loc>https://www.ibizaprivatedrivers.com/villa-transfers-ibiza/</loc>
-    <lastmod>2025-06-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://www.ibizaprivatedrivers.com/yacht-transfers-ibiza/</loc>
-    <lastmod>2025-06-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <!-- DESTINATION SUBPAGES -->
-  <url>
-    <loc>https://www.ibizaprivatedrivers.com/airport-transfers-ibiza/ibiza-town/</loc>
-    <lastmod>2025-06-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://www.ibizaprivatedrivers.com/airport-transfers-ibiza/santa-eulalia/</loc>
-    <lastmod>2025-06-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://www.ibizaprivatedrivers.com/airport-transfers-ibiza/sant-antoni/</loc>
-    <lastmod>2025-06-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://www.ibizaprivatedrivers.com/airport-transfers-ibiza/formentera/</loc>
-    <lastmod>2025-06-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-
-  <!-- COMPANY -->
-  <url>
-    <loc>https://www.ibizaprivatedrivers.com/about/</loc>
-    <lastmod>2025-06-01</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.5</priority>
-  </url>
-
-  <url>
-    <loc>https://www.ibizaprivatedrivers.com/contact/</loc>
-    <lastmod>2025-06-01</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <!-- BLOG -->
-  <url>
-    <loc>https://www.ibizaprivatedrivers.com/blog/</loc>
-    <lastmod>2025-06-01</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-
-  <url>
-    <loc>https://www.ibizaprivatedrivers.com/blog/best-time-to-visit-ibiza/</loc>
-    <lastmod>2025-06-01</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.5</priority>
-  </url>
-
-  <url>
-    <loc>https://www.ibizaprivatedrivers.com/blog/ibiza-airport-guide/</loc>
-    <lastmod>2025-06-01</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.5</priority>
-  </url>
 
 </urlset>
