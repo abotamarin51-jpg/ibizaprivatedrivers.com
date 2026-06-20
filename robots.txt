@@ -18,4 +18,4 @@ User-agent: Bytespider
 Allow: /
 
 # Sitemap
-Sitemap: https://www.ibizaprivatedrivers.com/sitemap.xml
+Sitemap: https://ibizaprivatedrivers.com/sitemap.xml
