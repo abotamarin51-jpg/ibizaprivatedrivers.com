@@ -11,7 +11,7 @@ Looking for reliable **Ibiza transfers**? We provide private transfers across th
 
 Unlike standard taxis, every transfer is **pre-booked and guaranteed**: your driver tracks your flight, waits at arrivals with a name sign, and takes you directly to your villa, hotel, yacht or club.
 
-[Book your transfer on WhatsApp](https://wa.me/34600703303) · +34 600 703 303
+[Book your transfer on WhatsApp](https://wa.me/34613756211) · +34 613 756 211
 
 ## Airport Transfers
 
@@ -45,7 +45,7 @@ Door-to-door service for private villas, marinas and exclusive events.
 
 ## Prices
 
-Transfers from **€100**. The exact price depends on route, schedule and number of passengers. Send us your flight details on [WhatsApp](https://wa.me/34600703303) and receive an instant quote.
+Transfers from **€100**. The exact price depends on route, schedule and number of passengers. Send us your flight details on [WhatsApp](https://wa.me/34613756211) and receive an instant quote.
 
 <script type="application/ld+json">
 {
@@ -56,7 +56,7 @@ Transfers from **€100**. The exact price depends on route, schedule and number
   "provider": {
     "@type": "LocalBusiness",
     "name": "Ibiza Private Drivers",
-    "telephone": "+34600703303",
+    "telephone": "+34613756211",
     "url": "https://ibizaprivatedrivers.com",
     "address": {
       "@type": "PostalAddress",
