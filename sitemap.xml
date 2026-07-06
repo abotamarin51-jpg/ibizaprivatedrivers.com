@@ -91,6 +91,11 @@
     <loc>https://ibizaprivatedrivers.com/ibiza-transfers/</loc>
     <lastmod>2026-07-06</lastmod>
   </url>
+  <url>
+    <loc>https://ibizaprivatedrivers.com/conductor-privado-ibiza/</loc>
+    <lastmod>2026-07-06</lastmod>
+    <priority>0.80</priority>
+  </url>
 
 
 </urlset>
