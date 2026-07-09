@@ -97,5 +97,10 @@
     <priority>0.80</priority>
   </url>
 
-
+<url>
+  <loc>https://www.ibizaprivatedrivers.com/blog/best-private-driver-ibiza.html</loc>
+  <lastmod>2026-07-10</lastmod>
+  <changefreq>monthly</changefreq>
+  <priority>0.9</priority>
+</url>
 </urlset>
