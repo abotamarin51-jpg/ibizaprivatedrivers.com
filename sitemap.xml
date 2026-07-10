@@ -114,6 +114,25 @@
 <changefreq>weekly</changefreq>
 <priority>1.0</priority>
 </url>
+<url>
+  <loc>https://ibizaprivatedrivers.com/private-driver-ushuaia-ibiza/</loc>
+  <lastmod>2026-07-10</lastmod>
+  <changefreq>weekly</changefreq>
+  <priority>0.80</priority>
+</url>
 
+<url>
+  <loc>https://ibizaprivatedrivers.com/private-driver-hi-ibiza/</loc>
+  <lastmod>2026-07-10</lastmod>
+  <changefreq>weekly</changefreq>
+  <priority>0.80</priority>
+</url>
+
+<url>
+  <loc>https://ibizaprivatedrivers.com/private-driver-marina-botafoch/</loc>
+  <lastmod>2026-07-10</lastmod>
+  <changefreq>weekly</changefreq>
+  <priority>0.80</priority>
+</url>
      
 </urlset>
