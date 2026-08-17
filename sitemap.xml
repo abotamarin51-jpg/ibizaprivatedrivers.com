@@ -134,5 +134,9 @@
   <changefreq>weekly</changefreq>
   <priority>0.80</priority>
 </url>
-     
+     <url>
+  <loc>https://ibizaprivatedrivers.com/ibiza-night-driver/</loc>
+  <lastmod>2026-08-17</lastmod>
+  <priority>0.80</priority>
+</url>
 </urlset>
