@@ -1,142 +1,129 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset
-      xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
-            http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
-<!-- created with Free Online Sitemap Generator www.xml-sitemaps.com -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
-
-<url>
-  <loc>https://ibizaprivatedrivers.com/</loc>
-  <lastmod>2026-06-17T09:30:53+00:00</lastmod>
-  <priority>1.00</priority>
-</url>
-<url>
-  <loc>https://ibizaprivatedrivers.com/ibiza-airport-to-ibiza-town/</loc>
-  <lastmod>2026-06-17T09:30:53+00:00</lastmod>
-  <priority>0.80</priority>
-</url>
-<url>
-  <loc>https://ibizaprivatedrivers.com/ibiza-airport-to-santa-eulalia/</loc>
-  <lastmod>2026-06-17T09:30:53+00:00</lastmod>
-  <priority>0.80</priority>
-</url>
-<url>
-  <loc>https://ibizaprivatedrivers.com/ibiza-airport-to-san-antonio/</loc>
-  <lastmod>2026-06-17T09:30:53+00:00</lastmod>
-  <priority>0.80</priority>
-</url>
-<url>
-  <loc>https://ibizaprivatedrivers.com/ibiza-airport-to-playa-den-bossa/</loc>
-  <lastmod>2026-06-17T09:30:53+00:00</lastmod>
-  <priority>0.80</priority>
-</url>
-<url>
-  <loc>https://ibizaprivatedrivers.com/ibiza-airport-to-formentera/</loc>
-  <lastmod>2026-06-17T09:30:53+00:00</lastmod>
-  <priority>0.80</priority>
-</url>
-<url>
-  <loc>https://ibizaprivatedrivers.com/airport-transfers/</loc>
-  <lastmod>2026-06-17T09:30:53+00:00</lastmod>
-  <priority>0.80</priority>
-</url>
-<url>
-  <loc>https://ibizaprivatedrivers.com/chauffeur-service/</loc>
-  <lastmod>2026-06-17T09:30:53+00:00</lastmod>
-  <priority>0.80</priority>
-</url>
-<url>
-  <loc>https://ibizaprivatedrivers.com/villa-transfers/</loc>
-  <lastmod>2026-06-17T09:30:53+00:00</lastmod>
-  <priority>0.80</priority>
-</url>
-<url>
-  <loc>https://ibizaprivatedrivers.com/yacht-transfers/</loc>
-  <lastmod>2026-06-17T09:30:53+00:00</lastmod>
-  <priority>0.80</priority>
-</url>
-<url>
-  <loc>https://ibizaprivatedrivers.com/contact/</loc>
-  <lastmod>2026-06-17T09:30:53+00:00</lastmod>
-  <priority>0.80</priority>
-</url>
-<url>
-  <loc>https://ibizaprivatedrivers.com/legal-notice/</loc>
-  <lastmod>2026-06-17T09:30:53+00:00</lastmod>
-  <priority>0.80</priority>
-</url>
-<url>
-  <loc>https://ibizaprivatedrivers.com/privacy/</loc>
-  <lastmod>2026-06-17T09:30:53+00:00</lastmod>
-  <priority>0.80</priority>
-</url>
-
-<url>
-  <loc>https://ibizaprivatedrivers.com/private-taxi-ibiza/</loc>
-  <lastmod>2026-06-22T00:00:00+00:00</lastmod>
-  <priority>0.80</priority>
-</url>
-<url>
-  <loc>https://ibizaprivatedrivers.com/luxury-transfers/</loc>
-  <lastmod>2026-06-22T00:00:00+00:00</lastmod>
-  <priority>0.80</priority>
-</url>
-<url>
-  <loc>https://ibizaprivatedrivers.com/ibiza-airport-to-cala-llonga/</loc>
-  <lastmod>2026-06-22T00:00:00+00:00</lastmod>
-  <priority>0.80</priority>
-</url>  <url>
-    <loc>https://ibizaprivatedrivers.com/ibiza-transfers/</loc>
-    <lastmod>2026-07-06</lastmod>
+  <url>
+    <loc>https://ibizaprivatedrivers.com/</loc>
+    <lastmod>2026-08-17</lastmod>
   </url>
+
+  <url>
+    <loc>https://ibizaprivatedrivers.com/airport-transfers/</loc>
+    <lastmod>2026-08-17</lastmod>
+  </url>
+
+  <url>
+    <loc>https://ibizaprivatedrivers.com/chauffeur-service/</loc>
+    <lastmod>2026-08-17</lastmod>
+  </url>
+
+  <url>
+    <loc>https://ibizaprivatedrivers.com/villa-transfers/</loc>
+    <lastmod>2026-08-17</lastmod>
+  </url>
+
+  <url>
+    <loc>https://ibizaprivatedrivers.com/yacht-transfers/</loc>
+    <lastmod>2026-08-17</lastmod>
+  </url>
+
+  <url>
+    <loc>https://ibizaprivatedrivers.com/private-taxi-ibiza/</loc>
+    <lastmod>2026-08-17</lastmod>
+  </url>
+
+  <url>
+    <loc>https://ibizaprivatedrivers.com/luxury-transfers/</loc>
+    <lastmod>2026-08-17</lastmod>
+  </url>
+
+  <url>
+    <loc>https://ibizaprivatedrivers.com/vip-driver-ibiza/</loc>
+    <lastmod>2026-08-17</lastmod>
+  </url>
+
+  <url>
+    <loc>https://ibizaprivatedrivers.com/ibiza-transfers/</loc>
+    <lastmod>2026-08-17</lastmod>
+  </url>
+
   <url>
     <loc>https://ibizaprivatedrivers.com/conductor-privado-ibiza/</loc>
-    <lastmod>2026-07-06</lastmod>
-    <priority>0.80</priority>
+    <lastmod>2026-08-17</lastmod>
   </url>
 
-<url>
-  <loc>https://ibizaprivatedrivers.com/blog/best-private-driver-ibiza.html</loc>
-  <lastmod>2026-07-10</lastmod>
-  <changefreq>monthly</changefreq>
-  <priority>0.9</priority>
-</url>
-    <url>
-  <loc>https://ibizaprivatedrivers.com/services/private-driver-ibiza.html</loc>
-  <lastmod>2026-07-10</lastmod>
-  <changefreq>weekly</changefreq>
-  <priority>1.0</priority>
-</url>
- <url>
-<loc>https://ibizaprivatedrivers.com/vip-driver-ibiza/</loc>
-<changefreq>weekly</changefreq>
-<priority>1.0</priority>
-</url>
-<url>
-  <loc>https://ibizaprivatedrivers.com/private-driver-ushuaia-ibiza/</loc>
-  <lastmod>2026-07-10</lastmod>
-  <changefreq>weekly</changefreq>
-  <priority>0.80</priority>
-</url>
+  <url>
+    <loc>https://ibizaprivatedrivers.com/ibiza-night-driver/</loc>
+    <lastmod>2026-08-17</lastmod>
+  </url>
 
-<url>
-  <loc>https://ibizaprivatedrivers.com/private-driver-hi-ibiza/</loc>
-  <lastmod>2026-07-10</lastmod>
-  <changefreq>weekly</changefreq>
-  <priority>0.80</priority>
-</url>
+  <url>
+    <loc>https://ibizaprivatedrivers.com/ibiza-airport-to-ibiza-town/</loc>
+    <lastmod>2026-08-17</lastmod>
+  </url>
 
-<url>
-  <loc>https://ibizaprivatedrivers.com/private-driver-marina-botafoch/</loc>
-  <lastmod>2026-07-10</lastmod>
-  <changefreq>weekly</changefreq>
-  <priority>0.80</priority>
-</url>
-     <url>
-  <loc>https://ibizaprivatedrivers.com/ibiza-night-driver/</loc>
-  <lastmod>2026-08-17</lastmod>
-  <priority>0.80</priority>
-</url>
+  <url>
+    <loc>https://ibizaprivatedrivers.com/ibiza-airport-to-santa-eulalia/</loc>
+    <lastmod>2026-08-17</lastmod>
+  </url>
+
+  <url>
+    <loc>https://ibizaprivatedrivers.com/ibiza-airport-to-san-antonio/</loc>
+    <lastmod>2026-08-17</lastmod>
+  </url>
+
+  <url>
+    <loc>https://ibizaprivatedrivers.com/ibiza-airport-to-playa-den-bossa/</loc>
+    <lastmod>2026-08-17</lastmod>
+  </url>
+
+  <url>
+    <loc>https://ibizaprivatedrivers.com/ibiza-airport-to-formentera/</loc>
+    <lastmod>2026-08-17</lastmod>
+  </url>
+
+  <url>
+    <loc>https://ibizaprivatedrivers.com/ibiza-airport-to-cala-llonga/</loc>
+    <lastmod>2026-08-17</lastmod>
+  </url>
+
+  <url>
+    <loc>https://ibizaprivatedrivers.com/private-driver-ushuaia-ibiza/</loc>
+    <lastmod>2026-08-17</lastmod>
+  </url>
+
+  <url>
+    <loc>https://ibizaprivatedrivers.com/private-driver-hi-ibiza/</loc>
+    <lastmod>2026-08-17</lastmod>
+  </url>
+
+  <url>
+    <loc>https://ibizaprivatedrivers.com/private-driver-marina-botafoch/</loc>
+    <lastmod>2026-08-17</lastmod>
+  </url>
+
+  <url>
+    <loc>https://ibizaprivatedrivers.com/services/private-driver-ibiza.html</loc>
+    <lastmod>2026-08-17</lastmod>
+  </url>
+
+  <url>
+    <loc>https://ibizaprivatedrivers.com/blog/best-private-driver-ibiza.html</loc>
+    <lastmod>2026-08-17</lastmod>
+  </url>
+
+  <url>
+    <loc>https://ibizaprivatedrivers.com/contact/</loc>
+    <lastmod>2026-08-17</lastmod>
+  </url>
+
+  <url>
+    <loc>https://ibizaprivatedrivers.com/legal-notice/</loc>
+    <lastmod>2026-08-17</lastmod>
+  </url>
+
+  <url>
+    <loc>https://ibizaprivatedrivers.com/privacy/</loc>
+    <lastmod>2026-08-17</lastmod>
+  </url>
+
 </urlset>
