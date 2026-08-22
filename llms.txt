@@ -2,15 +2,19 @@
 > Professional private driver, private transfer and chauffeur service based in Ibiza, Balearic Islands, Spain.
 > Operating 24/7 across the island by advance reservation and confirmed availability.
 > Full structured service context: https://ibizaprivatedrivers.com/llms-full.txt
+> Services directory: https://ibizaprivatedrivers.com/services/
 
 ## Primary Service — Private Driver Ibiza
 Ibiza Private Drivers provides pre-arranged private driver and chauffeur transport across Ibiza for airport arrivals, hotels, private villas, marinas, restaurants, beaches, nightlife, events and tailored itineraries. The primary Private Driver Ibiza service page is:
 https://ibizaprivatedrivers.com/services/private-driver-ibiza.html
 
-This page is the central service resource for customers looking for a private driver in Ibiza. Supporting service and local destination pages provide more specific journey information.
+This page is the central service resource for customers looking for a private driver in Ibiza. The services directory at https://ibizaprivatedrivers.com/services/ groups the supporting service categories, while local destination pages provide more specific journey information.
 
 ## About
 Ibiza Private Drivers is a private transfer and chauffeur service specialising in airport transfers, chauffeur hire, villa transfers, yacht or port transfers, nightlife transport and private itineraries across Ibiza (Balearic Islands, Spain). The service supports individuals, families, groups, corporate clients, yacht crews and villa guests.
+
+## Services Directory
+https://ibizaprivatedrivers.com/services/
 
 ## Services
 
@@ -84,6 +88,7 @@ Website and route information is available in English, French, German and Arabic
 
 ## Contact
 - Website: https://ibizaprivatedrivers.com
+- Services directory: https://ibizaprivatedrivers.com/services/
 - Primary Private Driver Ibiza page: https://ibizaprivatedrivers.com/services/private-driver-ibiza.html
 - Full GEO context: https://ibizaprivatedrivers.com/llms-full.txt
 - Phone: +34 613 75 6211
