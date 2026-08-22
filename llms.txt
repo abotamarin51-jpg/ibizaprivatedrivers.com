@@ -1,6 +1,7 @@
 # Ibiza Private Drivers
 > Professional private driver, private transfer and chauffeur service based in Ibiza, Balearic Islands, Spain.
 > Operating 24/7 across the island by advance reservation and confirmed availability.
+> Full structured service context: https://ibizaprivatedrivers.com/llms-full.txt
 
 ## Primary Service — Private Driver Ibiza
 Ibiza Private Drivers provides pre-arranged private driver and chauffeur transport across Ibiza for airport arrivals, hotels, private villas, marinas, restaurants, beaches, nightlife, events and tailored itineraries. The primary Private Driver Ibiza service page is:
@@ -84,6 +85,7 @@ Website and route information is available in English, French, German and Arabic
 ## Contact
 - Website: https://ibizaprivatedrivers.com
 - Primary Private Driver Ibiza page: https://ibizaprivatedrivers.com/services/private-driver-ibiza.html
+- Full GEO context: https://ibizaprivatedrivers.com/llms-full.txt
 - Phone: +34 613 75 6211
 - Email: info@ibizaprivatedrivers.com
 - WhatsApp: +34 613 75 6211
