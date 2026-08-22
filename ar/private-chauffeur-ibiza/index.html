@@ -55,35 +55,16 @@
         "longitude": 1.4316
       },
       "areaServed": [
-        {
-          "@type": "City",
-          "name": "Ibiza"
-        },
-        {
-          "@type": "Place",
-          "name": "Formentera"
-        },
-        {
-          "@type": "Airport",
-          "name": "Ibiza Airport"
-        }
+        {"@type": "City","name": "Ibiza"},
+        {"@type": "Place","name": "Formentera"},
+        {"@type": "Airport","name": "Ibiza Airport"}
       ],
-      "openingHoursSpecification": [
-        {
-          "@type": "OpeningHoursSpecification",
-          "dayOfWeek": [
-            "Monday",
-            "Tuesday",
-            "Wednesday",
-            "Thursday",
-            "Friday",
-            "Saturday",
-            "Sunday"
-          ],
-          "opens": "00:00",
-          "closes": "23:59"
-        }
-      ],
+      "openingHoursSpecification": [{
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],
+        "opens": "00:00",
+        "closes": "23:59"
+      }],
       "sameAs": [
         "https://www.facebook.com/ibizaprivatedrivers",
         "https://www.instagram.com/ibizaprivatedrivers"
@@ -96,38 +77,23 @@
       "name": "سائق خاص في إيبيزا | بالساعة أو اليوم",
       "description": "احجز سائقاً خاصاً في إيبيزا بالساعة أو لنصف يوم أو يوم كامل للمطاعم والشواطئ والاجتماعات والفعاليات والحياة الليلية.",
       "inLanguage": "ar",
-      "about": {
-        "@id": "https://ibizaprivatedrivers.com/#business"
-      },
-      "isPartOf": {
-        "@id": "https://ibizaprivatedrivers.com/#website"
-      },
-      "translationOfWork": {
-        "@id": "https://ibizaprivatedrivers.com/chauffeur-service/#webpage"
-      }
+      "about": {"@id": "https://ibizaprivatedrivers.com/#business"},
+      "isPartOf": {"@id": "https://ibizaprivatedrivers.com/#website"},
+      "translationOfWork": {"@id": "https://ibizaprivatedrivers.com/chauffeur-service/#webpage"}
     },
     {
       "@type": "Service",
       "@id": "https://ibizaprivatedrivers.com/ar/private-chauffeur-ibiza/#service",
       "name": "خدمة سائق خاص في إيبيزا",
       "serviceType": "خدمة سائق خاص في إيبيزا",
-      "provider": {
-        "@id": "https://ibizaprivatedrivers.com/#business"
-      },
-      "areaServed": {
-        "@type": "Place",
-        "name": "Ibiza and Formentera"
-      },
+      "provider": {"@id": "https://ibizaprivatedrivers.com/#business"},
+      "areaServed": {"@type": "Place","name": "Ibiza and Formentera"},
       "availableChannel": {
         "@type": "ServiceChannel",
         "servicePhone": {
           "@type": "ContactPoint",
           "telephone": "+34613756211",
-          "availableLanguage": [
-            "English",
-            "French",
-            "Spanish"
-          ]
+          "availableLanguage": ["Arabic","English"]
         }
       }
     },
@@ -135,30 +101,9 @@
       "@type": "FAQPage",
       "@id": "https://ibizaprivatedrivers.com/ar/private-chauffeur-ibiza/#faq",
       "mainEntity": [
-        {
-          "@type": "Question",
-          "name": "ما مدة حجز السائق الخاص؟",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "حسب التوفر يمكن الحجز لعدة ساعات أو لنصف يوم أو يوم كامل. أرسل المدة والبرنامج المتوقع."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "هل ينتظر السائق بين عدة مواقع؟",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "يمكن تضمين وقت الانتظار ومحطات متعددة ضمن المدة المتفق عليها، ويتم تأكيد التفاصيل قبل الحجز."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "هل تتوفر الخدمة للفعاليات والحياة الليلية؟",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "نعم، يمكن تنظيم الرحلات المسائية والليلية بالحجز المسبق وحسب التوفر."
-          }
-        }
+        {"@type":"Question","name":"ما مدة حجز السائق الخاص؟","acceptedAnswer":{"@type":"Answer","text":"حسب التوفر يمكن الحجز لعدة ساعات أو لنصف يوم أو يوم كامل. أرسل المدة والبرنامج المتوقع."}},
+        {"@type":"Question","name":"هل ينتظر السائق بين عدة مواقع؟","acceptedAnswer":{"@type":"Answer","text":"يمكن تضمين وقت الانتظار ومحطات متعددة ضمن المدة المتفق عليها، ويتم تأكيد التفاصيل قبل الحجز."}},
+        {"@type":"Question","name":"هل تتوفر الخدمة للفعاليات والحياة الليلية؟","acceptedAnswer":{"@type":"Answer","text":"نعم، يمكن تنظيم الرحلات المسائية والليلية بالحجز المسبق وحسب التوفر."}}
       ]
     }
   ]
@@ -189,26 +134,7 @@
     <section class="section light"><div class="wrap"><p class="eyebrow">أسئلة شائعة</p><h2>الاستعداد للحجز</h2><div class="faq"><details><summary>ما مدة حجز السائق الخاص؟</summary><p>حسب التوفر يمكن الحجز لعدة ساعات أو لنصف يوم أو يوم كامل. أرسل المدة والبرنامج المتوقع.</p></details><details><summary>هل ينتظر السائق بين عدة مواقع؟</summary><p>يمكن تضمين وقت الانتظار ومحطات متعددة ضمن المدة المتفق عليها، ويتم تأكيد التفاصيل قبل الحجز.</p></details><details><summary>هل تتوفر الخدمة للفعاليات والحياة الليلية؟</summary><p>نعم، يمكن تنظيم الرحلات المسائية والليلية بالحجز المسبق وحسب التوفر.</p></details></div></div></section>
   <!-- PHASE2_GEO_LINKS_START --><style>.ipd-geo-links{padding:56px 6vw;background:#f2ede4;color:#1a1814}.ipd-geo-links>div{max-width:1180px;margin:auto}.ipd-geo-links h2{font:400 clamp(32px,5vw,52px)/1.08 Georgia,serif;margin:0 0 24px}.ipd-geo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.ipd-geo-grid a{display:block;padding:20px;background:#fff;border:1px solid rgba(26,24,20,.14);color:#1a1814;text-decoration:none}.ipd-geo-grid a:hover{text-decoration:underline}@media(max-width:760px){.ipd-geo-grid{grid-template-columns:1fr}}</style><section class="ipd-geo-links" aria-labelledby="phase2-routes"><div><h2 id="phase2-routes">نقل خاص للحياة الليلية</h2><div class="ipd-geo-grid"><a href="/ar/club-transfers-ibiza/">نقل خاص إلى النوادي وخدمة سائق ليلي في إيبيزا</a></div></div></section><!-- PHASE2_GEO_LINKS_END -->
 </main>
-  <!-- PHASE3_REAL_FLEET_START -->
-  <section class="ipd-photo-proof" aria-labelledby="real-fleet-title">
-    <div class="ipd-photo-proof__inner">
-      <p class="ipd-photo-proof__eyebrow">خدمة حقيقية في إيبيزا</p>
-      <h2 id="real-fleet-title">مرسيدس بنز الفئة V في إيبيزا</h2>
-      <div class="ipd-photo-proof__grid">
-        <figure>
-          <img src="/images/private-driver-ibiza-v-class-coast.webp" width="942" height="926" loading="lazy" decoding="async" alt="سيارة مرسيدس بنز الفئة V مع سائق خاص على ساحل إيبيزا">
-          <figcaption>خدمة سائق خاص بسيارة مرسيدس بنز الفئة V في إيبيزا.</figcaption>
-        </figure>
-        <figure>
-          <img src="/images/mercedes-v-class-ibiza-marina.webp" width="1200" height="1198" loading="lazy" decoding="async" alt="مرسيدس بنز الفئة V بالقرب من موانئ ومراسي إيبيزا">
-          <figcaption>نقل خاص إلى موانئ إيبيزا ومراسيها وفنادقها وفيلاتها.</figcaption>
-        </figure>
-      </div>
-      <a class="ipd-photo-proof__map" href="https://maps.app.goo.gl/YUyHpxYTWAqaFgUeA?g_st=ic" target="_blank" rel="noopener noreferrer">عرض Ibiza Private Drivers على خرائط Google ↗</a>
-    </div>
-  </section>
-  <!-- PHASE3_REAL_FLEET_END -->
-
+  <section class="ipd-photo-proof" aria-labelledby="real-fleet-title"><div class="ipd-photo-proof__inner"><p class="ipd-photo-proof__eyebrow">خدمة حقيقية في إيبيزا</p><h2 id="real-fleet-title">مرسيدس بنز الفئة V في إيبيزا</h2><div class="ipd-photo-proof__grid"><figure><img src="/images/private-driver-ibiza-v-class-coast.webp" width="942" height="926" loading="lazy" decoding="async" alt="سيارة مرسيدس بنز الفئة V مع سائق خاص على ساحل إيبيزا"><figcaption>خدمة سائق خاص بسيارة مرسيدس بنز الفئة V في إيبيزا.</figcaption></figure><figure><img src="/images/mercedes-v-class-ibiza-marina.webp" width="1200" height="1198" loading="lazy" decoding="async" alt="مرسيدس بنز الفئة V بالقرب من موانئ ومراسي إيبيزا"><figcaption>نقل خاص إلى موانئ إيبيزا ومراسيها وفنادقها وفيلاتها.</figcaption></figure></div><a class="ipd-photo-proof__map" href="https://maps.app.goo.gl/YUyHpxYTWAqaFgUeA?g_st=ic" target="_blank" rel="noopener noreferrer">عرض Ibiza Private Drivers على خرائط Google ↗</a></div></section>
   <section class="cta"><h2>لنخطط رحلتك في إيبيزا</h2><p>أرسل التاريخ والوقت وعدد الركاب ومكان الاستلام والوجهة، وسنرد بالتوفر وعرض مناسب.</p><a class="button" href="https://wa.me/34613756211?text=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7%D9%8B%D8%8C%20%D8%A3%D8%B1%D8%BA%D8%A8%20%D9%81%D9%8A%20%D8%AD%D8%AC%D8%B2%20%D8%B3%D8%A7%D8%A6%D9%82%20%D8%AE%D8%A7%D8%B5%20%D9%81%D9%8A%20%D8%A5%D9%8A%D8%A8%D9%8A%D8%B2%D8%A7.%20%D8%A7%D9%84%D8%AA%D8%A7%D8%B1%D9%8A%D8%AE%3A%20%2F%20%D8%A7%D9%84%D8%A8%D8%AF%D8%A7%D9%8A%D8%A9%3A%20%2F%20%D8%A7%D9%84%D9%85%D8%AF%D8%A9%3A%20%2F%20%D8%A7%D9%84%D8%B1%D9%83%D8%A7%D8%A8%3A%20%2F%20%D8%A7%D9%84%D8%A8%D8%B1%D9%86%D8%A7%D9%85%D8%AC%3A" rel="noopener">تواصل عبر واتساب</a></section>
   <footer><div class="footer-grid"><div><div class="footer-title">Ibiza Private Drivers</div><p>سائق خاص وخدمات نقل فاخرة في إيبيزا.</p><p><a href="tel:+34613756211"><bdi>+34 613 75 62 11</bdi></a><br><a href="mailto:info@ibizaprivatedrivers.com"><bdi>info@ibizaprivatedrivers.com</bdi></a></p></div><div><strong>الخدمات</strong><div class="footer-links"><a href="/ar/airport-transfer-ibiza/">نقل المطار</a><a href="/ar/private-chauffeur-ibiza/">سائق خاص</a><a href="/ar/villa-transfer-ibiza/">نقل الفلل</a><a href="/ar/yacht-transfer-ibiza/">نقل اليخوت</a></div></div><div><strong>اللغات</strong><div class="footer-links"><a href="/chauffeur-service/" hreflang="en">English</a><a href="/fr/chauffeur-prive-ibiza/" hreflang="fr">Français</a><a href="/de/privatchauffeur-ibiza/" hreflang="de">Deutsch</a><a href="/ar/private-chauffeur-ibiza/" hreflang="ar">العربية</a></div></div></div><small>© 2026 Ibiza Private Drivers · Ibiza, Balearic Islands, Spain</small></footer>
 </body>
