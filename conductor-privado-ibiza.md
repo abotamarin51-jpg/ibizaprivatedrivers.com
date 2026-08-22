@@ -1,42 +1,43 @@
 ---
 layout: default
-title: "Conductor Privado en Ibiza | Chófer con Mercedes V-Class 24h"
-description: "Conductor privado en Ibiza con Mercedes V-Class nuevo. Traslados aeropuerto, villas, yates y discotecas. Servicio 24h, precio cerrado desde 100€. Reserva por WhatsApp."
+title: "Conductor Privado en Ibiza | Servicio de Chófer Privado"
+description: "Servicio de conductor privado en Ibiza para aeropuerto, villas, hoteles, marinas, restaurantes y eventos. Reserva previa y presupuesto personalizado."
 permalink: /conductor-privado-ibiza/
 ---
 
-## Conductor Privado en Ibiza — Puntual, Discreto, Premium
+## Conductor Privado en Ibiza
 
-¿Buscas un **conductor privado en Ibiza**? Ofrecemos servicio de chófer profesional con **Mercedes V-Class** nuevos en toda la isla. Disponibles 24 horas, precio cerrado desde 100€, sin esperas y sin compartir vehículo.
+¿Buscas un **conductor privado en Ibiza**? Ibiza Private Drivers ofrece transporte privado con reserva previa para aeropuerto, villas, hoteles, marinas, restaurantes, eventos y recorridos personalizados por la isla.
 
-A diferencia de un taxi convencional, tu servicio queda **reservado y garantizado**: tu conductor sigue tu vuelo en tiempo real, te espera en llegadas con un cartel con tu nombre y te lleva directo a tu villa, hotel, yate o discoteca.
+La página principal del servicio es [Private Driver Ibiza](/services/private-driver-ibiza.html), donde se centraliza la información sobre disponibilidad, itinerarios, vehículo y reserva.
+
+A diferencia de un servicio de taxi de parada, el trayecto se organiza con antelación: fecha, hora, punto de recogida, destino o itinerario, pasajeros, equipaje y necesidades de vehículo se revisan antes de confirmar.
 
 [Reserva por WhatsApp](https://wa.me/34613756211) · +34 613 75 62 11
 
-## Nuestros servicios de transporte privado
+## Servicios de transporte privado
 
-- **Traslados aeropuerto** — recogida privada en el Aeropuerto de Ibiza (IBZ) a cualquier punto de la isla
-- **Traslados a villas** — servicio puerta a puerta en villas privadas, incluso en zonas de difícil acceso
-- **Traslados a yates y puertos** — Marina Ibiza, Marina Botafoch, Puerto de Ibiza
-- **Discotecas y eventos** — Ushuaïa, Hï Ibiza, Pacha, Amnesia, cenas y eventos privados
-- **Chófer por horas** — conductor a tu disposición para rutas por la isla, compras o reuniones
+- **Traslados de aeropuerto** — recogidas y salidas en Ibiza Airport (IBZ)
+- **Traslados a villas y hoteles** — servicio puerta a puerta con ubicación confirmada
+- **Traslados a yates y marinas** — conexiones con Marina Ibiza, Marina Botafoch y otros puertos de la isla
+- **Discotecas y eventos** — transporte previamente organizado para salidas y regresos
+- **Chófer por horas** — servicio por horas, media jornada, jornada completa o itinerario personalizado, sujeto a disponibilidad
 
-## Por qué elegir nuestro servicio de conductor privado
+Consulta también:
 
-- **Precio cerrado por adelantado** — sin taxímetro ni sorpresas
-- **Flota Mercedes V-Class nueva** — hasta 7 pasajeros con equipaje
-- **Seguimiento de vuelos** — espera gratuita si tu vuelo se retrasa
-- **Disponibilidad 24/7** — incluidos traslados nocturnos
-- **Conductores multilingües** — español, inglés e italiano
-- **Valoración 5.0★ en Google** — la confianza de clientes de toda Europa
+- [Private Driver Ibiza](/services/private-driver-ibiza.html)
+- [Ibiza Airport Transfers](/airport-transfers/)
+- [Private Chauffeur Service](/chauffeur-service/)
+- [Villa Transfers](/villa-transfers/)
+- [Yacht Transfers](/yacht-transfers/)
 
-## Precios
+## Reserva y presupuesto
 
-Servicios desde **100€**. El precio exacto depende de la ruta, el horario y el número de pasajeros. Envíanos los datos de tu vuelo o trayecto por [WhatsApp](https://wa.me/34613756211) y recibe presupuesto al instante.
+El precio depende de la fecha, horario, ruta o itinerario, pasajeros, equipaje, paradas y requisitos del vehículo. Envía los detalles por [WhatsApp](https://wa.me/34613756211) para recibir disponibilidad y un presupuesto personalizado.
 
-## Zonas que cubrimos
+## Zonas de servicio
 
-Toda la isla de Ibiza: Ibiza ciudad, San Antonio, Santa Eulalia, Playa d'en Bossa, San José, Cala Llonga, San Juan, Portinatx y conexión con Formentera.
+El servicio puede solicitarse para Ibiza ciudad, Playa d'en Bossa, Talamanca, Marina Botafoch, Santa Eulalia, San Antonio, villas privadas y otros puntos de Ibiza, sujeto a disponibilidad y confirmación previa.
 
 <script type="application/ld+json">
 {
@@ -54,12 +55,11 @@ Toda la isla de Ibiza: Ibiza ciudad, San Antonio, Santa Eulalia, Playa d'en Boss
     "address": {
       "@type": "PostalAddress",
       "addressLocality": "Ibiza",
-      "addressRegion": "Baleares",
+      "addressRegion": "Balearic Islands",
       "addressCountry": "ES"
     }
   },
-  "areaServed": "Ibiza, España",
+  "areaServed": "Ibiza, Spain",
   "url": "https://ibizaprivatedrivers.com/conductor-privado-ibiza/"
 }
 </script>
-
