@@ -9,6 +9,8 @@ permalink: /ibiza-transfers/
 
 Looking for reliable **Ibiza transfers**? We provide private transfers across Ibiza with **Mercedes-Benz V-Class** service. Available 24/7 by reservation, with a tailored quote for the confirmed itinerary.
 
+For island-wide journeys, multi-stop plans and tailored transport, start with our central [Private Driver Ibiza service](/services/private-driver-ibiza.html).
+
 Unlike standard taxis, every transfer is **pre-booked and confirmed**: your driver tracks your flight, waits at arrivals with a name sign, and takes you directly to your villa, hotel, yacht or club.
 
 [Book your transfer on WhatsApp](https://wa.me/34613756211) · +34 613 756 211
@@ -29,6 +31,7 @@ Our most requested service: private pickup at Ibiza Airport (IBZ) to any destina
 
 Door-to-door service for private villas, marinas and exclusive events.
 
+- [Private Driver Ibiza](/services/private-driver-ibiza.html)
 - [Villa Transfers](/villa-transfers/)
 - [Yacht Transfers](/yacht-transfers/)
 - [Luxury Transfers](/luxury-transfers/)
@@ -45,7 +48,7 @@ Door-to-door service for private villas, marinas and exclusive events.
 
 Pricing depends on the route, date, schedule, passengers, luggage and vehicle requirements. Send the full itinerary on [WhatsApp](https://wa.me/34613756211) for a tailored quote.
 
-Related information: [private driver service in Ibiza](/conductor-privado-ibiza/).
+Related information: [how to choose a private driver in Ibiza](/blog/best-private-driver-ibiza.html).
 
 <script type="application/ld+json">
 {
