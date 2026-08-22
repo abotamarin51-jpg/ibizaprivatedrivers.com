@@ -1,15 +1,15 @@
 ---
 layout: default
 title: "Ibiza Transfers | Private Airport & Island Transfers – Mercedes V-Class"
-description: "Premium Ibiza transfers with private driver. Airport, villa, yacht & club transfers across the island. New Mercedes V-Class, 24/7, from €100. Book via WhatsApp."
+description: "Private Ibiza transfers for airport, villa, yacht and event journeys. Mercedes-Benz V-Class service, 24/7 by reservation."
 permalink: /ibiza-transfers/
 ---
 
-# Ibiza Transfers — Private, Punctual, Premium
+## Ibiza Transfers — Private, Punctual, Premium
 
-Looking for reliable **Ibiza transfers**? We provide private transfers across the entire island with new **Mercedes V-Class** vehicles and professional multilingual drivers. Available 24/7, fixed prices from €100, no waiting, no sharing.
+Looking for reliable **Ibiza transfers**? We provide private transfers across Ibiza with **Mercedes-Benz V-Class** service. Available 24/7 by reservation, with a tailored quote for the confirmed itinerary.
 
-Unlike standard taxis, every transfer is **pre-booked and guaranteed**: your driver tracks your flight, waits at arrivals with a name sign, and takes you directly to your villa, hotel, yacht or club.
+Unlike standard taxis, every transfer is **pre-booked and confirmed**: your driver tracks your flight, waits at arrivals with a name sign, and takes you directly to your villa, hotel, yacht or club.
 
 [Book your transfer on WhatsApp](https://wa.me/34613756211) · +34 613 756 211
 
@@ -36,16 +36,16 @@ Door-to-door service for private villas, marinas and exclusive events.
 
 ## Why book your Ibiza transfer with us
 
-- **Fixed price confirmed in advance** — no meters, no surprises
-- **New Mercedes V-Class fleet** — up to 7 passengers with luggage
-- **Flight monitoring** — free waiting time if your flight is delayed
-- **24/7 availability** — including night transfers to clubs and events
-- **Multilingual drivers** — English, Spanish, Italian
-- **5.0★ rating on Google** — trusted by international clients
+- **Quote confirmed in advance** for the agreed itinerary
+- **Mercedes-Benz V-Class service** — up to 7 passengers with luggage
+- **Flight monitoring** — waiting terms confirmed with the quote
+- **24/7 by reservation** — including requested night transfers to clubs and events
 
 ## Prices
 
-Transfers from **€100**. The exact price depends on route, schedule and number of passengers. Send us your flight details on [WhatsApp](https://wa.me/34613756211) and receive an instant quote.
+Pricing depends on the route, date, schedule, passengers, luggage and vehicle requirements. Send the full itinerary on [WhatsApp](https://wa.me/34613756211) for a tailored quote.
+
+Related information: [private driver service in Ibiza](/conductor-privado-ibiza/).
 
 <script type="application/ld+json">
 {
@@ -55,6 +55,7 @@ Transfers from **€100**. The exact price depends on route, schedule and number
   "name": "Ibiza Transfers",
   "provider": {
     "@type": "LocalBusiness",
+    "hasMap": "https://maps.app.goo.gl/YUyHpxYTWAqaFgUeA?g_st=ic",
     "name": "Ibiza Private Drivers",
     "telephone": "+34613756211",
     "url": "https://ibizaprivatedrivers.com",

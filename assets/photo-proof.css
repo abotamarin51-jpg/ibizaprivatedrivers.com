@@ -1,0 +1,72 @@
+.ipd-photo-proof {
+  background: #f2ede4;
+  color: #1a1814;
+  padding: clamp(3rem, 7vw, 6rem) 1.25rem;
+}
+
+.ipd-photo-proof__inner {
+  width: min(1120px, 100%);
+  margin: 0 auto;
+}
+
+.ipd-photo-proof__eyebrow {
+  margin: 0 0 0.75rem;
+  color: #8b7355;
+  font: 600 0.72rem/1.4 Inter, Arial, sans-serif;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.ipd-photo-proof h2 {
+  margin: 0 0 1.5rem;
+  color: #1a1814;
+  font: 400 clamp(2rem, 5vw, 3.6rem)/1.05 "Cormorant Garamond", Georgia, serif;
+}
+
+.ipd-photo-proof__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.ipd-photo-proof figure {
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid rgba(139, 115, 85, 0.28);
+  background: #1a1814;
+}
+
+.ipd-photo-proof img {
+  display: block;
+  width: 100%;
+  height: clamp(280px, 45vw, 560px);
+  object-fit: cover;
+}
+
+.ipd-photo-proof figcaption {
+  padding: 0.85rem 1rem;
+  background: #1a1814;
+  color: #f2ede4;
+  font: 400 0.82rem/1.55 Inter, Arial, sans-serif;
+}
+
+.ipd-photo-proof__map {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-top: 1.25rem;
+  color: #1a1814;
+  font: 600 0.8rem/1.4 Inter, Arial, sans-serif;
+  letter-spacing: 0.08em;
+  text-underline-offset: 0.2em;
+}
+
+@media (max-width: 720px) {
+  .ipd-photo-proof__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ipd-photo-proof img {
+    height: min(94vw, 520px);
+  }
+}

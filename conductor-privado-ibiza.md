@@ -5,7 +5,7 @@ description: "Conductor privado en Ibiza con Mercedes V-Class nuevo. Traslados a
 permalink: /conductor-privado-ibiza/
 ---
 
-# Conductor Privado en Ibiza — Puntual, Discreto, Premium
+## Conductor Privado en Ibiza — Puntual, Discreto, Premium
 
 ¿Buscas un **conductor privado en Ibiza**? Ofrecemos servicio de chófer profesional con **Mercedes V-Class** nuevos en toda la isla. Disponibles 24 horas, precio cerrado desde 100€, sin esperas y sin compartir vehículo.
 
@@ -47,6 +47,7 @@ Toda la isla de Ibiza: Ibiza ciudad, San Antonio, Santa Eulalia, Playa d'en Boss
   "inLanguage": "es",
   "provider": {
     "@type": "LocalBusiness",
+    "hasMap": "https://maps.app.goo.gl/YUyHpxYTWAqaFgUeA?g_st=ic",
     "name": "Ibiza Private Drivers",
     "telephone": "+34613756211",
     "url": "https://ibizaprivatedrivers.com",
