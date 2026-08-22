@@ -21,6 +21,7 @@
   <meta property="og:locale" content="de_DE">
   <meta property="og:locale:alternate" content="en_GB">
   <meta property="og:locale:alternate" content="fr_FR">
+  <meta property="og:locale:alternate" content="ar_AE">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
@@ -41,52 +42,11 @@
       "email": "info@ibizaprivatedrivers.com",
       "priceRange": "€€€",
       "currenciesAccepted": "EUR",
-      "address": {
-        "@type": "PostalAddress",
-        "addressLocality": "Ibiza",
-        "addressRegion": "Balearic Islands",
-        "postalCode": "07800",
-        "addressCountry": "ES"
-      },
-      "geo": {
-        "@type": "GeoCoordinates",
-        "latitude": 38.9088,
-        "longitude": 1.4316
-      },
-      "areaServed": [
-        {
-          "@type": "City",
-          "name": "Ibiza"
-        },
-        {
-          "@type": "Place",
-          "name": "Formentera"
-        },
-        {
-          "@type": "Airport",
-          "name": "Ibiza Airport"
-        }
-      ],
-      "openingHoursSpecification": [
-        {
-          "@type": "OpeningHoursSpecification",
-          "dayOfWeek": [
-            "Monday",
-            "Tuesday",
-            "Wednesday",
-            "Thursday",
-            "Friday",
-            "Saturday",
-            "Sunday"
-          ],
-          "opens": "00:00",
-          "closes": "23:59"
-        }
-      ],
-      "sameAs": [
-        "https://www.facebook.com/ibizaprivatedrivers",
-        "https://www.instagram.com/ibizaprivatedrivers"
-      ]
+      "address": {"@type":"PostalAddress","addressLocality":"Ibiza","addressRegion":"Balearic Islands","postalCode":"07800","addressCountry":"ES"},
+      "geo": {"@type":"GeoCoordinates","latitude":38.9088,"longitude":1.4316},
+      "areaServed": [{"@type":"City","name":"Ibiza"},{"@type":"Place","name":"Formentera"},{"@type":"Airport","name":"Ibiza Airport"}],
+      "openingHoursSpecification": [{"@type":"OpeningHoursSpecification","dayOfWeek":["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],"opens":"00:00","closes":"23:59"}],
+      "sameAs": ["https://www.facebook.com/ibizaprivatedrivers","https://www.instagram.com/ibizaprivatedrivers"]
     },
     {
       "@type": "WebPage",
@@ -95,69 +55,26 @@
       "name": "Privatchauffeur Ibiza | Luxus-Transfers rund um die Uhr",
       "description": "Privatchauffeur auf Ibiza für Flughafen-, Villa- und Yacht-Transfers. Mercedes-Fahrzeuge, diskreter Service und Fahrten rund um die Uhr nach Reservierung.",
       "inLanguage": "de",
-      "about": {
-        "@id": "https://ibizaprivatedrivers.com/#business"
-      },
-      "isPartOf": {
-        "@id": "https://ibizaprivatedrivers.com/#website"
-      },
-      "translationOfWork": {
-        "@id": "https://ibizaprivatedrivers.com/#webpage"
-      }
+      "about": {"@id":"https://ibizaprivatedrivers.com/#business"},
+      "isPartOf": {"@id":"https://ibizaprivatedrivers.com/#website"},
+      "translationOfWork": {"@id":"https://ibizaprivatedrivers.com/#webpage"}
     },
     {
       "@type": "Service",
       "@id": "https://ibizaprivatedrivers.com/de/#service",
       "name": "Privater Chauffeur- und Transferservice auf Ibiza",
       "serviceType": "Privater Chauffeur- und Transferservice auf Ibiza",
-      "provider": {
-        "@id": "https://ibizaprivatedrivers.com/#business"
-      },
-      "areaServed": {
-        "@type": "Place",
-        "name": "Ibiza and Formentera"
-      },
-      "availableChannel": {
-        "@type": "ServiceChannel",
-        "servicePhone": {
-          "@type": "ContactPoint",
-          "telephone": "+34613756211",
-          "availableLanguage": [
-            "English",
-            "French",
-            "Spanish"
-          ]
-        }
-      }
+      "provider": {"@id":"https://ibizaprivatedrivers.com/#business"},
+      "areaServed": {"@type":"Place","name":"Ibiza and Formentera"},
+      "availableChannel": {"@type":"ServiceChannel","servicePhone":{"@type":"ContactPoint","telephone":"+34613756211","availableLanguage":["German","English"]}}
     },
     {
       "@type": "FAQPage",
       "@id": "https://ibizaprivatedrivers.com/de/#faq",
       "mainEntity": [
-        {
-          "@type": "Question",
-          "name": "Wie buche ich einen Privatchauffeur auf Ibiza?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Senden Sie uns per WhatsApp Datum, Uhrzeit, Passagierzahl, Abholort und Ziel. Wir bestätigen anschließend Verfügbarkeit und Preis."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Ist der Service auch nachts verfügbar?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Ja. Nachtfahrten sowie sehr frühe Transfers können rund um die Uhr nach vorheriger Reservierung und Verfügbarkeit organisiert werden."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Welche Gebiete auf Ibiza werden bedient?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Wir fahren zum Flughafen Ibiza, nach Ibiza-Stadt, Marina Botafoch, Playa d’en Bossa, Santa Eulària, Sant Antoni sowie zu Villen, Hotels, Häfen und weiteren Zielen auf der Insel."
-          }
-        }
+        {"@type":"Question","name":"Wie buche ich einen Privatchauffeur auf Ibiza?","acceptedAnswer":{"@type":"Answer","text":"Senden Sie uns per WhatsApp Datum, Uhrzeit, Passagierzahl, Abholort und Ziel. Wir bestätigen anschließend Verfügbarkeit und Preis."}},
+        {"@type":"Question","name":"Ist der Service auch nachts verfügbar?","acceptedAnswer":{"@type":"Answer","text":"Ja. Nachtfahrten sowie sehr frühe Transfers können rund um die Uhr nach vorheriger Reservierung und Verfügbarkeit organisiert werden."}},
+        {"@type":"Question","name":"Welche Gebiete auf Ibiza werden bedient?","acceptedAnswer":{"@type":"Answer","text":"Wir fahren zum Flughafen Ibiza, nach Ibiza-Stadt, Marina Botafoch, Playa d’en Bossa, Santa Eulària, Sant Antoni sowie zu Villen, Hotels, Häfen und weiteren Zielen auf der Insel."}}
       ]
     }
   ]
@@ -197,26 +114,7 @@
     <section class="section"><div class="wrap"><p class="eyebrow">Lokales Einsatzgebiet</p><h2>Fahrservice auf Ibiza und Formentera</h2><div class="prose"><p>Wir betreuen deutschsprachige Reisende aus Deutschland, Österreich, der Schweiz, Luxemburg und der ganzen Welt. Der Fahrservice selbst findet ausschließlich auf Ibiza und Formentera statt.</p></div><div class="coverage"><span>Flughafen Ibiza IBZ</span><span>Ibiza-Stadt</span><span>Marina Botafoch</span><span>Playa d’en Bossa</span><span>Santa Eulària</span><span>Sant Antoni</span><span>Cala Llonga</span><span>Villen und Hotels</span><span>Formentera</span></div></div></section>
     <section class="section light"><div class="wrap"><p class="eyebrow">Häufige Fragen</p><h2>Ihre Buchung vorbereiten</h2><div class="faq"><details><summary>Wie buche ich einen Privatchauffeur auf Ibiza?</summary><p>Senden Sie uns per WhatsApp Datum, Uhrzeit, Passagierzahl, Abholort und Ziel. Wir bestätigen anschließend Verfügbarkeit und Preis.</p></details><details><summary>Ist der Service auch nachts verfügbar?</summary><p>Ja. Nachtfahrten sowie sehr frühe Transfers können rund um die Uhr nach vorheriger Reservierung und Verfügbarkeit organisiert werden.</p></details><details><summary>Welche Gebiete auf Ibiza werden bedient?</summary><p>Wir fahren zum Flughafen Ibiza, nach Ibiza-Stadt, Marina Botafoch, Playa d’en Bossa, Santa Eulària, Sant Antoni sowie zu Villen, Hotels, Häfen und weiteren Zielen auf der Insel.</p></details></div></div></section>
   </main>
-  <!-- PHASE3_REAL_FLEET_START -->
-  <section class="ipd-photo-proof" aria-labelledby="real-fleet-title">
-    <div class="ipd-photo-proof__inner">
-      <p class="ipd-photo-proof__eyebrow">Echter Service auf Ibiza</p>
-      <h2 id="real-fleet-title">Mercedes-Benz V-Klasse auf Ibiza</h2>
-      <div class="ipd-photo-proof__grid">
-        <figure>
-          <img src="/images/private-driver-ibiza-v-class-coast.webp" width="942" height="926" loading="lazy" decoding="async" alt="Mercedes-Benz V-Klasse mit privatem Fahrer an der Küste Ibizas">
-          <figcaption>Privater Fahrservice mit Mercedes-Benz V-Klasse auf Ibiza.</figcaption>
-        </figure>
-        <figure>
-          <img src="/images/mercedes-v-class-ibiza-marina.webp" width="1200" height="1198" loading="lazy" decoding="async" alt="Mercedes-Benz V-Klasse in der Nähe der Häfen und Marinas von Ibiza">
-          <figcaption>Privater Transport zu Häfen, Marinas, Hotels und Villen auf Ibiza.</figcaption>
-        </figure>
-      </div>
-      <a class="ipd-photo-proof__map" href="https://maps.app.goo.gl/YUyHpxYTWAqaFgUeA?g_st=ic" target="_blank" rel="noopener noreferrer">Ibiza Private Drivers auf Google Maps ansehen ↗</a>
-    </div>
-  </section>
-  <!-- PHASE3_REAL_FLEET_END -->
-
+  <section class="ipd-photo-proof" aria-labelledby="real-fleet-title"><div class="ipd-photo-proof__inner"><p class="ipd-photo-proof__eyebrow">Echter Service auf Ibiza</p><h2 id="real-fleet-title">Mercedes-Benz V-Klasse auf Ibiza</h2><div class="ipd-photo-proof__grid"><figure><img src="/images/private-driver-ibiza-v-class-coast.webp" width="942" height="926" loading="lazy" decoding="async" alt="Mercedes-Benz V-Klasse mit privatem Fahrer an der Küste Ibizas"><figcaption>Privater Fahrservice mit Mercedes-Benz V-Klasse auf Ibiza.</figcaption></figure><figure><img src="/images/mercedes-v-class-ibiza-marina.webp" width="1200" height="1198" loading="lazy" decoding="async" alt="Mercedes-Benz V-Klasse in der Nähe der Häfen und Marinas von Ibiza"><figcaption>Privater Transport zu Häfen, Marinas, Hotels und Villen auf Ibiza.</figcaption></figure></div><a class="ipd-photo-proof__map" href="https://maps.app.goo.gl/YUyHpxYTWAqaFgUeA?g_st=ic" target="_blank" rel="noopener noreferrer">Ibiza Private Drivers auf Google Maps ansehen ↗</a></div></section>
   <section class="cta"><h2>Planen wir Ihre Fahrt auf Ibiza</h2><p>Senden Sie uns Datum, Uhrzeit, Passagierzahl, Abholort und Ziel. Wir antworten mit Verfügbarkeit und einem individuellen Angebot.</p><a class="button" href="https://wa.me/34613756211?text=Hallo%2C%20ich%20m%C3%B6chte%20einen%20privaten%20Fahrer%20auf%20Ibiza%20buchen.%20Bitte%20senden%20Sie%20mir%20Verf%C3%BCgbarkeit%20und%20Preis." rel="noopener">Per WhatsApp anfragen</a></section>
   <footer><div class="footer-grid"><div><div class="footer-title">Ibiza Private Drivers</div><p>Privatchauffeur und hochwertige Transfers auf Ibiza.</p><p><a href="tel:+34613756211">+34 613 75 62 11</a><br><a href="mailto:info@ibizaprivatedrivers.com">info@ibizaprivatedrivers.com</a></p></div><div><strong>Services</strong><div class="footer-links"><a href="/de/flughafentransfer-ibiza/">Flughafentransfer</a><a href="/de/privatchauffeur-ibiza/">Privatchauffeur</a><a href="/de/villa-transfer-ibiza/">Villa Transfer</a><a href="/de/yacht-transfer-ibiza/">Yacht Transfer</a></div></div><div><strong>Sprachen</strong><div class="footer-links"><a href="/" hreflang="en">English</a><a href="/fr/" hreflang="fr">Français</a><a href="/de/" hreflang="de">Deutsch</a><a href="/ar/" hreflang="ar">العربية</a></div></div></div><small>© 2026 Ibiza Private Drivers · Ibiza, Balearic Islands, Spain</small></footer>
 </body>
