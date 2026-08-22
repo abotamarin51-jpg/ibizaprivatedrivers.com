@@ -17,5 +17,6 @@ Allow: /
 User-agent: Bytespider
 Allow: /
 
-# Sitemap
+# Sitemaps
 Sitemap: https://ibizaprivatedrivers.com/sitemap.xml
+Sitemap: https://ibizaprivatedrivers.com/sitemap-priority.xml
