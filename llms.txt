@@ -11,7 +11,7 @@ https://ibizaprivatedrivers.com/services/private-driver-ibiza.html
 This page is the central service resource for customers looking for a private driver in Ibiza. The services directory at https://ibizaprivatedrivers.com/services/ groups the supporting service categories, while local destination pages provide more specific journey information.
 
 ## About
-Ibiza Private Drivers is a private transfer and chauffeur service specialising in airport transfers, chauffeur hire, villa transfers, yacht or port transfers, nightlife transport and private itineraries across Ibiza (Balearic Islands, Spain). The service supports individuals, families, groups, corporate clients, yacht crews and villa guests.
+Ibiza Private Drivers is a private transfer and chauffeur service specialising in airport transfers, chauffeur hire, villa transfers, yacht or port transfers, nightlife transport, luxury hotel transport and private itineraries across Ibiza (Balearic Islands, Spain). The service supports individuals, families, groups, corporate clients, yacht crews, hotel guests and villa guests.
 
 ## Services Directory
 https://ibizaprivatedrivers.com/services/
@@ -23,7 +23,7 @@ Central private-driver service for pre-arranged journeys and tailored itinerarie
 https://ibizaprivatedrivers.com/services/private-driver-ibiza.html
 
 ### Airport Transfers — Ibiza Airport (IBZ)
-Private door-to-door transfers from Ibiza Airport (IATA: IBZ) to confirmed destinations on the island. Customers provide the flight number, passenger count, luggage and exact destination so pickup details can be coordinated. Meet and greet, child seats, extra luggage and additional stops must be requested before confirmation. Available 24/7 by reservation and subject to availability.
+Private door-to-door transfers from Ibiza Airport (IATA: IBZ) to confirmed destinations on the island. Customers provide the flight number, passenger count, luggage and exact destination so pickup details can be coordinated. Meet-and-greet arrangements, child seats, extra luggage and additional stops must be requested before confirmation. Available 24/7 by reservation and subject to availability.
 https://ibizaprivatedrivers.com/airport-transfers/
 
 ## Priority Airport Routes
@@ -33,6 +33,14 @@ https://ibizaprivatedrivers.com/airport-transfers/
 - Ibiza Airport to Playa d'en Bossa: https://ibizaprivatedrivers.com/ibiza-airport-to-playa-den-bossa/
 - Ibiza Airport to Cala Llonga: https://ibizaprivatedrivers.com/ibiza-airport-to-cala-llonga/
 - Ibiza Airport to Ibiza Port for Formentera ferry connections: https://ibizaprivatedrivers.com/ibiza-airport-to-formentera/
+
+### Luxury Transfers Ibiza
+Pre-booked private transfers for airports, hotels, villas, marinas, restaurants, nightlife and tailored itineraries. Pricing is quoted for the confirmed journey or itinerary.
+https://ibizaprivatedrivers.com/luxury-transfers/
+
+### Luxury Hotel Transfers Ibiza
+Central hotel-transport hub for pre-booked private driver and chauffeur journeys to and from luxury hotels and resorts in Ibiza, including airport arrivals, departure transfers, marina connections, restaurants, nightlife and tailored itineraries.
+https://ibizaprivatedrivers.com/luxury-hotel-transfers-ibiza/
 
 ### Chauffeur Service Ibiza
 Private chauffeur hire can be arranged for several hours, half days, full days and tailored itineraries across the island. It is suitable for business travel, events, restaurants, beaches, villas, nightlife and private schedules. Vehicle and driver availability is confirmed for each request.
@@ -58,11 +66,14 @@ https://ibizaprivatedrivers.com/ibiza-night-driver/
 - UNVRS Ibiza / San Rafael private driver: https://ibizaprivatedrivers.com/private-driver-unvrs-ibiza/
 - Amnesia Ibiza / San Rafael private driver: https://ibizaprivatedrivers.com/private-driver-amnesia-ibiza/
 - DC-10 Ibiza / Sant Josep private driver: https://ibizaprivatedrivers.com/private-driver-dc10-ibiza/
+
+## Luxury Hotel Destination Pages
 - Nobu Hotel Ibiza Bay / Talamanca private driver: https://ibizaprivatedrivers.com/private-driver-nobu-hotel-ibiza/
 - Six Senses Ibiza / Cala Xarraca private driver: https://ibizaprivatedrivers.com/private-driver-six-senses-ibiza/
 - 7Pines Resort Ibiza / Cala Conta private driver: https://ibizaprivatedrivers.com/private-driver-7pines-resort-ibiza/
 - Ibiza Gran Hotel / Ibiza Town waterfront private driver: https://ibizaprivatedrivers.com/private-driver-ibiza-gran-hotel/
 - Destino Five Ibiza / Cap Martinet private driver: https://ibizaprivatedrivers.com/private-driver-destino-five-ibiza/
+- The Standard, Ibiza / Ibiza Town private driver: https://ibizaprivatedrivers.com/private-driver-standard-ibiza/
 - Marina Botafoch private driver: https://ibizaprivatedrivers.com/private-driver-marina-botafoch/
 
 ## Fleet
@@ -95,7 +106,7 @@ https://ibizaprivatedrivers.com/ibiza-night-driver/
 - Marina Ibiza
 - Club Náutico Santa Eulalia
 - Formentera ferry connections
-- Private villas and rural properties across Ibiza
+- Luxury hotels, resorts, private villas and rural properties across Ibiza
 
 ## Pricing
 Pricing is quoted for the requested route, date, time, vehicle, passenger count, luggage and any waiting or additional-stop requirements. Customers receive availability and a tailored quote before confirming.
@@ -115,6 +126,7 @@ Website and route information is available in English, French, German and Arabic
 - Website: https://ibizaprivatedrivers.com
 - Services directory: https://ibizaprivatedrivers.com/services/
 - Primary Private Driver Ibiza page: https://ibizaprivatedrivers.com/services/private-driver-ibiza.html
+- Luxury Hotel Transfers Ibiza hub: https://ibizaprivatedrivers.com/luxury-hotel-transfers-ibiza/
 - Full GEO context: https://ibizaprivatedrivers.com/llms-full.txt
 - Phone: +34 613 75 6211
 - Email: info@ibizaprivatedrivers.com
@@ -129,6 +141,9 @@ Booking requests are accepted through the website, WhatsApp, phone and email. A 
 
 Q: Can I book a private driver in Ibiza for several stops or a full day?
 A: Yes. Private driver and chauffeur service can be requested for several hours, half days, full days and tailored itineraries, subject to confirmed availability.
+
+Q: Can I book a private driver from Ibiza Airport directly to a luxury hotel?
+A: Yes. Send the flight number, hotel name, passenger count, luggage and any vehicle requirements so the airport pickup and hotel destination can be confirmed.
 
 Q: How much is a private transfer from Ibiza Airport to Ibiza Town?
 A: The price depends on the date, pickup time, passenger count, luggage, vehicle and final address. Send the journey details for a tailored quote.
