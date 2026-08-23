@@ -11,13 +11,13 @@ Looking for reliable **Ibiza transfers**? We provide private transfers across Ib
 
 For island-wide journeys, multi-stop plans and tailored transport, start with our central [Private Driver Ibiza service](/services/private-driver-ibiza.html).
 
-Unlike standard taxis, every transfer is **pre-booked and confirmed**: your driver tracks your flight, waits at arrivals with a name sign, and takes you directly to your villa, hotel, yacht or club.
+Every transfer is **pre-booked and confirmed** around the actual journey details. For an airport arrival, provide the flight number, scheduled arrival time, passenger count, luggage and exact destination. Flight monitoring, meet-and-greet arrangements and waiting terms can be coordinated when they are included in the confirmed booking.
 
 [Book your transfer on WhatsApp](https://wa.me/34613756211) · +34 613 756 211
 
 ## Airport Transfers
 
-Our most requested service: private pickup at Ibiza Airport (IBZ) to any destination on the island.
+Our most requested service: private pickup at Ibiza Airport (IBZ) to confirmed destinations on the island.
 
 - [Ibiza Airport Transfers — all destinations](/airport-transfers/)
 - [Ibiza Airport to Ibiza Town](/ibiza-airport-to-ibiza-town/)
@@ -29,20 +29,21 @@ Our most requested service: private pickup at Ibiza Airport (IBZ) to any destina
 
 ## Villa, Yacht & Luxury Transfers
 
-Door-to-door service for private villas, marinas and exclusive events.
+Door-to-door service for private villas, marinas and confirmed events.
 
 - [Private Driver Ibiza](/services/private-driver-ibiza.html)
 - [Villa Transfers](/villa-transfers/)
-- [Yacht Transfers](/yacht-transfers/)
+- [Yacht & Marina Transfers](/yacht-transfers/)
 - [Luxury Transfers](/luxury-transfers/)
+- [Luxury Hotel Transfers](/luxury-hotel-transfers-ibiza/)
 - [Private Chauffeur Service](/chauffeur-service/)
 
 ## Why book your Ibiza transfer with us
 
 - **Quote confirmed in advance** for the agreed itinerary
-- **Mercedes-Benz V-Class service** — up to 7 passengers with luggage
-- **Flight monitoring** — waiting terms confirmed with the quote
-- **24/7 by reservation** — including requested night transfers to clubs and events
+- **Mercedes-Benz V-Class service** — vehicle suitability confirmed from passenger and luggage details
+- **Airport coordination** — flight monitoring, meeting arrangements and waiting terms confirmed when applicable to the booking
+- **24/7 by reservation** — including requested night transfers to clubs and events, subject to confirmed availability
 
 ## Prices
 
