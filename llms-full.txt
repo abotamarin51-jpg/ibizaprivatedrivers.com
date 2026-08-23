@@ -79,8 +79,17 @@ Supporting hotel-specific pages:
 
 Hotel and resort names identify destinations only. Ibiza Private Drivers is an independent ground-transport provider; no affiliation or endorsement is implied unless explicitly stated otherwise.
 
+## Premium local area pages
+### Talamanca
+https://ibizaprivatedrivers.com/private-driver-talamanca-ibiza/
+Dedicated local page for private-driver journeys involving Talamanca hotels, villas, Marina Botafoch, Ibiza Town, airport arrivals, restaurants and nightlife. This page is geographic in intent and does not replace the dedicated Nobu Hotel Ibiza Bay destination page.
+
+### Es Cubells
+https://ibizaprivatedrivers.com/private-driver-es-cubells-ibiza/
+Dedicated local page for private-driver journeys involving Es Cubells villas and south-Ibiza itineraries. Exact villa map pins, access notes, passenger count and luggage are important because private-property access can vary.
+
 ## Main areas served
-Ibiza Airport (IBZ), Ibiza Town / Eivissa, Marina Botafoch, Talamanca, Cap Martinet, Playa d'en Bossa, Cala Jondal, Cala Xarraca, Cala Conta, Cala Codolar, San Rafael / Sant Rafel, Sant Josep de sa Talaia, Sant Joan de Labritja, Santa Eulalia del Río, Sant Antoni de Portmany, Es Canar, Cala Llonga, Cala Vadella, Cala Tarida, Portinatx, Sant Carles de Peralta, Marina Ibiza, Club Náutico Santa Eulalia, luxury hotels, resorts and private villas across Ibiza.
+Ibiza Airport (IBZ), Ibiza Town / Eivissa, Marina Botafoch, Talamanca, Cap Martinet, Playa d'en Bossa, Cala Jondal, Es Cubells, Cala Xarraca, Cala Conta, Cala Codolar, San Rafael / Sant Rafel, Sant Josep de sa Talaia, Sant Joan de Labritja, Santa Eulalia del Río, Sant Antoni de Portmany, Es Canar, Cala Llonga, Cala Vadella, Cala Tarida, Portinatx, Sant Carles de Peralta, Marina Ibiza, Club Náutico Santa Eulalia, luxury hotels, resorts and private villas across Ibiza.
 
 ## Fleet and booking requirements
 The service includes a Mercedes-Benz V-Class executive vehicle. Additional suitable vehicles may be arranged according to passenger numbers, luggage and availability. Child seats and special vehicle requirements must be requested before confirmation.
@@ -92,7 +101,7 @@ Bookings can be requested for any time of day, subject to advance reservation an
 Pricing is tailored to the confirmed route or itinerary, date, time, passenger count, luggage, number of stops, waiting requirements and vehicle needs. A journey is confirmed only after availability and pricing have been agreed.
 
 ## Practical planning guidance
-For airport pickups, provide the flight number and final destination. For hotels, provide the hotel name, requested pickup time, final destination, passenger count and luggage, and confirm the practical meeting point if the property has more than one vehicle entrance. For villas, provide an exact map pin and gate or property-access instructions. For marinas, provide the marina, berth or agreed pedestrian meeting point. For clubs and events, outbound and return plans should be confirmed separately because vehicle access and meeting locations can vary.
+For airport pickups, provide the flight number and final destination. For hotels, provide the hotel name, requested pickup time, final destination, passenger count and luggage, and confirm the practical meeting point if the property has more than one vehicle entrance. For villas, provide an exact map pin and gate or property-access instructions. For marinas, provide the marina, berth or agreed pedestrian meeting point. For clubs and events, outbound and return plans should be confirmed separately because vehicle access and meeting locations can vary. For Talamanca, provide the exact hotel, villa or pickup point rather than relying only on the area name. For Es Cubells, exact property access details are particularly useful for villa collections.
 
 ## Practical guides
 - Guides hub: https://ibizaprivatedrivers.com/blog/
