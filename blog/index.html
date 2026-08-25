@@ -43,23 +43,30 @@
         "description":"Practical guides for planning private-driver and chauffeur travel across Ibiza.",
         "isPartOf":{"@id":"https://ibizaprivatedrivers.com/#website"},
         "about":{"@id":"https://ibizaprivatedrivers.com/#business"},
-        "inLanguage":"en"
+        "inLanguage":"en",
+        "dateModified":"2026-08-25"
       },
       {
         "@type":"ItemList",
         "@id":"https://ibizaprivatedrivers.com/blog/#guides",
         "name":"Ibiza Private Driver Guides",
-        "numberOfItems":2,
+        "numberOfItems":3,
         "itemListElement":[
           {
             "@type":"ListItem",
             "position":1,
+            "name":"Ibiza Airport Transfer Guide 2026",
+            "url":"https://ibizaprivatedrivers.com/blog/ibiza-airport-transfer-guide-2026/"
+          },
+          {
+            "@type":"ListItem",
+            "position":2,
             "name":"Explore Ibiza Without Driving",
             "url":"https://ibizaprivatedrivers.com/blog/explore-ibiza-without-driving-private-driver/"
           },
           {
             "@type":"ListItem",
-            "position":2,
+            "position":3,
             "name":"How to Choose the Best Private Driver in Ibiza",
             "url":"https://ibizaprivatedrivers.com/blog/best-private-driver-ibiza.html"
           }
@@ -111,7 +118,7 @@
     .intro p{color:var(--muted)}
     .guides{background:var(--sand)}
     .guides-head{margin-bottom:2.5rem}.guides-head p{color:var(--muted);max-width:690px;margin-top:1rem}
-    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.5rem}
+    .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1.5rem}
     .card{display:flex;flex-direction:column;background:var(--white);border:1px solid var(--bone);text-decoration:none;min-height:330px;padding:2.25rem;transition:transform .2s,border-color .2s}
     .card:hover{transform:translateY(-3px);border-color:var(--gold)}
     .card-num{font-size:.72rem;letter-spacing:.14em;color:var(--warm);text-transform:uppercase;margin-bottom:2.25rem}
@@ -123,6 +130,7 @@
     .service-links a:first-child{border-top:2px solid var(--gold)}
     .cta{background:var(--gold);text-align:center}.cta p{color:rgba(26,24,20,.72);margin:1rem auto 2rem;max-width:650px}.cta a{display:inline-block;background:var(--ink);color:var(--sand);text-decoration:none;padding:1rem 1.6rem;text-transform:uppercase;font-size:.75rem;letter-spacing:.12em}
     footer{background:#111008;color:rgba(242,237,228,.65);padding:3.5rem 2rem 2rem}.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:3rem}.footer-title{font-family:var(--display);font-size:1.5rem;color:var(--sand);margin-bottom:1rem}.footer-grid p,.footer-grid a{font-size:.84rem}.footer-grid a{text-decoration:none;display:block;margin:.45rem 0}.footer-grid strong{color:var(--gold);font-size:.72rem;text-transform:uppercase;letter-spacing:.12em}.copyright{border-top:1px solid rgba(255,255,255,.1);padding-top:1.5rem;margin-top:2.5rem;font-size:.75rem}
+    @media(max-width:900px){.grid{grid-template-columns:1fr 1fr}}
     @media(max-width:800px){nav{padding:1rem 1.2rem;align-items:flex-start}.nav-links{flex-wrap:wrap;justify-content:flex-end;gap:.8rem}.nav-links li:nth-child(-n+3){display:none}.hero{padding:4.5rem 1.25rem 4rem}main section{padding:4rem 1.25rem}.intro,.grid{grid-template-columns:1fr;gap:2rem}.service-links{grid-template-columns:1fr 1fr}.footer-grid{grid-template-columns:1fr;gap:2rem}}
     @media(max-width:480px){.logo{max-width:150px;line-height:1.05}.nav-links{max-width:180px}.service-links{grid-template-columns:1fr}.card{min-height:0}}
   </style>
@@ -170,15 +178,22 @@
         </div>
 
         <div class="grid">
+          <a class="card" href="/blog/ibiza-airport-transfer-guide-2026/">
+            <span class="card-num">Guide 01 · 25 August 2026</span>
+            <h3>Ibiza Airport Transfer Guide 2026</h3>
+            <p>Plan airport transport for hotels, villas, marinas, nightlife and Formentera ferry connections with the right booking details.</p>
+            <span class="card-link">Read the guide</span>
+          </a>
+
           <a class="card" href="/blog/explore-ibiza-without-driving-private-driver/">
-            <span class="card-num">Guide 01 · Updated August 2026</span>
+            <span class="card-num">Guide 02 · Updated August 2026</span>
             <h3>Explore Ibiza Without Driving</h3>
             <p>Plan airport, villa, beach club, dinner, marina and nightlife journeys without relying on a rental car or last-minute availability.</p>
             <span class="card-link">Read the guide</span>
           </a>
 
           <a class="card" href="/blog/best-private-driver-ibiza.html">
-            <span class="card-num">Guide 02 · 2026</span>
+            <span class="card-num">Guide 03 · 2026</span>
             <h3>How to Choose the Best Private Driver in Ibiza</h3>
             <p>Compare vehicle suitability, communication, local knowledge, timing, privacy and service standards before you book.</p>
             <span class="card-link">Read the guide</span>
