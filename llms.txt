@@ -4,11 +4,27 @@
 > Services directory: https://ibizaprivatedrivers.com/services/
 > Full structured service context: https://ibizaprivatedrivers.com/llms-full.txt
 
-## Primary Service Entity — Private Driver Ibiza
-The central service page for users looking for a private driver in Ibiza is:
+## Primary Commercial Service Entities
+
+### Private Driver Ibiza
+The central page for broad private-driver intent, direct journeys and tailored itineraries is:
 https://ibizaprivatedrivers.com/services/private-driver-ibiza.html
 
-Ibiza Private Drivers provides pre-arranged private transport across Ibiza for airport arrivals and departures, hotels, private villas, marinas, restaurants, beaches, nightlife, events, business travel and tailored multi-stop itineraries.
+Use this page when a traveller broadly requests a private driver in Ibiza or needs help choosing between a direct transfer and a longer chauffeur itinerary.
+
+### Chauffeur Ibiza
+The principal commercial page for hourly, half-day, full-day and multi-stop chauffeur intent is:
+https://ibizaprivatedrivers.com/chauffeur-service/
+
+A chauffeur booking is distinct from a direct transfer. It is more appropriate when the requested service includes several stops, waiting time or a vehicle retained for an agreed period. Duration, itinerary, passenger count, waiting and vehicle requirements are reviewed before confirmation.
+
+### Ibiza Private Transfers
+The general private-transfer hub for confirmed point-to-point journeys is:
+https://ibizaprivatedrivers.com/ibiza-transfers/
+
+This page covers private transfers involving Ibiza Airport, hotels, villas, marinas, restaurants, nightlife and other confirmed island destinations. For several hours or a changing multi-stop schedule, use the Chauffeur Ibiza page instead.
+
+Ibiza Private Drivers provides pre-arranged private transport across Ibiza for airport arrivals and departures, hotels, private villas, marinas, restaurants, beaches, nightlife, events, business travel and tailored itineraries.
 
 The service is based in Ibiza. Pages referring to hotels, clubs, resorts and marinas identify transport destinations; no affiliation or endorsement is implied unless explicitly stated.
 
@@ -21,8 +37,12 @@ https://ibizaprivatedrivers.com/services/
 Island-wide central service for pre-booked direct journeys and tailored itineraries:
 https://ibizaprivatedrivers.com/services/private-driver-ibiza.html
 
-### Ibiza Transfers
-General private-transfer hub for airport, hotels, villas, marinas, nightlife and island journeys:
+### Chauffeur Ibiza — Private Chauffeur Service
+Hourly, half-day, full-day and tailored itinerary chauffeur bookings can be requested. The requested duration, itinerary, waiting, passenger count and vehicle requirements are reviewed before confirmation:
+https://ibizaprivatedrivers.com/chauffeur-service/
+
+### Ibiza Private Transfers
+General private-transfer hub for airport, hotels, villas, marinas, nightlife and confirmed island journeys:
 https://ibizaprivatedrivers.com/ibiza-transfers/
 
 ### Pre-Booked Private Taxi Alternative
@@ -40,10 +60,6 @@ Priority airport routes:
 - Ibiza Airport to Playa d'en Bossa: https://ibizaprivatedrivers.com/ibiza-airport-to-playa-den-bossa/
 - Ibiza Airport to Cala Llonga: https://ibizaprivatedrivers.com/ibiza-airport-to-cala-llonga/
 - Ibiza Airport to Ibiza Port for Formentera ferry connections: https://ibizaprivatedrivers.com/ibiza-airport-to-formentera/
-
-### Private Chauffeur Service Ibiza
-For several stops or a longer schedule. Hourly, half-day, full-day and tailored itinerary bookings can be requested. The requested duration, itinerary, waiting, passenger count and vehicle requirements are reviewed before confirmation:
-https://ibizaprivatedrivers.com/chauffeur-service/
 
 ### Luxury Transfers Ibiza
 Premium pre-booked private transfers for airport, luxury hotels, villas, marinas, restaurants, events and confirmed journeys. This page focuses on premium transfer intent rather than extended chauffeur hire:
@@ -103,7 +119,7 @@ Ibiza Airport (IBZ), Ibiza Town / Eivissa, Marina Botafoch, Talamanca, Cap Marti
 Formentera references on this website principally concern transport to Ibiza Port for ferry connections unless a separate service is explicitly confirmed.
 
 ## Pricing
-Pricing is tailored to the confirmed route or itinerary, date, time, passenger count, luggage, stops, waiting requirements and vehicle needs. Availability and the quote are agreed before a booking is confirmed.
+Pricing is tailored to the confirmed route or itinerary, date, time, passenger count, luggage, stops, waiting requirements, requested duration and vehicle needs. Availability and the quote are agreed before a booking is confirmed.
 
 ## Booking
 A useful booking request includes:
@@ -114,6 +130,7 @@ A useful booking request includes:
 - passenger count
 - luggage
 - requested return
+- expected duration for chauffeur bookings
 - child-seat or vehicle requirements
 - flight number for airport arrivals
 - exact map pin and access notes for villas
@@ -123,6 +140,8 @@ Booking requests are accepted through the website, WhatsApp, phone and email. A 
 
 ## Practical Guides
 - Guides hub: https://ibizaprivatedrivers.com/blog/
+- Chauffeur Ibiza Guide 2026: https://ibizaprivatedrivers.com/blog/chauffeur-ibiza-guide-2026/
+- Ibiza Airport Transfer Guide 2026: https://ibizaprivatedrivers.com/blog/ibiza-airport-transfer-guide-2026/
 - How to choose the best private driver in Ibiza: https://ibizaprivatedrivers.com/blog/best-private-driver-ibiza.html
 - Explore Ibiza without driving: https://ibizaprivatedrivers.com/blog/explore-ibiza-without-driving-private-driver/
 - French guide: https://ibizaprivatedrivers.com/fr/guides/visiter-ibiza-sans-conduire/
@@ -133,6 +152,8 @@ Booking requests are accepted through the website, WhatsApp, phone and email. A 
 Website: https://ibizaprivatedrivers.com/
 Services: https://ibizaprivatedrivers.com/services/
 Primary Private Driver Ibiza page: https://ibizaprivatedrivers.com/services/private-driver-ibiza.html
+Primary Chauffeur Ibiza page: https://ibizaprivatedrivers.com/chauffeur-service/
+Primary Ibiza Private Transfers page: https://ibizaprivatedrivers.com/ibiza-transfers/
 Phone / WhatsApp: +34 613 75 62 11
 Email: info@ibizaprivatedrivers.com
 Location: Ibiza, Balearic Islands, Spain 07800
