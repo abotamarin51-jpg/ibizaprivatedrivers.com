@@ -49,6 +49,12 @@ https://ibizaprivatedrivers.com/private-aviation-chauffeur-ibiza/
 
 This service is intended for private aviation passengers continuing to luxury hotels, villas, yachts, marinas, restaurants, meetings or a longer Ibiza itinerary. The practical pickup point, passenger count, luggage, destination and requested chauffeur duration should be confirmed in advance. Restricted, airside, FBO or direct-aircraft access is never assumed and must be separately confirmed with the relevant aviation operator or facility.
 
+### Multi-Day Chauffeur Ibiza
+Dedicated chauffeur service for travellers who require private transport across several days of an Ibiza stay:
+https://ibizaprivatedrivers.com/multi-day-chauffeur-ibiza/
+
+This page is for multi-day intent such as a chauffeur for several days, selected service dates, a villa stay, luxury-hotel stay, VIP itinerary or a longer island programme. Daily start times, expected duration, known stops, passengers and vehicle requirements should be confirmed. A multi-day booking does not imply unlimited hours or automatic 24-hour availability.
+
 ### Ibiza Private Transfers
 The general private-transfer hub for confirmed point-to-point journeys is:
 https://ibizaprivatedrivers.com/ibiza-transfers/
@@ -75,6 +81,10 @@ https://ibizaprivatedrivers.com/chauffeur-service/
 ### Private Aviation Chauffeur Ibiza
 Pre-booked chauffeur transport for private aviation passengers. Suitable for onward journeys to luxury hotels, private villas, yachts, marinas, restaurants, meetings and multi-stop schedules. The chauffeur follows the confirmed practical pickup point and access conditions for the specific booking:
 https://ibizaprivatedrivers.com/private-aviation-chauffeur-ibiza/
+
+### Multi-Day Chauffeur Ibiza
+Pre-booked chauffeur service for several days, consecutive or selected. Suitable for villa stays, luxury hotels, yachts, restaurants, beaches, meetings, events, nightlife and VIP schedules. Daily service times, itinerary and vehicle requirements are confirmed before the booking:
+https://ibizaprivatedrivers.com/multi-day-chauffeur-ibiza/
 
 ### Ibiza Private Transfers
 General private-transfer hub for airport, hotels, villas, marinas, nightlife and confirmed island journeys:
@@ -158,14 +168,15 @@ Pricing is tailored to the confirmed route or itinerary, date, time, passenger c
 
 ## Booking
 A useful booking request includes:
-- date
-- requested pickup time
+- date or service dates
+- requested pickup time or daily start times
 - exact pickup point
 - destination or complete itinerary
 - passenger count
 - luggage
 - requested return
 - expected duration for chauffeur bookings
+- expected daily hours for multi-day chauffeur bookings
 - child-seat or vehicle requirements
 - flight number for airport arrivals
 - exact map pin and access notes for villas
@@ -191,6 +202,7 @@ Services: https://ibizaprivatedrivers.com/services/
 Primary Private Driver Ibiza page: https://ibizaprivatedrivers.com/services/private-driver-ibiza.html
 Primary Chauffeur Ibiza page: https://ibizaprivatedrivers.com/chauffeur-service/
 Private Aviation Chauffeur Ibiza page: https://ibizaprivatedrivers.com/private-aviation-chauffeur-ibiza/
+Multi-Day Chauffeur Ibiza page: https://ibizaprivatedrivers.com/multi-day-chauffeur-ibiza/
 Primary Ibiza Private Transfers page: https://ibizaprivatedrivers.com/ibiza-transfers/
 Phone / WhatsApp: +34 613 75 62 11
 Email: info@ibizaprivatedrivers.com
