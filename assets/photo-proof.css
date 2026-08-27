@@ -216,6 +216,155 @@ section h2 {
   --ipd-service-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='8.5' fill='none' stroke='black' stroke-width='1.55'/%3E%3Cpath d='m15.6 8.4-2.2 5-5 2.2 2.2-5 5-2.2Z' fill='none' stroke='black' stroke-width='1.55' stroke-linejoin='round'/%3E%3C/svg%3E");
 }
 
+/* Shared premium polish for multilingual/internal service templates. */
+.topbar {
+  font-size: 11px;
+  letter-spacing: .11em;
+}
+
+.topbar + .nav {
+  min-height: 78px;
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+}
+
+.topbar + .nav .brand {
+  letter-spacing: -.012em;
+}
+
+.topbar + .nav .navlinks a {
+  color: #5f564c;
+  font-size: .72rem;
+  letter-spacing: .075em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: color .22s ease;
+}
+
+.topbar + .nav .navlinks a:hover,
+.topbar + .nav .navlinks a:focus-visible {
+  color: #1a1814;
+  text-decoration: none;
+  outline: none;
+}
+
+.topbar + .nav .navcta,
+.nav + .hero .button {
+  border-radius: 1px;
+  transition: transform .22s ease, background-color .22s ease, color .22s ease, border-color .22s ease;
+}
+
+.topbar + .nav .navcta:hover,
+.topbar + .nav .navcta:focus-visible,
+.nav + .hero .button:hover,
+.nav + .hero .button:focus-visible {
+  transform: translateY(-1px);
+  outline: none;
+}
+
+.nav + .hero h1 {
+  letter-spacing: -.026em;
+}
+
+.nav + .hero p {
+  line-height: 1.72;
+}
+
+.trust div {
+  font-size: .68rem;
+  letter-spacing: .12em;
+}
+
+.section .card {
+  border-color: rgba(120,100,76,.18);
+  box-shadow: 0 12px 32px rgba(26,24,20,.035);
+  transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+}
+
+.section .card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(185,145,80,.42);
+  box-shadow: 0 18px 38px rgba(26,24,20,.055);
+}
+
+.section .card h3 {
+  letter-spacing: -.012em;
+  line-height: 1.14;
+}
+
+.section .service {
+  position: relative;
+  overflow: hidden;
+  background: rgba(255,255,255,.018);
+  transition: transform .25s ease, border-color .25s ease, background-color .25s ease;
+}
+
+.section .service::after {
+  content: "";
+  position: absolute;
+  left: 32px;
+  bottom: 0;
+  width: 34px;
+  height: 1px;
+  background: #b99150;
+  opacity: .7;
+  transform: scaleX(.45);
+  transform-origin: left;
+  transition: transform .28s ease;
+}
+
+.section .service:hover,
+.section .service:focus-visible {
+  transform: translateY(-2px);
+  border-color: #b99150;
+  background: rgba(255,255,255,.035);
+  outline: none;
+}
+
+.section .service:hover::after,
+.section .service:focus-visible::after {
+  transform: scaleX(1);
+}
+
+.section .service h3 {
+  line-height: 1.12;
+  letter-spacing: -.012em;
+}
+
+.section .service p {
+  line-height: 1.68;
+}
+
+.section .faq summary {
+  line-height: 1.45;
+  transition: color .2s ease;
+}
+
+.section .faq details[open] summary,
+.section .faq summary:hover {
+  color: #78644c;
+}
+
+.footer-title {
+  letter-spacing: -.01em;
+}
+
+.footer-links {
+  gap: 11px;
+}
+
+.footer-links a {
+  line-height: 1.45;
+  transition: color .22s ease, transform .22s ease;
+}
+
+.footer-links a:hover,
+.footer-links a:focus-visible {
+  color: #f2ede4;
+  transform: translateX(2px);
+  outline: none;
+}
+
 /* Footer polish — same structure, cleaner luxury hierarchy. */
 footer {
   padding-top: 5rem;
@@ -293,8 +442,8 @@ footer {
     margin-bottom: 1.5rem;
   }
 
-  /* Refined mobile navigation while preserving the original identity. */
-  nav {
+  /* HOME mobile navigation only. */
+  body > nav[aria-label="Main navigation"] {
     height: 68px !important;
     padding: 0 1.25rem !important;
     background: rgba(250,250,248,.975) !important;
@@ -302,13 +451,13 @@ footer {
     backdrop-filter: blur(14px);
   }
 
-  .nav-logo {
+  body > nav[aria-label="Main navigation"] .nav-logo {
     font-size: 1.24rem !important;
     letter-spacing: .045em !important;
     white-space: nowrap;
   }
 
-  .nav-toggle {
+  body > nav[aria-label="Main navigation"] .nav-toggle {
     width: 44px;
     height: 44px;
     padding: 10px !important;
@@ -318,13 +467,13 @@ footer {
     -webkit-tap-highlight-color: transparent;
   }
 
-  .nav-toggle span {
+  body > nav[aria-label="Main navigation"] .nav-toggle span {
     width: 23px !important;
     height: 1.5px !important;
     border-radius: 999px;
   }
 
-  .nav-links {
+  body > nav[aria-label="Main navigation"] .nav-links {
     top: 68px !important;
     padding: .55rem 1.25rem 1.1rem !important;
     gap: 0 !important;
@@ -334,14 +483,14 @@ footer {
     box-shadow: 0 14px 32px rgba(26,24,20,.055);
   }
 
-  .nav-links li {
+  body > nav[aria-label="Main navigation"] .nav-links li {
     width: 100%;
     border-bottom: 1px solid rgba(232,224,212,.78);
   }
 
-  .nav-links li:last-child { border-bottom: 0; }
+  body > nav[aria-label="Main navigation"] .nav-links li:last-child { border-bottom: 0; }
 
-  .nav-links a {
+  body > nav[aria-label="Main navigation"] .nav-links a {
     display: flex !important;
     width: 100%;
     align-items: center;
@@ -352,11 +501,29 @@ footer {
     letter-spacing: .12em !important;
   }
 
-  .nav-links .nav-cta {
+  body > nav[aria-label="Main navigation"] .nav-links .nav-cta {
     width: auto !important;
     margin-top: .55rem;
     padding: .8rem 1rem !important;
     justify-content: center;
+  }
+
+  /* Internal templates keep their own responsive navigation layout. */
+  .topbar + .nav {
+    min-height: 0;
+  }
+
+  .topbar + .nav .navlinks a {
+    font-size: .69rem;
+    white-space: nowrap;
+  }
+
+  .nav + .hero h1 {
+    letter-spacing: -.02em;
+  }
+
+  .section .service::after {
+    left: 24px;
   }
 
   /* Mobile footer: calmer spacing and easier scanning. */
