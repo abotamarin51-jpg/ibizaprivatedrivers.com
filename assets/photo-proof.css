@@ -10,10 +10,10 @@
 }
 
 .ipd-photo-proof__eyebrow {
-  margin: 0 0 0.75rem;
+  margin: 0 0 .75rem;
   color: #8b7355;
-  font: 600 0.72rem/1.4 Inter, Arial, sans-serif;
-  letter-spacing: 0.2em;
+  font: 600 .72rem/1.4 Inter, Arial, sans-serif;
+  letter-spacing: .2em;
   text-transform: uppercase;
 }
 
@@ -32,36 +32,36 @@
 .ipd-photo-proof figure {
   margin: 0;
   overflow: hidden;
-  border: 1px solid rgba(139, 115, 85, 0.28);
+  border: 1px solid rgba(139,115,85,.28);
   background: #1a1814;
 }
 
 .ipd-photo-proof img {
   display: block;
   width: 100%;
-  height: clamp(280px, 45vw, 560px);
+  height: clamp(280px,45vw,560px);
   object-fit: cover;
 }
 
 .ipd-photo-proof figcaption {
-  padding: 0.85rem 1rem;
+  padding: .85rem 1rem;
   background: #1a1814;
   color: #f2ede4;
-  font: 400 0.82rem/1.55 Inter, Arial, sans-serif;
+  font: 400 .82rem/1.55 Inter, Arial, sans-serif;
 }
 
 .ipd-photo-proof__map {
   display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
+  gap: .45rem;
   margin-top: 1.25rem;
   color: #1a1814;
-  font: 600 0.8rem/1.4 Inter, Arial, sans-serif;
-  letter-spacing: 0.08em;
-  text-underline-offset: 0.2em;
+  font: 600 .8rem/1.4 Inter, Arial, sans-serif;
+  letter-spacing: .08em;
+  text-underline-offset: .2em;
 }
 
-/* Premium homepage service cards — visual-only enhancement. */
+/* Premium homepage service cards. */
 .service-card {
   position: relative;
   overflow: hidden;
@@ -86,7 +86,7 @@
 .service-card:focus-visible {
   background: #f7f3ec;
   transform: translateY(-1px);
-  box-shadow: 0 12px 28px rgba(26, 24, 20, .045);
+  box-shadow: 0 12px 28px rgba(26,24,20,.045);
   outline: none;
 }
 
@@ -103,9 +103,9 @@
   margin-bottom: 1.65rem;
   font-size: 0;
   color: #9a8059;
-  border: 1px solid rgba(154, 128, 89, .34);
+  border: 1px solid rgba(154,128,89,.34);
   border-radius: 50%;
-  background: rgba(201, 169, 110, .055);
+  background: rgba(201,169,110,.055);
   box-shadow: inset 0 0 0 5px rgba(255,255,255,.34);
   transition: color .28s ease, border-color .28s ease, background-color .28s ease, transform .28s ease;
 }
@@ -113,8 +113,8 @@
 .service-card:hover .service-icon,
 .service-card:focus-visible .service-icon {
   color: #7f6847;
-  border-color: rgba(154, 128, 89, .56);
-  background: rgba(201, 169, 110, .11);
+  border-color: rgba(154,128,89,.56);
+  background: rgba(201,169,110,.11);
   transform: translateY(-2px);
 }
 
@@ -124,60 +124,79 @@
   width: 23px;
   height: 23px;
   background-color: currentColor;
+  -webkit-mask-image: var(--ipd-service-icon);
+  mask-image: var(--ipd-service-icon);
   -webkit-mask-repeat: no-repeat;
-  -webkit-mask-position: center;
-  -webkit-mask-size: contain;
   mask-repeat: no-repeat;
+  -webkit-mask-position: center;
   mask-position: center;
+  -webkit-mask-size: contain;
   mask-size: contain;
 }
 
-.service-card[href="/airport-transfers/"] .service-icon::before {
-  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3 16.4 20.5 12c.9-.2 1.2-1.3.5-1.9-.3-.3-.8-.4-1.2-.3l-5.6 1-4.9-6.1-2 .5 2.8 6.6-4.4.9-2-2.1-1.5.4 1.2 3-.4 2.4Z' fill='none' stroke='black' stroke-width='1.55' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3 16.4 20.5 12c.9-.2 1.2-1.3.5-1.9-.3-.3-.8-.4-1.2-.3l-5.6 1-4.9-6.1-2 .5 2.8 6.6-4.4.9-2-2.1-1.5.4 1.2 3-.4 2.4Z' fill='none' stroke='black' stroke-width='1.55' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+.service-card[href="/airport-transfers/"] {
+  --ipd-service-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3 16.4 20.5 12c.9-.2 1.2-1.3.5-1.9-.3-.3-.8-.4-1.2-.3l-5.6 1-4.9-6.1-2 .5 2.8 6.6-4.4.9-2-2.1-1.5.4 1.2 3-.4 2.4Z' fill='none' stroke='black' stroke-width='1.55' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
 }
 
-.service-card[href="/chauffeur-service/"] .service-icon::before {
-  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='m5.1 10 1.5-3.7c.3-.8 1.1-1.4 2-1.4h6.8c.9 0 1.7.6 2 1.4l1.5 3.7M4.2 10h15.6c1 0 1.8.8 1.8 1.8v4c0 .8-.6 1.4-1.4 1.4H3.8c-.8 0-1.4-.6-1.4-1.4v-4c0-1 .8-1.8 1.8-1.8Zm2.3 7.2v1.5m11-1.5v1.5M6.2 13.3h.1m11.4 0h.1' fill='none' stroke='black' stroke-width='1.55' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='m5.1 10 1.5-3.7c.3-.8 1.1-1.4 2-1.4h6.8c.9 0 1.7.6 2 1.4l1.5 3.7M4.2 10h15.6c1 0 1.8.8 1.8 1.8v4c0 .8-.6 1.4-1.4 1.4H3.8c-.8 0-1.4-.6-1.4-1.4v-4c0-1 .8-1.8 1.8-1.8Zm2.3 7.2v1.5m11-1.5v1.5M6.2 13.3h.1m11.4 0h.1' fill='none' stroke='black' stroke-width='1.55' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+.service-card[href="/chauffeur-service/"] {
+  --ipd-service-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='m5.1 10 1.5-3.7c.3-.8 1.1-1.4 2-1.4h6.8c.9 0 1.7.6 2 1.4l1.5 3.7M4.2 10h15.6c1 0 1.8.8 1.8 1.8v4c0 .8-.6 1.4-1.4 1.4H3.8c-.8 0-1.4-.6-1.4-1.4v-4c0-1 .8-1.8 1.8-1.8Zm2.3 7.2v1.5m11-1.5v1.5M6.2 13.3h.1m11.4 0h.1' fill='none' stroke='black' stroke-width='1.55' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
 }
 
-.service-card[href="/villa-transfers/"] .service-icon::before {
-  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='m3.2 11.3 8.8-7 8.8 7M5.6 9.5V20h12.8V9.5M9 20v-6.2h6V20M7.5 12.3h.8m7.4 0h.8' fill='none' stroke='black' stroke-width='1.55' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='m3.2 11.3 8.8-7 8.8 7M5.6 9.5V20h12.8V9.5M9 20v-6.2h6V20M7.5 12.3h.8m7.4 0h.8' fill='none' stroke='black' stroke-width='1.55' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+.service-card[href="/villa-transfers/"] {
+  --ipd-service-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='m3.2 11.3 8.8-7 8.8 7M5.6 9.5V20h12.8V9.5M9 20v-6.2h6V20M7.5 12.3h.8m7.4 0h.8' fill='none' stroke='black' stroke-width='1.55' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
 }
 
-.service-card[href="/yacht-transfers/"] .service-icon::before {
-  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M4 14.6h15.8l-2.1 3.1c-.6.9-1.6 1.4-2.7 1.4H8c-1.1 0-2.2-.6-2.8-1.5L4 14.6Zm3.1 0 2.1-5.2h7.2l3.4 5.2M11 9.4V6.1h4.2l1.8 3.3' fill='none' stroke='black' stroke-width='1.55' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M4 14.6h15.8l-2.1 3.1c-.6.9-1.6 1.4-2.7 1.4H8c-1.1 0-2.2-.6-2.8-1.5L4 14.6Zm3.1 0 2.1-5.2h7.2l3.4 5.2M11 9.4V6.1h4.2l1.8 3.3' fill='none' stroke='black' stroke-width='1.55' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+.service-card[href="/yacht-transfers/"] {
+  --ipd-service-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M4 14.6h15.8l-2.1 3.1c-.6.9-1.6 1.4-2.7 1.4H8c-1.1 0-2.2-.6-2.8-1.5L4 14.6Zm3.1 0 2.1-5.2h7.2l3.4 5.2M11 9.4V6.1h4.2l1.8 3.3' fill='none' stroke='black' stroke-width='1.55' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
 }
 
-.service-card[href="/blog/explore-ibiza-without-driving-private-driver/"] .service-icon::before {
-  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='8.5' fill='none' stroke='black' stroke-width='1.55'/%3E%3Cpath d='m15.6 8.4-2.2 5-5 2.2 2.2-5 5-2.2Z' fill='none' stroke='black' stroke-width='1.55' stroke-linejoin='round'/%3E%3C/svg%3E");
-  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='8.5' fill='none' stroke='black' stroke-width='1.55'/%3E%3Cpath d='m15.6 8.4-2.2 5-5 2.2 2.2-5 5-2.2Z' fill='none' stroke='black' stroke-width='1.55' stroke-linejoin='round'/%3E%3C/svg%3E");
+.service-card[href="/blog/explore-ibiza-without-driving-private-driver/"] {
+  --ipd-service-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='8.5' fill='none' stroke='black' stroke-width='1.55'/%3E%3Cpath d='m15.6 8.4-2.2 5-5 2.2 2.2-5 5-2.2Z' fill='none' stroke='black' stroke-width='1.55' stroke-linejoin='round'/%3E%3C/svg%3E");
 }
 
 @media (max-width: 720px) {
-  .ipd-photo-proof__grid {
-    grid-template-columns: 1fr;
-  }
+  .ipd-photo-proof__grid { grid-template-columns: 1fr; }
+  .ipd-photo-proof img { height: min(94vw,520px); }
 
-  .ipd-photo-proof img {
-    height: min(94vw, 520px);
-  }
-
-  .service-card {
-    padding: 2.35rem 2rem;
-  }
-
-  .service-card::after {
-    left: 2rem;
-    right: 2rem;
-  }
-
+  .service-card { padding: 2.35rem 2rem; }
+  .service-card::after { left: 2rem; right: 2rem; }
   .service-card .service-icon {
     width: 46px;
     height: 46px;
     margin-bottom: 1.5rem;
+  }
+
+  /* Language choices become part of the page instead of covering service cards. */
+  .ipd-lang-links {
+    position: static !important;
+    inset: auto !important;
+    z-index: auto !important;
+    width: 100% !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 6px !important;
+    padding: 1.15rem 1rem calc(1.15rem + env(safe-area-inset-bottom)) !important;
+    background: #1a1814 !important;
+  }
+
+  .ipd-lang-link {
+    min-width: 44px !important;
+    padding: 10px 12px !important;
+    text-align: center !important;
+    font-size: 11px !important;
+    line-height: 1 !important;
+    letter-spacing: .08em !important;
+    border-color: rgba(201,169,110,.72) !important;
+  }
+
+  /* Keep WhatsApp accessible without dominating the iPhone viewport. */
+  a[aria-label="Chat with Ibiza Private Drivers on WhatsApp"] {
+    width: 58px !important;
+    height: 58px !important;
+    right: 16px !important;
+    bottom: calc(16px + env(safe-area-inset-bottom)) !important;
+    box-shadow: 0 10px 26px rgba(26,24,20,.22) !important;
+    border: 2px solid rgba(255,255,255,.92) !important;
   }
 }
