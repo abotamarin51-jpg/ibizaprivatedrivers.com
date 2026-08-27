@@ -166,6 +166,72 @@
     margin-bottom: 1.5rem;
   }
 
+  /* Refined mobile navigation while preserving the original identity. */
+  nav {
+    height: 68px !important;
+    padding: 0 1.25rem !important;
+    background: rgba(250,250,248,.975) !important;
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+  }
+
+  .nav-logo {
+    font-size: 1.24rem !important;
+    letter-spacing: .045em !important;
+    white-space: nowrap;
+  }
+
+  .nav-toggle {
+    width: 44px;
+    height: 44px;
+    padding: 10px !important;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 5px !important;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .nav-toggle span {
+    width: 23px !important;
+    height: 1.5px !important;
+    border-radius: 999px;
+  }
+
+  .nav-links {
+    top: 68px !important;
+    padding: .55rem 1.25rem 1.1rem !important;
+    gap: 0 !important;
+    background: rgba(250,250,248,.985) !important;
+    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(16px);
+    box-shadow: 0 14px 32px rgba(26,24,20,.055);
+  }
+
+  .nav-links li {
+    width: 100%;
+    border-bottom: 1px solid rgba(232,224,212,.78);
+  }
+
+  .nav-links li:last-child { border-bottom: 0; }
+
+  .nav-links a {
+    display: flex !important;
+    width: 100%;
+    align-items: center;
+    min-height: 48px;
+    padding: .92rem 0 !important;
+    font-size: .78rem !important;
+    line-height: 1.2 !important;
+    letter-spacing: .12em !important;
+  }
+
+  .nav-links .nav-cta {
+    width: auto !important;
+    margin-top: .55rem;
+    padding: .8rem 1rem !important;
+    justify-content: center;
+  }
+
   /* Language choices become part of the page instead of covering service cards. */
   .ipd-lang-links {
     position: static !important;
