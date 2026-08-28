@@ -128,7 +128,15 @@ French: https://ibizaprivatedrivers.com/fr/guides/chauffeur-prive-ibiza-2026/
 German: https://ibizaprivatedrivers.com/de/guides/privatchauffeur-ibiza-2026/
 Arabic: https://ibizaprivatedrivers.com/ar/guides/private-chauffeur-ibiza-2026/
 
-Market-specific acquisition guides remain separate from this translated informational cluster:
+## Multilingual Explore Ibiza Without Driving Guide
+This informational cluster helps travellers understand how to organise an Ibiza stay without driving a rental car. It supports airport, villa, beach, restaurant, marina and nightlife planning and links back to the appropriate commercial service pages.
+
+English: https://ibizaprivatedrivers.com/blog/explore-ibiza-without-driving-private-driver/
+French: https://ibizaprivatedrivers.com/fr/guides/visiter-ibiza-sans-conduire/
+German: https://ibizaprivatedrivers.com/de/guides/ibiza-ohne-auto-privatchauffeur/
+Arabic: https://ibizaprivatedrivers.com/ar/guides/ibiza-without-driving/
+
+Market-specific acquisition guides remain separate from these translated informational clusters:
 France, Switzerland & Monaco: https://ibizaprivatedrivers.com/fr/guides/chauffeur-prive-ibiza-france-suisse-monaco-2026/
 Germany & Switzerland: https://ibizaprivatedrivers.com/de/guides/privatchauffeur-ibiza-deutschland-schweiz-2026/
 UAE, Saudi Arabia, Qatar & Kuwait: https://ibizaprivatedrivers.com/ar/guides/chauffeur-ibiza-uae-saudi-qatar-kuwait-2026/
