@@ -1,16 +1,18 @@
 ---
 layout: default
-title: "Ibiza Private Transfers | Airport, Villas & Island Transport"
-description: "Pre-book private transfers in Ibiza for airport, hotels, villas, marinas, nightlife and island journeys. Mercedes-Benz V-Class service by confirmed reservation."
+title: "Ibiza Private Transfers & Car Service"
+description: "Pre-book Ibiza private transfers and car service for airport, hotels, villas, marinas, nightlife and island journeys in a Mercedes-Benz V-Class."
 permalink: /ibiza-transfers/
 last_modified_at: 2026-08-28
 ---
 
-## Ibiza Private Transfers — Pre-Booked Point-to-Point Transport
+## Ibiza Private Transfers & Private Car Service
 
-Looking for reliable **private transfers in Ibiza**? Ibiza Private Drivers provides pre-booked point-to-point transport across Ibiza for airport arrivals and departures, hotels, villas, marinas, restaurants, nightlife and confirmed island journeys.
+Looking for reliable **Ibiza private transfers** or a **private car service in Ibiza**? Ibiza Private Drivers provides pre-booked point-to-point transport for airport arrivals and departures, hotels, villas, marinas, restaurants, nightlife and confirmed island journeys.
 
 This page is specifically for **one confirmed pickup and destination, or a planned outbound-and-return transfer**. For broader island-wide private-driver requests, start with our [Private Driver Ibiza service](/services/private-driver-ibiza.html). If you need a vehicle and driver for several hours, waiting time or several stops, use our [Chauffeur Ibiza service](/chauffeur-service/) instead.
+
+US travellers may describe the same requirement as an **Ibiza car service** or **private car service in Ibiza**. Here, that means a pre-booked driver and vehicle for a confirmed point-to-point journey; waiting time or several stops require a chauffeur booking.
 
 Every transfer is organised around the actual booking details: **date, pickup time, exact pickup point, destination, passenger count, luggage, return requirements and vehicle needs**. Availability and pricing are confirmed before the journey.
 
@@ -58,6 +60,7 @@ Ibiza nightlife transport works best when the outbound journey and return plan a
 
 - [Ibiza Club Transfers](/ibiza-club-transfers/)
 - [Ibiza Night Driver](/ibiza-night-driver/)
+- [Ibiza Nightlife Guide 2026](/blog/ibiza-nightlife-guide-2026/)
 - [Private Driver to Pacha Ibiza](/private-driver-pacha-ibiza/)
 - [Private Driver to Hï Ibiza](/private-driver-hi-ibiza/)
 - [Private Driver to Ushuaïa Ibiza](/private-driver-ushuaia-ibiza/)
@@ -81,6 +84,9 @@ There is no single price that accurately covers every private transfer in Ibiza.
 Send the complete journey details on [WhatsApp](https://wa.me/34613756211?text=Hello%2C%20I%20would%20like%20a%20private%20transfer%20in%20Ibiza.%0ADate%3A%0APickup%3A%0ADestination%3A%0ATime%3A%0APassengers%3A%0ALuggage%3A%0AReturn%20required%3A) to receive availability and a tailored quote before booking.
 
 ## Frequently Asked Questions
+
+### Is a private car service in Ibiza the same as a transfer?
+For one confirmed pickup and destination, a private car service can be booked as a point-to-point transfer. If you require waiting, several stops or agreed hours, request chauffeur service instead.
 
 ### Can I pre-book a private transfer from Ibiza Airport?
 Yes. Send the flight number, arrival time, passenger count, luggage and exact destination so the pickup plan and availability can be confirmed.
@@ -107,8 +113,8 @@ Related information: [how to choose a private driver in Ibiza](/blog/best-privat
       "@type": "WebPage",
       "@id": "https://ibizaprivatedrivers.com/ibiza-transfers/#webpage",
       "url": "https://ibizaprivatedrivers.com/ibiza-transfers/",
-      "name": "Ibiza Private Transfers | Airport, Villas & Island Transport",
-      "description": "Pre-book point-to-point private transfers in Ibiza for airport, hotels, villas, marinas, nightlife and confirmed island journeys.",
+      "name": "Ibiza Private Transfers & Car Service",
+      "description": "Pre-book Ibiza private transfers and private car service for airport, hotels, villas, marinas, nightlife and confirmed island journeys.",
       "inLanguage": "en",
       "dateModified": "2026-08-28",
       "about": {"@id": "https://ibizaprivatedrivers.com/ibiza-transfers/#service"},
@@ -119,6 +125,7 @@ Related information: [how to choose a private driver in Ibiza](/blog/best-privat
       "@id": "https://ibizaprivatedrivers.com/ibiza-transfers/#service",
       "serviceType": "Pre-booked point-to-point private transfer service",
       "name": "Ibiza Private Transfers",
+      "alternateName": ["Ibiza Car Service", "Private Car Service Ibiza"],
       "url": "https://ibizaprivatedrivers.com/ibiza-transfers/",
       "provider": {
         "@type": "LocalBusiness",
@@ -163,6 +170,7 @@ Related information: [how to choose a private driver in Ibiza](/blog/best-privat
       "@type": "FAQPage",
       "@id": "https://ibizaprivatedrivers.com/ibiza-transfers/#faq",
       "mainEntity": [
+        {"@type":"Question","name":"Is a private car service in Ibiza the same as a transfer?","acceptedAnswer":{"@type":"Answer","text":"For one confirmed pickup and destination, a private car service can be booked as a point-to-point transfer. Waiting, several stops or agreed hours require chauffeur service instead."}},
         {"@type":"Question","name":"Can I pre-book a private transfer from Ibiza Airport?","acceptedAnswer":{"@type":"Answer","text":"Yes. Send the flight number, arrival time, passenger count, luggage and exact destination so the pickup plan and availability can be confirmed."}},
         {"@type":"Question","name":"Can I book a private transfer to a villa in Ibiza?","acceptedAnswer":{"@type":"Answer","text":"Yes. Provide the exact villa map pin, access or gate instructions, passengers and luggage before confirmation because private-property access can vary."}},
         {"@type":"Question","name":"Can I arrange both the outbound and return journey?","acceptedAnswer":{"@type":"Answer","text":"Yes. Include the requested return time and final destination when requesting the booking so both journeys can be planned together."}},
