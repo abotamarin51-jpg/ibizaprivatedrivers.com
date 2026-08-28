@@ -3,17 +3,18 @@ layout: default
 title: "Ibiza Private Transfers | Airport, Villas & Island Transport"
 description: "Pre-book private transfers in Ibiza for airport, hotels, villas, marinas, nightlife and island journeys. Mercedes-Benz V-Class service by confirmed reservation."
 permalink: /ibiza-transfers/
+last_modified_at: 2026-08-28
 ---
 
-## Ibiza Private Transfers — Pre-Booked Transport
+## Ibiza Private Transfers — Pre-Booked Point-to-Point Transport
 
-Looking for reliable **private transfers in Ibiza**? Ibiza Private Drivers provides pre-booked private transport across Ibiza for airport arrivals and departures, hotels, villas, marinas, restaurants, nightlife and confirmed island journeys.
+Looking for reliable **private transfers in Ibiza**? Ibiza Private Drivers provides pre-booked point-to-point transport across Ibiza for airport arrivals and departures, hotels, villas, marinas, restaurants, nightlife and confirmed island journeys.
 
-For broader island-wide journeys, multi-stop plans and general booking information, start with our central [Private Driver Ibiza service](/services/private-driver-ibiza.html). If you need a vehicle and driver for several hours, use our [Chauffeur Ibiza service](/chauffeur-service/) instead of treating a multi-stop day as a single transfer.
+This page is specifically for **one confirmed pickup and destination, or a planned outbound-and-return transfer**. For broader island-wide private-driver requests, start with our [Private Driver Ibiza service](/services/private-driver-ibiza.html). If you need a vehicle and driver for several hours, waiting time or several stops, use our [Chauffeur Ibiza service](/chauffeur-service/) instead.
 
 Every transfer is organised around the actual booking details: **date, pickup time, exact pickup point, destination, passenger count, luggage, return requirements and vehicle needs**. Availability and pricing are confirmed before the journey.
 
-[Request a private transfer on WhatsApp](https://wa.me/34613756211) · +34 613 75 62 11
+[Request a private transfer on WhatsApp](https://wa.me/34613756211?text=Hello%2C%20I%20would%20like%20a%20private%20transfer%20in%20Ibiza.%0ADate%3A%0APickup%3A%0ADestination%3A%0ATime%3A%0APassengers%3A%0ALuggage%3A%0AReturn%20required%3A) · +34 613 75 62 11
 
 ## Ibiza Airport Private Transfers
 
@@ -37,16 +38,19 @@ Private transfers can connect Ibiza Airport, hotels, private villas, ports and m
 - [Villa Transfers Ibiza](/villa-transfers/)
 - [Yacht & Marina Transfers Ibiza](/yacht-transfers/)
 - [Luxury Transfers Ibiza](/luxury-transfers/)
-- [Chauffeur Ibiza](/chauffeur-service/)
 - [Marina Botafoch Private Driver](/private-driver-marina-botafoch/)
+- [Talamanca Private Driver](/private-driver-talamanca-ibiza/)
+- [Playa d'en Bossa Private Driver](/private-driver-playa-den-bossa-ibiza/)
 
-For rural villas, send the exact map pin and access instructions. For marinas or yacht collections, provide the marina, berth or agreed pedestrian meeting point where applicable.
+For rural villas, send the exact map pin and access instructions. For marinas or yacht collections, provide the marina, berth reference when useful and the agreed pedestrian meeting point where applicable.
 
-## When to Choose Chauffeur Service Instead
+## Transfer, Chauffeur or Multi-Day Service?
 
 A **private transfer** is best for one confirmed pickup and destination. If the vehicle is needed for several hours, waiting time, several restaurants or beaches, multiple meetings, a marina visit and a later return, a chauffeur booking is usually the clearer service format.
 
-See [Chauffeur Ibiza — hourly and full-day service](/chauffeur-service/) or read the [Chauffeur Ibiza Guide 2026](/blog/chauffeur-ibiza-guide-2026/) before requesting a multi-stop itinerary.
+For guests requiring transport across several days, use [Multi-Day Chauffeur Ibiza](/multi-day-chauffeur-ibiza/). Private aviation passengers should use [Private Aviation Chauffeur Ibiza](/private-aviation-chauffeur-ibiza/) so the practical pickup point and access conditions are handled correctly. Travel advisors, luxury concierges and professional guest coordinators can use our [Travel Advisors & Concierge Support](/travel-advisors-concierge-ibiza/) page.
+
+See [Chauffeur Ibiza — hourly and full-day service](/chauffeur-service/) or read the [Chauffeur Ibiza Guide 2026](/blog/chauffeur-ibiza-guide-2026/) before requesting a changing multi-stop itinerary.
 
 ## Nightlife & Event Transfers
 
@@ -58,6 +62,9 @@ Ibiza nightlife transport works best when the outbound journey and return plan a
 - [Private Driver to Hï Ibiza](/private-driver-hi-ibiza/)
 - [Private Driver to Ushuaïa Ibiza](/private-driver-ushuaia-ibiza/)
 - [Private Driver to UNVRS Ibiza](/private-driver-unvrs-ibiza/)
+- [Private Driver to Amnesia Ibiza](/private-driver-amnesia-ibiza/)
+- [Private Driver to DC-10 Ibiza](/private-driver-dc10-ibiza/)
+- [Private Driver to Blue Marlin Ibiza](/private-driver-blue-marlin-ibiza/)
 
 ## Why Pre-Book a Private Transfer in Ibiza?
 
@@ -71,7 +78,7 @@ Ibiza nightlife transport works best when the outbound journey and return plan a
 
 There is no single price that accurately covers every private transfer in Ibiza. The quote depends on the route, date, pickup time, passengers, luggage, number of stops, waiting requirements and vehicle needs.
 
-Send the complete journey details on [WhatsApp](https://wa.me/34613756211) to receive availability and a tailored quote before booking.
+Send the complete journey details on [WhatsApp](https://wa.me/34613756211?text=Hello%2C%20I%20would%20like%20a%20private%20transfer%20in%20Ibiza.%0ADate%3A%0APickup%3A%0ADestination%3A%0ATime%3A%0APassengers%3A%0ALuggage%3A%0AReturn%20required%3A) to receive availability and a tailored quote before booking.
 
 ## Frequently Asked Questions
 
@@ -101,16 +108,16 @@ Related information: [how to choose a private driver in Ibiza](/blog/best-privat
       "@id": "https://ibizaprivatedrivers.com/ibiza-transfers/#webpage",
       "url": "https://ibizaprivatedrivers.com/ibiza-transfers/",
       "name": "Ibiza Private Transfers | Airport, Villas & Island Transport",
-      "description": "Pre-book private transfers in Ibiza for airport, hotels, villas, marinas, nightlife and confirmed island journeys.",
+      "description": "Pre-book point-to-point private transfers in Ibiza for airport, hotels, villas, marinas, nightlife and confirmed island journeys.",
       "inLanguage": "en",
-      "dateModified": "2026-08-25",
+      "dateModified": "2026-08-28",
       "about": {"@id": "https://ibizaprivatedrivers.com/ibiza-transfers/#service"},
       "breadcrumb": {"@id": "https://ibizaprivatedrivers.com/ibiza-transfers/#breadcrumbs"}
     },
     {
       "@type": "Service",
       "@id": "https://ibizaprivatedrivers.com/ibiza-transfers/#service",
-      "serviceType": "Private transfer service",
+      "serviceType": "Pre-booked point-to-point private transfer service",
       "name": "Ibiza Private Transfers",
       "url": "https://ibizaprivatedrivers.com/ibiza-transfers/",
       "provider": {
@@ -130,6 +137,18 @@ Related information: [how to choose a private driver in Ibiza](/blog/best-privat
         }
       },
       "areaServed": {"@type":"Place","name":"Ibiza, Balearic Islands, Spain"}
+    },
+    {
+      "@type":"ItemList",
+      "@id":"https://ibizaprivatedrivers.com/ibiza-transfers/#transfer-types",
+      "name":"Ibiza private transfer categories",
+      "itemListElement":[
+        {"@type":"ListItem","position":1,"name":"Ibiza Airport Transfers","url":"https://ibizaprivatedrivers.com/airport-transfers/"},
+        {"@type":"ListItem","position":2,"name":"Luxury Hotel Transfers Ibiza","url":"https://ibizaprivatedrivers.com/luxury-hotel-transfers-ibiza/"},
+        {"@type":"ListItem","position":3,"name":"Villa Transfers Ibiza","url":"https://ibizaprivatedrivers.com/villa-transfers/"},
+        {"@type":"ListItem","position":4,"name":"Yacht and Marina Transfers Ibiza","url":"https://ibizaprivatedrivers.com/yacht-transfers/"},
+        {"@type":"ListItem","position":5,"name":"Ibiza Club Transfers","url":"https://ibizaprivatedrivers.com/ibiza-club-transfers/"}
+      ]
     },
     {
       "@type": "BreadcrumbList",
