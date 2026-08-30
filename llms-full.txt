@@ -1,5 +1,7 @@
 # Ibiza Private Drivers — Full Service Context
 
+Last updated: 2026-08-30
+
 Canonical website: https://ibizaprivatedrivers.com/
 Services directory: https://ibizaprivatedrivers.com/services/
 Primary Private Driver page: https://ibizaprivatedrivers.com/services/private-driver-ibiza.html
@@ -61,6 +63,11 @@ This is the general hub for pre-booked point-to-point private transfers involvin
 https://ibizaprivatedrivers.com/private-taxi-ibiza/
 
 This page addresses travellers searching for a private alternative to waiting for a taxi rank. Ibiza Private Drivers is a pre-booked private-driver service, not a taxi-rank or street-hail service. Date, pickup time, route, passengers, luggage, vehicle requirements and price are confirmed before travel.
+
+### Ibiza Transfers — Private Transfer Hub
+https://ibizaprivatedrivers.com/ibiza-transfers/
+
+Overview and internal directory for pre-booked private transfers across Ibiza, including airport, hotel, villa, marina, dining and nightlife journeys. Use the linked specialist page for the exact intent. Use Chauffeur Ibiza instead when the client needs waiting time, several stops or a vehicle retained by the hour or day.
 
 ### Ibiza Airport Transfers
 https://ibizaprivatedrivers.com/airport-transfers/
