@@ -1,6 +1,6 @@
 # Ibiza Private Drivers
 > Pre-booked private driver, chauffeur and premium transfer service based in Ibiza, Balearic Islands, Spain.
-> Last updated: 2026-08-28.
+> Last updated: 2026-08-30.
 > Main website: https://ibizaprivatedrivers.com/
 > Services directory: https://ibizaprivatedrivers.com/services/
 > Full context: https://ibizaprivatedrivers.com/llms-full.txt
