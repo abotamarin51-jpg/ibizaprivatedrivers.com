@@ -156,6 +156,52 @@
     return 'Contact Ibiza Private Drivers on WhatsApp';
   }
 
+  function serviceIntentForPath() {
+    var path = (window.location.pathname || '/').toLowerCase();
+
+    if (path.indexOf('private-aviation') !== -1) return 'private_aviation';
+    if (path.indexOf('airport') !== -1) return 'airport_transfer';
+    if (path.indexOf('multi-day') !== -1) return 'multi_day_chauffeur';
+    if (path.indexOf('chauffeur') !== -1 || path.indexOf('chauffeur-prive') !== -1 || path.indexOf('privatchauffeur') !== -1) return 'chauffeur';
+    if (path.indexOf('villa') !== -1) return 'villa_transfer';
+    if (path.indexOf('yacht') !== -1 || path.indexOf('marina') !== -1) return 'yacht_marina';
+    if (path.indexOf('hotel') !== -1 || path.indexOf('nobu') !== -1 || path.indexOf('six-senses') !== -1 || path.indexOf('7pines') !== -1 || path.indexOf('standard') !== -1 || path.indexOf('destino') !== -1) return 'hotel_transfer';
+    if (path.indexOf('night') !== -1 || path.indexOf('club') !== -1 || path.indexOf('pacha') !== -1 || path.indexOf('ushuaia') !== -1 || path.indexOf('hi-ibiza') !== -1 || path.indexOf('unvrs') !== -1 || path.indexOf('amnesia') !== -1 || path.indexOf('dc10') !== -1 || path.indexOf('blue-marlin') !== -1) return 'nightlife';
+    if (path.indexOf('mercedes-v-class') !== -1) return 'mercedes_v_class';
+    if (path.indexOf('taxi') !== -1) return 'private_taxi_alternative';
+    if (path.indexOf('travel-advisors') !== -1 || path.indexOf('international-private-clients') !== -1) return 'b2b_international';
+    if (path.indexOf('private-driver') !== -1 || path.indexOf('conductor-privado') !== -1) return 'private_driver';
+    if (path.indexOf('transfer') !== -1) return 'private_transfer';
+    return 'general_private_transport';
+  }
+
+  function whatsappUrlForPath() {
+    var intent = serviceIntentForPath();
+    var message = 'Hello, I would like to request private transport in Ibiza.\nDate:\nTime:\nPickup:\nDestination or itinerary:\nPassengers:\nLuggage:';
+
+    if (intent === 'airport_transfer') {
+      message = 'Hello, I would like to request an Ibiza Airport transfer.\nDate:\nFlight number:\nArrival or departure time:\nDestination:\nPassengers:\nLuggage:';
+    } else if (intent === 'private_aviation') {
+      message = 'Hello, I would like to request private aviation chauffeur service in Ibiza.\nDate:\nArrival/departure details:\nMeeting point or terminal:\nDestination or itinerary:\nPassengers:\nLuggage:';
+    } else if (intent === 'chauffeur' || intent === 'multi_day_chauffeur') {
+      message = 'Hello, I would like to request chauffeur service in Ibiza.\nDate(s):\nStart time:\nExpected duration:\nPickup:\nItinerary/stops:\nPassengers:\nLuggage:';
+    } else if (intent === 'villa_transfer') {
+      message = 'Hello, I would like to request private transport for a villa in Ibiza.\nDate:\nTime:\nPickup:\nVilla name or map pin:\nPassengers:\nLuggage:\nReturn required:';
+    } else if (intent === 'yacht_marina') {
+      message = 'Hello, I would like to request yacht or marina transport in Ibiza.\nDate:\nTime:\nPickup:\nMarina / yacht / meeting point:\nDestination:\nPassengers:\nLuggage:';
+    } else if (intent === 'hotel_transfer') {
+      message = 'Hello, I would like to request private hotel transport in Ibiza.\nDate:\nTime:\nHotel:\nPickup or destination:\nPassengers:\nLuggage:\nReturn required:';
+    } else if (intent === 'nightlife') {
+      message = 'Hello, I would like to request private nightlife transport in Ibiza.\nDate:\nPickup time and place:\nVenue(s):\nReturn time/place:\nPassengers:';
+    } else if (intent === 'mercedes_v_class') {
+      message = 'Hello, I would like to request a Mercedes-Benz V-Class in Ibiza.\nDate:\nTime:\nPickup:\nDestination or itinerary:\nPassengers:\nLuggage:';
+    } else if (intent === 'b2b_international') {
+      message = 'Hello, I would like to coordinate private transport in Ibiza for a client/guest.\nCompany or contact name:\nDate(s):\nPickup(s):\nItinerary:\nPassengers:\nVehicle requirements:';
+    }
+
+    return 'https://wa.me/34613756211?text=' + encodeURIComponent(message);
+  }
+
   function addWhatsAppFloat() {
     var path = window.location.pathname.replace(/\/+$/, '/') || '/';
     if (path === '/privacy/' || path === '/legal-notice/') return;
@@ -168,7 +214,7 @@
 
     var link = document.createElement('a');
     link.id = 'ipd-whatsapp-float';
-    link.href = 'https://wa.me/34613756211?text=Hello%2C%20I%20would%20like%20to%20request%20private%20transport%20in%20Ibiza.%0ADate%3A%0ATime%3A%0APickup%3A%0ADestination%20or%20itinerary%3A%0APassengers%3A%0ALuggage%3A';
+    link.href = whatsappUrlForPath();
     link.target = '_blank';
     link.rel = 'noopener';
     link.setAttribute('aria-label', whatsappLabelForLanguage());
@@ -192,6 +238,7 @@
     var href = rawHref.toLowerCase();
     var eventName = '';
     var leadType = '';
+    var serviceIntent = serviceIntentForPath();
 
     if (href.indexOf('wa.me/') !== -1 || href.indexOf('api.whatsapp.com/') !== -1 || href.indexOf('whatsapp://') === 0) {
       eventName = 'whatsapp_click';
@@ -209,8 +256,10 @@
     window.gtag('event', eventName, {
       event_category: 'lead',
       lead_type: leadType,
+      service_intent: serviceIntent,
       link_url: link.href,
       page_path: window.location.pathname,
+      page_title: document.title,
       transport_type: 'beacon'
     });
 
@@ -218,7 +267,9 @@
       currency: 'EUR',
       value: 0,
       lead_type: leadType,
+      service_intent: serviceIntent,
       page_path: window.location.pathname,
+      page_title: document.title,
       transport_type: 'beacon'
     });
   }
