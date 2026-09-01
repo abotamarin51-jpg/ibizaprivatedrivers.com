@@ -1,6 +1,28 @@
 (function () {
   'use strict';
 
+  function redirectLegacyPostUrl() {
+    if (window.location.pathname !== '/') return false;
+
+    var params = new URLSearchParams(window.location.search);
+    var post = params.get('post');
+    if (!post) return false;
+
+    var legacyTargets = {
+      'private-driver-ibiza-nightlife': '/blog/ibiza-nightlife-guide-2026/',
+      'private-airport-pickup-ibiza': '/airport-transfers/',
+      'private-transfer-ibiza-to-villa': '/villa-transfers/',
+      'explore-ibiza-without-driving-private-driver': '/blog/explore-ibiza-without-driving-private-driver/'
+    };
+
+    if (!legacyTargets[post]) return false;
+
+    window.location.replace(legacyTargets[post]);
+    return true;
+  }
+
+  if (redirectLegacyPostUrl()) return;
+
   var CONSENT_KEY = 'ipd_google_consent_v1';
 
   function getConsentChoice() {
