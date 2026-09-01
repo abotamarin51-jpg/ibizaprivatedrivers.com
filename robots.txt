@@ -1,13 +1,19 @@
 User-agent: *
 Allow: /
 
-# AI crawlers - explicitly allowed for GEO
+# OpenAI Search - required for ChatGPT Search discovery
+User-agent: OAI-SearchBot
+Allow: /
+
+# OpenAI model crawler
 User-agent: GPTBot
 Allow: /
 
+# Google AI use controls
 User-agent: Google-Extended
 Allow: /
 
+# Other AI crawlers
 User-agent: anthropic-ai
 Allow: /
 
