@@ -4,8 +4,30 @@ meta-viewport: width=device-width, initial-scale=1.0
 title: Privacy Policy | Ibiza Private Drivers
 ---
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
+
+<!-- GOOGLE ANALYTICS + CONSENT MODE -->
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('consent', 'default', {
+  ad_storage: 'denied',
+  ad_user_data: 'denied',
+  ad_personalization: 'denied',
+  analytics_storage: 'denied',
+  wait_for_update: 500
+});
+try {
+  if (window.localStorage.getItem('ipd_google_consent_v1') === 'granted') {
+    gtag('consent', 'update', {analytics_storage: 'granted'});
+  }
+} catch (error) {}
+gtag('js', new Date());
+gtag('config', 'G-BB9SWKE384');
+</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-BB9SWKE384"></script>
+<script src="/analytics.js" defer></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Privacy Policy | Ibiza Private Drivers</title>
@@ -30,7 +52,7 @@ title: Privacy Policy | Ibiza Private Drivers
 <div class="wrap">
   <div class="eyebrow">Privacidad / Privacy</div>
   <h1>Privacy <em>Policy</em></h1>
-  <p class="updated">Last updated: August 2026</p>
+  <p class="updated">Last updated: September 2026</p>
   <p>This Privacy Policy explains how Ibiza Private Drivers collects, uses and protects users' personal data, in compliance with the EU GDPR and Spanish Organic Law 3/2018 (LOPDGDD).</p>
   <h2>Data Controller</h2>
   <ul>
@@ -46,6 +68,9 @@ title: Privacy Policy | Ibiza Private Drivers
   <p>Your data is used to prepare quotes, manage requested transport services and communicate with you about the booking. We do not sell personal data to advertisers.</p>
   <h2>Legal Basis</h2>
   <p>The legal basis for processing is the performance of pre-contractual measures or the service you request and, where applicable, your consent when contacting us.</p>
+  <h2>Analytics and Cookies</h2>
+  <p>With your consent, this website uses Google Analytics 4 to understand visits and interactions such as clicks on WhatsApp, telephone and email links. Analytics may process technical information including the page visited, approximate country, device type and interaction time. Advertising storage and advertising personalisation remain disabled.</p>
+  <p>Analytics storage is denied by default and is enabled only after you select “Accept Analytics” in the consent notice. You can withdraw or change your choice at any time by selecting <a href="#" data-reset-consent>change analytics preference</a>. For information about Google's processing, see <a href="https://policies.google.com/privacy" rel="noopener noreferrer" target="_blank">Google's Privacy Policy</a>.</p>
   <h2>Data Retention</h2>
   <p>Personal data is retained only for as long as necessary for the requested service and any applicable legal or administrative obligations.</p>
   <h2>Your Rights</h2>
