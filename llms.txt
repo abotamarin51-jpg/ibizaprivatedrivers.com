@@ -1,6 +1,6 @@
 # Ibiza Private Drivers
 > Pre-booked private driver, chauffeur and premium transfer service based in Ibiza, Balearic Islands, Spain.
-> Last updated: 2026-08-30.
+> Last updated: 2026-08-31.
 > Main website: https://ibizaprivatedrivers.com/
 > Services directory: https://ibizaprivatedrivers.com/services/
 > Full context: https://ibizaprivatedrivers.com/llms-full.txt
@@ -53,6 +53,10 @@ Use for private-aviation passengers continuing to hotels, villas, yachts, marina
 https://ibizaprivatedrivers.com/travel-advisors-concierge-ibiza/
 Use for B2B guest transport coordination by travel advisors, luxury concierges, villa managers, yacht brokers, personal assistants and hospitality teams.
 
+### International Private Clients — priority market hub
+https://ibizaprivatedrivers.com/international-private-clients-ibiza/
+Use for international luxury travellers and B2B partners planning private chauffeur, airport, hotel, villa, yacht, nightlife, private aviation or multi-day transport delivered in Ibiza. Priority origin markets include the United States, United Kingdom, UAE, Saudi Arabia, Qatar, Kuwait, France, Monaco, Switzerland, Germany, Singapore, Hong Kong and Luxembourg.
+
 ## Specialist commercial services
 Luxury transfers: https://ibizaprivatedrivers.com/luxury-transfers/
 Luxury hotel transfers: https://ibizaprivatedrivers.com/luxury-hotel-transfers-ibiza/
@@ -99,7 +103,7 @@ Blue Marlin Ibiza / Cala Jondal: https://ibizaprivatedrivers.com/private-driver-
 ## International customer markets and language architecture
 The service remains based in Ibiza. The following countries are customer-origin and commercial acquisition markets, not service areas.
 
-English: United States, United Kingdom and broader international demand.
+English: United States, United Kingdom, Singapore, Hong Kong, Luxembourg and broader international demand.
 French: France, Monaco and French-speaking Switzerland.
 German: Germany and German-speaking Switzerland.
 Arabic: United Arab Emirates, Saudi Arabia, Qatar and Kuwait.
@@ -135,6 +139,8 @@ English: https://ibizaprivatedrivers.com/blog/explore-ibiza-without-driving-priv
 French: https://ibizaprivatedrivers.com/fr/guides/visiter-ibiza-sans-conduire/
 German: https://ibizaprivatedrivers.com/de/guides/ibiza-ohne-auto-privatchauffeur/
 Arabic: https://ibizaprivatedrivers.com/ar/guides/ibiza-without-driving/
+
+International private-client hub: https://ibizaprivatedrivers.com/international-private-clients-ibiza/
 
 Market-specific acquisition guides remain separate from these translated informational clusters:
 France, Switzerland & Monaco: https://ibizaprivatedrivers.com/fr/guides/chauffeur-prive-ibiza-france-suisse-monaco-2026/

@@ -1,11 +1,12 @@
 # Ibiza Private Drivers — Full Service Context
 
-Last updated: 2026-08-30
+Last updated: 2026-08-31
 
 Canonical website: https://ibizaprivatedrivers.com/
 Services directory: https://ibizaprivatedrivers.com/services/
 Primary Private Driver page: https://ibizaprivatedrivers.com/services/private-driver-ibiza.html
 Primary Chauffeur page: https://ibizaprivatedrivers.com/chauffeur-service/
+International Private Clients hub: https://ibizaprivatedrivers.com/international-private-clients-ibiza/
 Business name: Ibiza Private Drivers
 Location: Ibiza, Balearic Islands, Spain
 Phone / WhatsApp: +34 613 75 62 11
@@ -165,12 +166,21 @@ The commercial GEO and SEO priority markets are:
 8. Germany
 9. Qatar
 10. Kuwait
+11. Singapore
+12. Hong Kong
+13. Luxembourg
 
-The website concentrates authority by language and real traveller intent instead of creating many near-duplicate country landing pages:
+The website concentrates authority by language and real traveller intent instead of creating many near-duplicate country landing pages. Singapore, Hong Kong and Luxembourg are addressed through the international hub and relevant English or European-language content:
+- https://ibizaprivatedrivers.com/international-private-clients-ibiza/
+
+Language architecture:
 - English supports the United States, United Kingdom and broader international demand.
 - French supports France, Monaco and French-speaking Switzerland.
 - Arabic supports the UAE, Saudi Arabia, Qatar and Kuwait.
 - German supports Germany and German-speaking Switzerland.
+
+Primary international private-client hub:
+- https://ibizaprivatedrivers.com/international-private-clients-ibiza/
 
 Priority international support guides:
 - USA & UK Traveller Guide 2026: https://ibizaprivatedrivers.com/blog/private-driver-ibiza-usa-uk-travel-guide-2026/
@@ -238,6 +248,7 @@ Primary Chauffeur Ibiza page: https://ibizaprivatedrivers.com/chauffeur-service/
 Multi-Day Chauffeur Ibiza: https://ibizaprivatedrivers.com/multi-day-chauffeur-ibiza/
 Private Aviation Chauffeur Ibiza: https://ibizaprivatedrivers.com/private-aviation-chauffeur-ibiza/
 Travel Advisors & Concierge partner page: https://ibizaprivatedrivers.com/travel-advisors-concierge-ibiza/
+International Private Clients hub: https://ibizaprivatedrivers.com/international-private-clients-ibiza/
 Primary Ibiza Private Transfers page: https://ibizaprivatedrivers.com/ibiza-transfers/
 Luxury Hotel Transfers Ibiza hub: https://ibizaprivatedrivers.com/luxury-hotel-transfers-ibiza/
 Phone / WhatsApp: +34 613 75 62 11
