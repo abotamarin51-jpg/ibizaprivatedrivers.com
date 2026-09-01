@@ -240,7 +240,12 @@
 
     var existingLinks = document.querySelectorAll('a[href*="wa.me/"],a[href*="api.whatsapp.com/"],a[href^="whatsapp://"]');
     for (var index = 0; index < existingLinks.length; index += 1) {
-      if (window.getComputedStyle(existingLinks[index]).position === 'fixed') return;
+      var existingLink = existingLinks[index];
+      if (window.getComputedStyle(existingLink).position === 'fixed') {
+        existingLink.href = whatsappUrlForPath();
+        existingLink.setAttribute('aria-label', whatsappLabelForLanguage());
+        return;
+      }
     }
 
     var link = document.createElement('a');
