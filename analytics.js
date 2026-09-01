@@ -3,7 +3,6 @@
 
   function redirectLegacyPostUrl() {
     if (window.location.pathname !== '/') return false;
-
     var params = new URLSearchParams(window.location.search);
     var post = params.get('post');
     if (!post) return false;
@@ -16,7 +15,6 @@
     };
 
     if (!legacyTargets[post]) return false;
-
     window.location.replace(legacyTargets[post]);
     return true;
   }
@@ -24,6 +22,29 @@
   if (redirectLegacyPostUrl()) return;
 
   var CONSENT_KEY = 'ipd_google_consent_v1';
+
+  function removeSoroFeed() {
+    var feed = document.getElementById('soro-blog');
+    if (feed) feed.remove();
+
+    document.querySelectorAll('script[src*="app.trysoro.com/api/embed"]').forEach(function (script) {
+      script.remove();
+    });
+  }
+
+  // analytics.js is a deferred head script and runs before the deferred Soro embed.
+  // Remove the homepage feed before it can inject unrelated multilingual articles.
+  removeSoroFeed();
+
+  if (document.body && window.MutationObserver) {
+    var soroObserver = new MutationObserver(function () {
+      var feed = document.getElementById('soro-blog');
+      var scripts = document.querySelectorAll('script[src*="app.trysoro.com/api/embed"]');
+      if (feed || scripts.length) removeSoroFeed();
+    });
+    soroObserver.observe(document.documentElement, {childList: true, subtree: true});
+    window.setTimeout(function () { soroObserver.disconnect(); }, 5000);
+  }
 
   function getConsentChoice() {
     try {
@@ -36,14 +57,11 @@
   function setConsentChoice(choice) {
     try {
       window.localStorage.setItem(CONSENT_KEY, choice);
-    } catch (error) {
-      // Consent still applies for the current page if storage is unavailable.
-    }
+    } catch (error) {}
   }
 
   function updateConsent(choice) {
     if (typeof window.gtag !== 'function') return;
-
     window.gtag('consent', 'update', {
       ad_storage: 'denied',
       ad_user_data: 'denied',
@@ -54,49 +72,19 @@
 
   function copyForLanguage() {
     var lang = (document.documentElement.lang || 'en').toLowerCase();
-
     if (lang.indexOf('es') === 0) {
-      return {
-        text: 'Usamos Google Analytics únicamente con tu permiso para medir visitas y solicitudes de reserva.',
-        accept: 'Aceptar Analytics',
-        reject: 'Solo esenciales',
-        privacy: 'Privacidad'
-      };
+      return {text:'Usamos Google Analytics únicamente con tu permiso para medir visitas y solicitudes de reserva.',accept:'Aceptar Analytics',reject:'Solo esenciales',privacy:'Privacidad'};
     }
-
     if (lang.indexOf('fr') === 0) {
-      return {
-        text: 'Nous utilisons Google Analytics uniquement avec votre accord afin de mesurer les visites et les demandes de réservation.',
-        accept: 'Accepter Analytics',
-        reject: 'Essentiels uniquement',
-        privacy: 'Confidentialité'
-      };
+      return {text:'Nous utilisons Google Analytics uniquement avec votre accord afin de mesurer les visites et les demandes de réservation.',accept:'Accepter Analytics',reject:'Essentiels uniquement',privacy:'Confidentialité'};
     }
-
     if (lang.indexOf('de') === 0) {
-      return {
-        text: 'Wir verwenden Google Analytics nur mit Ihrer Zustimmung, um Besuche und Buchungsanfragen zu messen.',
-        accept: 'Analytics akzeptieren',
-        reject: 'Nur notwendige',
-        privacy: 'Datenschutz'
-      };
+      return {text:'Wir verwenden Google Analytics nur mit Ihrer Zustimmung, um Besuche und Buchungsanfragen zu messen.',accept:'Analytics akzeptieren',reject:'Nur notwendige',privacy:'Datenschutz'};
     }
-
     if (lang.indexOf('ar') === 0) {
-      return {
-        text: 'نستخدم Google Analytics فقط بموافقتك لقياس الزيارات وطلبات الحجز.',
-        accept: 'قبول Analytics',
-        reject: 'الضروري فقط',
-        privacy: 'الخصوصية'
-      };
+      return {text:'نستخدم Google Analytics فقط بموافقتك لقياس الزيارات وطلبات الحجز.',accept:'قبول Analytics',reject:'الضروري فقط',privacy:'الخصوصية'};
     }
-
-    return {
-      text: 'We use Google Analytics only with your permission to measure visits and booking enquiries.',
-      accept: 'Accept analytics',
-      reject: 'Essential only',
-      privacy: 'Privacy'
-    };
+    return {text:'We use Google Analytics only with your permission to measure visits and booking enquiries.',accept:'Accept analytics',reject:'Essential only',privacy:'Privacy'};
   }
 
   function addConsentBanner() {
@@ -107,18 +95,17 @@
     banner.id = 'ipd-consent';
     banner.setAttribute('role', 'dialog');
     banner.setAttribute('aria-label', 'Analytics consent');
-    banner.innerHTML =
-      '<p>' + copy.text + ' <a href="/privacy/">' + copy.privacy + '</a></p>' +
+    banner.innerHTML = '<p>' + copy.text + ' <a href="/privacy/">' + copy.privacy + '</a></p>' +
       '<div class="ipd-consent-actions">' +
-        '<button type="button" data-consent="denied">' + copy.reject + '</button>' +
-        '<button type="button" class="ipd-consent-accept" data-consent="granted">' + copy.accept + '</button>' +
+      '<button type="button" data-consent="denied">' + copy.reject + '</button>' +
+      '<button type="button" class="ipd-consent-accept" data-consent="granted">' + copy.accept + '</button>' +
       '</div>';
 
     var style = document.createElement('style');
+    style.id = 'ipd-consent-style';
     style.textContent =
       '#ipd-consent{position:fixed;z-index:2147483647;left:16px;right:16px;bottom:16px;max-width:760px;margin:auto;padding:18px 20px;background:#111;color:#fff;border:1px solid rgba(255,255,255,.22);border-radius:14px;box-shadow:0 14px 44px rgba(0,0,0,.35);font:14px/1.45 Inter,Arial,sans-serif;display:flex;align-items:center;justify-content:space-between;gap:18px}' +
-      '#ipd-consent p{margin:0;max-width:470px}' +
-      '#ipd-consent a{color:#fff;text-decoration:underline}' +
+      '#ipd-consent p{margin:0;max-width:470px}#ipd-consent a{color:#fff;text-decoration:underline}' +
       '.ipd-consent-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}' +
       '#ipd-consent button{border:1px solid rgba(255,255,255,.45);border-radius:999px;padding:10px 14px;background:transparent;color:#fff;font:inherit;cursor:pointer;white-space:nowrap}' +
       '#ipd-consent .ipd-consent-accept{background:#fff;color:#111;border-color:#fff}' +
@@ -130,16 +117,12 @@
     banner.addEventListener('click', function (event) {
       var button = event.target.closest('button[data-consent]');
       if (!button) return;
-
       var choice = button.getAttribute('data-consent');
       setConsentChoice(choice);
       updateConsent(choice);
 
       if (choice === 'granted' && typeof window.gtag === 'function') {
-        window.gtag('event', 'page_view', {
-          page_location: window.location.href,
-          page_title: document.title
-        });
+        window.gtag('event', 'page_view', {page_location: window.location.href,page_title: document.title});
       }
 
       banner.remove();
@@ -158,7 +141,6 @@
 
   function serviceIntentForPath() {
     var path = (window.location.pathname || '/').toLowerCase();
-
     if (path.indexOf('private-aviation') !== -1) return 'private_aviation';
     if (path.indexOf('airport') !== -1) return 'airport_transfer';
     if (path.indexOf('multi-day') !== -1) return 'multi_day_chauffeur';
@@ -178,55 +160,70 @@
   function whatsappMessageForIntent(intent) {
     var lang = (document.documentElement.lang || 'en').toLowerCase();
 
-    if (lang.indexOf('fr') === 0) {
-      if (intent === 'airport_transfer') return 'Bonjour, je souhaite réserver un transfert depuis ou vers l’aéroport d’Ibiza.\nDate :\nNuméro de vol :\nHeure d’arrivée ou de départ :\nDestination :\nPassagers :\nBagages :';
-      if (intent === 'private_aviation') return 'Bonjour, je souhaite réserver un service de chauffeur pour aviation privée à Ibiza.\nDate :\nDétails d’arrivée/départ :\nPoint de rendez-vous ou terminal :\nDestination ou itinéraire :\nPassagers :\nBagages :';
-      if (intent === 'chauffeur' || intent === 'multi_day_chauffeur') return 'Bonjour, je souhaite réserver un chauffeur privé à Ibiza.\nDate(s) :\nHeure de début :\nDurée prévue :\nDépart :\nItinéraire / arrêts :\nPassagers :\nBagages :';
-      if (intent === 'villa_transfer') return 'Bonjour, je souhaite réserver un transport privé pour une villa à Ibiza.\nDate :\nHeure :\nDépart :\nNom ou localisation de la villa :\nPassagers :\nBagages :\nRetour nécessaire :';
-      if (intent === 'yacht_marina') return 'Bonjour, je souhaite réserver un transport pour un yacht ou une marina à Ibiza.\nDate :\nHeure :\nDépart :\nMarina / yacht / point de rendez-vous :\nDestination :\nPassagers :\nBagages :';
-      if (intent === 'hotel_transfer') return 'Bonjour, je souhaite réserver un transport privé pour un hôtel à Ibiza.\nDate :\nHeure :\nHôtel :\nDépart ou destination :\nPassagers :\nBagages :\nRetour nécessaire :';
-      if (intent === 'nightlife') return 'Bonjour, je souhaite réserver un transport privé pour une soirée à Ibiza.\nDate :\nHeure et lieu de départ :\nLieu(x) :\nHeure / lieu de retour :\nPassagers :';
-      if (intent === 'mercedes_v_class') return 'Bonjour, je souhaite réserver une Mercedes-Benz V-Class à Ibiza.\nDate :\nHeure :\nDépart :\nDestination ou itinéraire :\nPassagers :\nBagages :';
-      if (intent === 'b2b_international') return 'Bonjour, je souhaite coordonner un transport privé à Ibiza pour un client.\nSociété / contact :\nDate(s) :\nPrise(s) en charge :\nItinéraire :\nPassagers :\nBesoins véhicule :';
-      return 'Bonjour, je souhaite réserver un transport privé à Ibiza.\nDate :\nHeure :\nDépart :\nDestination ou itinéraire :\nPassagers :\nBagages :';
-    }
+    var messages = {
+      en: {
+        general_private_transport:'Hello, I would like to request private transport in Ibiza.\nDate:\nTime:\nPickup:\nDestination or itinerary:\nPassengers:\nLuggage:',
+        private_driver:'Hello, I would like to request a private driver in Ibiza.\nDate:\nTime:\nPickup:\nDestination or itinerary:\nPassengers:\nLuggage:',
+        private_transfer:'Hello, I would like to request a private transfer in Ibiza.\nDate:\nTime:\nPickup:\nDestination:\nPassengers:\nLuggage:',
+        private_taxi_alternative:'Hello, I would like to request a pre-booked private driver in Ibiza.\nDate:\nTime:\nPickup:\nDestination:\nPassengers:\nLuggage:',
+        airport_transfer:'Hello, I would like to request an Ibiza Airport transfer.\nDate:\nFlight number:\nArrival or departure time:\nDestination:\nPassengers:\nLuggage:',
+        private_aviation:'Hello, I would like to request private aviation chauffeur service in Ibiza.\nDate:\nArrival/departure details:\nMeeting point or terminal:\nDestination or itinerary:\nPassengers:\nLuggage:',
+        chauffeur:'Hello, I would like to request chauffeur service in Ibiza.\nDate(s):\nStart time:\nExpected duration:\nPickup:\nItinerary/stops:\nPassengers:\nLuggage:',
+        multi_day_chauffeur:'Hello, I would like to request multi-day chauffeur service in Ibiza.\nDate(s):\nDaily start time(s):\nExpected daily hours:\nAccommodation/pickup:\nItinerary:\nPassengers:\nLuggage:',
+        villa_transfer:'Hello, I would like to request private transport for a villa in Ibiza.\nDate:\nTime:\nPickup:\nVilla name or map pin:\nPassengers:\nLuggage:\nReturn required:',
+        yacht_marina:'Hello, I would like to request yacht or marina transport in Ibiza.\nDate:\nTime:\nPickup:\nMarina / yacht / meeting point:\nDestination:\nPassengers:\nLuggage:',
+        hotel_transfer:'Hello, I would like to request private hotel transport in Ibiza.\nDate:\nTime:\nHotel:\nPickup or destination:\nPassengers:\nLuggage:\nReturn required:',
+        nightlife:'Hello, I would like to request private nightlife transport in Ibiza.\nDate:\nPickup time and place:\nVenue(s):\nReturn time/place:\nPassengers:',
+        mercedes_v_class:'Hello, I would like to request a Mercedes-Benz V-Class in Ibiza.\nDate:\nTime:\nPickup:\nDestination or itinerary:\nPassengers:\nLuggage:',
+        b2b_international:'Hello, I would like to coordinate private transport in Ibiza for a client/guest.\nCompany or contact name:\nDate(s):\nPickup(s):\nItinerary:\nPassengers:\nVehicle requirements:'
+      },
+      es: {
+        general_private_transport:'Hola, quisiera solicitar transporte privado en Ibiza.\nFecha:\nHora:\nRecogida:\nDestino o itinerario:\nPasajeros:\nEquipaje:',
+        private_driver:'Hola, quisiera solicitar un conductor privado en Ibiza.\nFecha:\nHora:\nRecogida:\nDestino o itinerario:\nPasajeros:\nEquipaje:',
+        private_transfer:'Hola, quisiera solicitar un traslado privado en Ibiza.\nFecha:\nHora:\nRecogida:\nDestino:\nPasajeros:\nEquipaje:',
+        airport_transfer:'Hola, quisiera solicitar un traslado desde o hacia el Aeropuerto de Ibiza.\nFecha:\nNúmero de vuelo:\nHora de llegada o salida:\nDestino:\nPasajeros:\nEquipaje:',
+        chauffeur:'Hola, quisiera solicitar un servicio de chófer en Ibiza.\nFecha(s):\nHora de inicio:\nDuración prevista:\nRecogida:\nItinerario/paradas:\nPasajeros:\nEquipaje:',
+        villa_transfer:'Hola, quisiera solicitar transporte privado para una villa en Ibiza.\nFecha:\nHora:\nRecogida:\nNombre o ubicación de la villa:\nPasajeros:\nEquipaje:\n¿Necesita regreso?:',
+        yacht_marina:'Hola, quisiera solicitar transporte para un yate o marina en Ibiza.\nFecha:\nHora:\nRecogida:\nMarina / yate / punto de encuentro:\nDestino:\nPasajeros:\nEquipaje:',
+        nightlife:'Hola, quisiera solicitar transporte privado para la noche en Ibiza.\nFecha:\nHora y lugar de recogida:\nLugar(es):\nHora/lugar de regreso:\nPasajeros:',
+        mercedes_v_class:'Hola, quisiera solicitar una Mercedes-Benz V-Class en Ibiza.\nFecha:\nHora:\nRecogida:\nDestino o itinerario:\nPasajeros:\nEquipaje:'
+      },
+      fr: {
+        general_private_transport:'Bonjour, je souhaite réserver un transport privé à Ibiza.\nDate :\nHeure :\nDépart :\nDestination ou itinéraire :\nPassagers :\nBagages :',
+        airport_transfer:'Bonjour, je souhaite réserver un transfert depuis ou vers l’aéroport d’Ibiza.\nDate :\nNuméro de vol :\nHeure d’arrivée ou de départ :\nDestination :\nPassagers :\nBagages :',
+        chauffeur:'Bonjour, je souhaite réserver un chauffeur privé à Ibiza.\nDate(s) :\nHeure de début :\nDurée prévue :\nDépart :\nItinéraire / arrêts :\nPassagers :\nBagages :',
+        villa_transfer:'Bonjour, je souhaite réserver un transport privé pour une villa à Ibiza.\nDate :\nHeure :\nDépart :\nNom ou localisation de la villa :\nPassagers :\nBagages :\nRetour nécessaire :',
+        yacht_marina:'Bonjour, je souhaite réserver un transport pour un yacht ou une marina à Ibiza.\nDate :\nHeure :\nDépart :\nMarina / yacht / point de rendez-vous :\nDestination :\nPassagers :\nBagages :',
+        nightlife:'Bonjour, je souhaite réserver un transport privé pour une soirée à Ibiza.\nDate :\nHeure et lieu de départ :\nLieu(x) :\nHeure / lieu de retour :\nPassagers :',
+        mercedes_v_class:'Bonjour, je souhaite réserver une Mercedes-Benz V-Class à Ibiza.\nDate :\nHeure :\nDépart :\nDestination ou itinéraire :\nPassagers :\nBagages :'
+      },
+      de: {
+        general_private_transport:'Hallo, ich möchte privaten Transport in Ibiza anfragen.\nDatum:\nUhrzeit:\nAbholung:\nZiel oder Route:\nPassagiere:\nGepäck:',
+        airport_transfer:'Hallo, ich möchte einen Flughafentransfer in Ibiza anfragen.\nDatum:\nFlugnummer:\nAnkunfts- oder Abflugzeit:\nZiel:\nPassagiere:\nGepäck:',
+        chauffeur:'Hallo, ich möchte einen Chauffeurservice in Ibiza anfragen.\nDatum/Daten:\nStartzeit:\nVoraussichtliche Dauer:\nAbholung:\nRoute / Stopps:\nPassagiere:\nGepäck:',
+        villa_transfer:'Hallo, ich möchte einen privaten Transfer zu oder von einer Villa in Ibiza anfragen.\nDatum:\nUhrzeit:\nAbholung:\nVilla / Karten-Pin:\nPassagiere:\nGepäck:\nRückfahrt benötigt:',
+        yacht_marina:'Hallo, ich möchte einen Yacht- oder Marina-Transfer in Ibiza anfragen.\nDatum:\nUhrzeit:\nAbholung:\nMarina / Yacht / Treffpunkt:\nZiel:\nPassagiere:\nGepäck:',
+        nightlife:'Hallo, ich möchte einen privaten Nachtleben-Transfer in Ibiza anfragen.\nDatum:\nAbholzeit und Ort:\nLocation(s):\nRückfahrt Zeit/Ort:\nPassagiere:',
+        mercedes_v_class:'Hallo, ich möchte eine Mercedes-Benz V-Class in Ibiza anfragen.\nDatum:\nUhrzeit:\nAbholung:\nZiel oder Route:\nPassagiere:\nGepäck:'
+      },
+      ar: {
+        general_private_transport:'مرحباً، أود طلب نقل خاص في إيبيزا.\nالتاريخ:\nالوقت:\nمكان الاستلام:\nالوجهة أو البرنامج:\nعدد الركاب:\nالأمتعة:',
+        airport_transfer:'مرحباً، أود طلب خدمة نقل من أو إلى مطار إيبيزا.\nالتاريخ:\nرقم الرحلة:\nوقت الوصول أو المغادرة:\nالوجهة:\nعدد الركاب:\nالأمتعة:',
+        chauffeur:'مرحباً، أود طلب خدمة سائق خاص في إيبيزا.\nالتاريخ/التواريخ:\nوقت البدء:\nالمدة المتوقعة:\nمكان الاستلام:\nالبرنامج / التوقفات:\nعدد الركاب:\nالأمتعة:',
+        villa_transfer:'مرحباً، أود طلب نقل خاص إلى أو من فيلا في إيبيزا.\nالتاريخ:\nالوقت:\nمكان الاستلام:\nاسم الفيلا أو رابط الموقع:\nعدد الركاب:\nالأمتعة:\nهل توجد رحلة عودة:',
+        yacht_marina:'مرحباً، أود طلب نقل إلى يخت أو مارينا في إيبيزا.\nالتاريخ:\nالوقت:\nمكان الاستلام:\nالمارينا / اليخت / نقطة اللقاء:\nالوجهة:\nعدد الركاب:\nالأمتعة:',
+        nightlife:'مرحباً، أود طلب نقل خاص للسهرات في إيبيزا.\nالتاريخ:\nوقت ومكان الاستلام:\nالمكان/الأماكن:\nوقت ومكان العودة:\nعدد الركاب:',
+        mercedes_v_class:'مرحباً، أود طلب Mercedes-Benz V-Class في إيبيزا.\nالتاريخ:\nالوقت:\nمكان الاستلام:\nالوجهة أو البرنامج:\nعدد الركاب:\nالأمتعة:'
+      }
+    };
 
-    if (lang.indexOf('de') === 0) {
-      if (intent === 'airport_transfer') return 'Hallo, ich möchte einen Flughafentransfer in Ibiza anfragen.\nDatum:\nFlugnummer:\nAnkunfts- oder Abflugzeit:\nZiel:\nPassagiere:\nGepäck:';
-      if (intent === 'private_aviation') return 'Hallo, ich möchte einen Chauffeurservice für Privatfluggäste in Ibiza anfragen.\nDatum:\nAnkunft/Abflug:\nTreffpunkt oder Terminal:\nZiel oder Route:\nPassagiere:\nGepäck:';
-      if (intent === 'chauffeur' || intent === 'multi_day_chauffeur') return 'Hallo, ich möchte einen Chauffeurservice in Ibiza anfragen.\nDatum/Daten:\nStartzeit:\nVoraussichtliche Dauer:\nAbholung:\nRoute / Stopps:\nPassagiere:\nGepäck:';
-      if (intent === 'villa_transfer') return 'Hallo, ich möchte einen privaten Transfer zu oder von einer Villa in Ibiza anfragen.\nDatum:\nUhrzeit:\nAbholung:\nVilla / Karten-Pin:\nPassagiere:\nGepäck:\nRückfahrt benötigt:';
-      if (intent === 'yacht_marina') return 'Hallo, ich möchte einen Yacht- oder Marina-Transfer in Ibiza anfragen.\nDatum:\nUhrzeit:\nAbholung:\nMarina / Yacht / Treffpunkt:\nZiel:\nPassagiere:\nGepäck:';
-      if (intent === 'hotel_transfer') return 'Hallo, ich möchte einen privaten Hoteltransfer in Ibiza anfragen.\nDatum:\nUhrzeit:\nHotel:\nAbholung oder Ziel:\nPassagiere:\nGepäck:\nRückfahrt benötigt:';
-      if (intent === 'nightlife') return 'Hallo, ich möchte einen privaten Nachtleben-Transfer in Ibiza anfragen.\nDatum:\nAbholzeit und Ort:\nLocation(s):\nRückfahrt Zeit/Ort:\nPassagiere:';
-      if (intent === 'mercedes_v_class') return 'Hallo, ich möchte eine Mercedes-Benz V-Class in Ibiza anfragen.\nDatum:\nUhrzeit:\nAbholung:\nZiel oder Route:\nPassagiere:\nGepäck:';
-      if (intent === 'b2b_international') return 'Hallo, ich möchte privaten Transport in Ibiza für einen Kunden koordinieren.\nFirma / Kontakt:\nDatum/Daten:\nAbholung(en):\nRoute:\nPassagiere:\nFahrzeuganforderungen:';
-      return 'Hallo, ich möchte privaten Transport in Ibiza anfragen.\nDatum:\nUhrzeit:\nAbholung:\nZiel oder Route:\nPassagiere:\nGepäck:';
-    }
+    var key = 'en';
+    if (lang.indexOf('es') === 0) key = 'es';
+    else if (lang.indexOf('fr') === 0) key = 'fr';
+    else if (lang.indexOf('de') === 0) key = 'de';
+    else if (lang.indexOf('ar') === 0) key = 'ar';
 
-    if (lang.indexOf('ar') === 0) {
-      if (intent === 'airport_transfer') return 'مرحباً، أود طلب خدمة نقل من أو إلى مطار إيبيزا.\nالتاريخ:\nرقم الرحلة:\nوقت الوصول أو المغادرة:\nالوجهة:\nعدد الركاب:\nالأمتعة:';
-      if (intent === 'private_aviation') return 'مرحباً، أود طلب خدمة سائق خاص للطيران الخاص في إيبيزا.\nالتاريخ:\nتفاصيل الوصول/المغادرة:\nنقطة اللقاء أو المبنى:\nالوجهة أو البرنامج:\nعدد الركاب:\nالأمتعة:';
-      if (intent === 'chauffeur' || intent === 'multi_day_chauffeur') return 'مرحباً، أود طلب خدمة سائق خاص في إيبيزا.\nالتاريخ/التواريخ:\nوقت البدء:\nالمدة المتوقعة:\nمكان الاستلام:\nالبرنامج / التوقفات:\nعدد الركاب:\nالأمتعة:';
-      if (intent === 'villa_transfer') return 'مرحباً، أود طلب نقل خاص إلى أو من فيلا في إيبيزا.\nالتاريخ:\nالوقت:\nمكان الاستلام:\nاسم الفيلا أو رابط الموقع:\nعدد الركاب:\nالأمتعة:\nهل توجد رحلة عودة:';
-      if (intent === 'yacht_marina') return 'مرحباً، أود طلب نقل إلى يخت أو مارينا في إيبيزا.\nالتاريخ:\nالوقت:\nمكان الاستلام:\nالمارينا / اليخت / نقطة اللقاء:\nالوجهة:\nعدد الركاب:\nالأمتعة:';
-      if (intent === 'hotel_transfer') return 'مرحباً، أود طلب نقل خاص إلى أو من فندق في إيبيزا.\nالتاريخ:\nالوقت:\nالفندق:\nمكان الاستلام أو الوجهة:\nعدد الركاب:\nالأمتعة:\nهل توجد رحلة عودة:';
-      if (intent === 'nightlife') return 'مرحباً، أود طلب نقل خاص للسهرات في إيبيزا.\nالتاريخ:\nوقت ومكان الاستلام:\nالمكان/الأماكن:\nوقت ومكان العودة:\nعدد الركاب:';
-      if (intent === 'mercedes_v_class') return 'مرحباً، أود طلب Mercedes-Benz V-Class في إيبيزا.\nالتاريخ:\nالوقت:\nمكان الاستلام:\nالوجهة أو البرنامج:\nعدد الركاب:\nالأمتعة:';
-      if (intent === 'b2b_international') return 'مرحباً، أود تنسيق نقل خاص في إيبيزا لعميل أو ضيف.\nالشركة / جهة الاتصال:\nالتاريخ/التواريخ:\nأماكن الاستلام:\nالبرنامج:\nعدد الركاب:\nمتطلبات السيارة:';
-      return 'مرحباً، أود طلب نقل خاص في إيبيزا.\nالتاريخ:\nالوقت:\nمكان الاستلام:\nالوجهة أو البرنامج:\nعدد الركاب:\nالأمتعة:';
-    }
-
-    if (intent === 'airport_transfer') return 'Hello, I would like to request an Ibiza Airport transfer.\nDate:\nFlight number:\nArrival or departure time:\nDestination:\nPassengers:\nLuggage:';
-    if (intent === 'private_aviation') return 'Hello, I would like to request private aviation chauffeur service in Ibiza.\nDate:\nArrival/departure details:\nMeeting point or terminal:\nDestination or itinerary:\nPassengers:\nLuggage:';
-    if (intent === 'chauffeur' || intent === 'multi_day_chauffeur') return 'Hello, I would like to request chauffeur service in Ibiza.\nDate(s):\nStart time:\nExpected duration:\nPickup:\nItinerary/stops:\nPassengers:\nLuggage:';
-    if (intent === 'villa_transfer') return 'Hello, I would like to request private transport for a villa in Ibiza.\nDate:\nTime:\nPickup:\nVilla name or map pin:\nPassengers:\nLuggage:\nReturn required:';
-    if (intent === 'yacht_marina') return 'Hello, I would like to request yacht or marina transport in Ibiza.\nDate:\nTime:\nPickup:\nMarina / yacht / meeting point:\nDestination:\nPassengers:\nLuggage:';
-    if (intent === 'hotel_transfer') return 'Hello, I would like to request private hotel transport in Ibiza.\nDate:\nTime:\nHotel:\nPickup or destination:\nPassengers:\nLuggage:\nReturn required:';
-    if (intent === 'nightlife') return 'Hello, I would like to request private nightlife transport in Ibiza.\nDate:\nPickup time and place:\nVenue(s):\nReturn time/place:\nPassengers:';
-    if (intent === 'mercedes_v_class') return 'Hello, I would like to request a Mercedes-Benz V-Class in Ibiza.\nDate:\nTime:\nPickup:\nDestination or itinerary:\nPassengers:\nLuggage:';
-    if (intent === 'b2b_international') return 'Hello, I would like to coordinate private transport in Ibiza for a client/guest.\nCompany or contact name:\nDate(s):\nPickup(s):\nItinerary:\nPassengers:\nVehicle requirements:';
-    return 'Hello, I would like to request private transport in Ibiza.\nDate:\nTime:\nPickup:\nDestination or itinerary:\nPassengers:\nLuggage:';
+    return messages[key][intent] || messages[key].general_private_transport || messages.en[intent] || messages.en.general_private_transport;
   }
 
   function whatsappUrlForPath() {
@@ -236,7 +233,6 @@
   function addWhatsAppFloat() {
     var path = window.location.pathname.replace(/\/+$/, '/') || '/';
     if (path === '/privacy/' || path === '/legal-notice/') return;
-    if (document.getElementById('ipd-whatsapp-float')) return;
 
     var existingLinks = document.querySelectorAll('a[href*="wa.me/"],a[href*="api.whatsapp.com/"],a[href^="whatsapp://"]');
     for (var index = 0; index < existingLinks.length; index += 1) {
@@ -248,6 +244,8 @@
       }
     }
 
+    if (document.getElementById('ipd-whatsapp-float')) return;
+
     var link = document.createElement('a');
     link.id = 'ipd-whatsapp-float';
     link.href = whatsappUrlForPath();
@@ -258,11 +256,7 @@
 
     var style = document.createElement('style');
     style.id = 'ipd-whatsapp-float-style';
-    style.textContent =
-      '#ipd-whatsapp-float{position:fixed;right:18px;bottom:18px;z-index:9998;width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#168a52;color:#fff;box-shadow:0 8px 24px rgba(0,0,0,.24);border:1px solid rgba(255,255,255,.5);text-decoration:none;transition:transform .2s ease,box-shadow .2s ease}' +
-      '#ipd-whatsapp-float:hover,#ipd-whatsapp-float:focus-visible{transform:translateY(-2px);box-shadow:0 11px 28px rgba(0,0,0,.3);outline:3px solid rgba(22,138,82,.25);outline-offset:3px}' +
-      '@media(max-width:480px){#ipd-whatsapp-float{right:14px;bottom:14px;width:54px;height:54px}}';
-
+    style.textContent = '#ipd-whatsapp-float{position:fixed;right:18px;bottom:18px;z-index:9998;width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#168a52;color:#fff;box-shadow:0 8px 24px rgba(0,0,0,.24);border:1px solid rgba(255,255,255,.5);text-decoration:none;transition:transform .2s ease,box-shadow .2s ease}#ipd-whatsapp-float:hover,#ipd-whatsapp-float:focus-visible{transform:translateY(-2px);box-shadow:0 11px 28px rgba(0,0,0,.3);outline:3px solid rgba(22,138,82,.25);outline-offset:3px}@media(max-width:480px){#ipd-whatsapp-float{right:14px;bottom:14px;width:54px;height:54px}}';
     document.head.appendChild(style);
     document.body.appendChild(link);
   }
@@ -270,8 +264,7 @@
   function trackLeadClick(link) {
     if (getConsentChoice() !== 'granted' || typeof window.gtag !== 'function') return;
 
-    var rawHref = link.getAttribute('href') || '';
-    var href = rawHref.toLowerCase();
+    var href = (link.getAttribute('href') || '').toLowerCase();
     var eventName = '';
     var leadType = '';
     var serviceIntent = serviceIntentForPath();
@@ -289,7 +282,7 @@
 
     if (!eventName) return;
 
-    window.gtag('event', eventName, {
+    var params = {
       event_category: 'lead',
       lead_type: leadType,
       service_intent: serviceIntent,
@@ -297,8 +290,9 @@
       page_path: window.location.pathname,
       page_title: document.title,
       transport_type: 'beacon'
-    });
+    };
 
+    window.gtag('event', eventName, params);
     window.gtag('event', 'generate_lead', {
       currency: 'EUR',
       value: 0,
@@ -314,9 +308,7 @@
     var reset = event.target.closest('[data-reset-consent]');
     if (reset) {
       event.preventDefault();
-      try {
-        window.localStorage.removeItem(CONSENT_KEY);
-      } catch (error) {}
+      try { window.localStorage.removeItem(CONSENT_KEY); } catch (error) {}
       updateConsent('denied');
       window.location.reload();
       return;
@@ -326,13 +318,12 @@
     if (link) trackLeadClick(link);
   });
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function () {
-      addConsentBanner();
-      addWhatsAppFloat();
-    });
-  } else {
+  function init() {
+    removeSoroFeed();
     addConsentBanner();
     addWhatsAppFloat();
   }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
 })();
