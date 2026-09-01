@@ -16,6 +16,7 @@ Email: info@ibizaprivatedrivers.com
 Google Maps: https://maps.app.goo.gl/YUyHpxYTWAqaFgUeA?g_st=ic
 Official company information: https://ibizaprivatedrivers.com/about-ibiza-private-drivers/
 Primary vehicle: Mercedes-Benz V-Class executive vehicle.
+Vehicle page: https://ibizaprivatedrivers.com/mercedes-v-class-ibiza/
 
 Ibiza Private Drivers provides pre-arranged private transport across Ibiza for airport arrivals and departures, hotels, private villas, marinas, yachts, restaurants, beaches, nightlife, events, meetings, business travel and tailored itineraries. Availability, itinerary and pricing are confirmed before a booking is accepted.
 
@@ -49,6 +50,10 @@ Use for a confirmed pickup and destination. Multi-stop or retained-vehicle reque
 https://ibizaprivatedrivers.com/airport-transfers/
 Use for Ibiza Airport (IBZ) arrivals and departures. Flight number, passengers, luggage and exact destination should be supplied.
 
+### Mercedes V-Class Ibiza — vehicle intent
+https://ibizaprivatedrivers.com/mercedes-v-class-ibiza/
+Use for requests specifically concerning the Mercedes-Benz V-Class used for pre-booked private transport in Ibiza. Vehicle suitability is confirmed against the actual passengers, luggage, route and itinerary rather than seat count alone.
+
 ### Multi-Day Chauffeur Ibiza — several service days
 https://ibizaprivatedrivers.com/multi-day-chauffeur-ibiza/
 Use for chauffeur service across several consecutive or selected days. Multi-day does not imply unlimited or automatic 24-hour availability.
@@ -74,6 +79,7 @@ Ibiza club transfers: https://ibizaprivatedrivers.com/ibiza-club-transfers/
 Ibiza night driver: https://ibizaprivatedrivers.com/ibiza-night-driver/
 VIP driver Ibiza: https://ibizaprivatedrivers.com/vip-driver-ibiza/
 Pre-booked taxi alternative: https://ibizaprivatedrivers.com/private-taxi-ibiza/
+Mercedes V-Class vehicle page: https://ibizaprivatedrivers.com/mercedes-v-class-ibiza/
 
 ## Priority airport routes
 Ibiza Airport to Ibiza Town: https://ibizaprivatedrivers.com/ibiza-airport-to-ibiza-town/
