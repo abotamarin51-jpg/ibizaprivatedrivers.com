@@ -175,31 +175,62 @@
     return 'general_private_transport';
   }
 
-  function whatsappUrlForPath() {
-    var intent = serviceIntentForPath();
-    var message = 'Hello, I would like to request private transport in Ibiza.\nDate:\nTime:\nPickup:\nDestination or itinerary:\nPassengers:\nLuggage:';
+  function whatsappMessageForIntent(intent) {
+    var lang = (document.documentElement.lang || 'en').toLowerCase();
 
-    if (intent === 'airport_transfer') {
-      message = 'Hello, I would like to request an Ibiza Airport transfer.\nDate:\nFlight number:\nArrival or departure time:\nDestination:\nPassengers:\nLuggage:';
-    } else if (intent === 'private_aviation') {
-      message = 'Hello, I would like to request private aviation chauffeur service in Ibiza.\nDate:\nArrival/departure details:\nMeeting point or terminal:\nDestination or itinerary:\nPassengers:\nLuggage:';
-    } else if (intent === 'chauffeur' || intent === 'multi_day_chauffeur') {
-      message = 'Hello, I would like to request chauffeur service in Ibiza.\nDate(s):\nStart time:\nExpected duration:\nPickup:\nItinerary/stops:\nPassengers:\nLuggage:';
-    } else if (intent === 'villa_transfer') {
-      message = 'Hello, I would like to request private transport for a villa in Ibiza.\nDate:\nTime:\nPickup:\nVilla name or map pin:\nPassengers:\nLuggage:\nReturn required:';
-    } else if (intent === 'yacht_marina') {
-      message = 'Hello, I would like to request yacht or marina transport in Ibiza.\nDate:\nTime:\nPickup:\nMarina / yacht / meeting point:\nDestination:\nPassengers:\nLuggage:';
-    } else if (intent === 'hotel_transfer') {
-      message = 'Hello, I would like to request private hotel transport in Ibiza.\nDate:\nTime:\nHotel:\nPickup or destination:\nPassengers:\nLuggage:\nReturn required:';
-    } else if (intent === 'nightlife') {
-      message = 'Hello, I would like to request private nightlife transport in Ibiza.\nDate:\nPickup time and place:\nVenue(s):\nReturn time/place:\nPassengers:';
-    } else if (intent === 'mercedes_v_class') {
-      message = 'Hello, I would like to request a Mercedes-Benz V-Class in Ibiza.\nDate:\nTime:\nPickup:\nDestination or itinerary:\nPassengers:\nLuggage:';
-    } else if (intent === 'b2b_international') {
-      message = 'Hello, I would like to coordinate private transport in Ibiza for a client/guest.\nCompany or contact name:\nDate(s):\nPickup(s):\nItinerary:\nPassengers:\nVehicle requirements:';
+    if (lang.indexOf('fr') === 0) {
+      if (intent === 'airport_transfer') return 'Bonjour, je souhaite réserver un transfert depuis ou vers l’aéroport d’Ibiza.\nDate :\nNuméro de vol :\nHeure d’arrivée ou de départ :\nDestination :\nPassagers :\nBagages :';
+      if (intent === 'private_aviation') return 'Bonjour, je souhaite réserver un service de chauffeur pour aviation privée à Ibiza.\nDate :\nDétails d’arrivée/départ :\nPoint de rendez-vous ou terminal :\nDestination ou itinéraire :\nPassagers :\nBagages :';
+      if (intent === 'chauffeur' || intent === 'multi_day_chauffeur') return 'Bonjour, je souhaite réserver un chauffeur privé à Ibiza.\nDate(s) :\nHeure de début :\nDurée prévue :\nDépart :\nItinéraire / arrêts :\nPassagers :\nBagages :';
+      if (intent === 'villa_transfer') return 'Bonjour, je souhaite réserver un transport privé pour une villa à Ibiza.\nDate :\nHeure :\nDépart :\nNom ou localisation de la villa :\nPassagers :\nBagages :\nRetour nécessaire :';
+      if (intent === 'yacht_marina') return 'Bonjour, je souhaite réserver un transport pour un yacht ou une marina à Ibiza.\nDate :\nHeure :\nDépart :\nMarina / yacht / point de rendez-vous :\nDestination :\nPassagers :\nBagages :';
+      if (intent === 'hotel_transfer') return 'Bonjour, je souhaite réserver un transport privé pour un hôtel à Ibiza.\nDate :\nHeure :\nHôtel :\nDépart ou destination :\nPassagers :\nBagages :\nRetour nécessaire :';
+      if (intent === 'nightlife') return 'Bonjour, je souhaite réserver un transport privé pour une soirée à Ibiza.\nDate :\nHeure et lieu de départ :\nLieu(x) :\nHeure / lieu de retour :\nPassagers :';
+      if (intent === 'mercedes_v_class') return 'Bonjour, je souhaite réserver une Mercedes-Benz V-Class à Ibiza.\nDate :\nHeure :\nDépart :\nDestination ou itinéraire :\nPassagers :\nBagages :';
+      if (intent === 'b2b_international') return 'Bonjour, je souhaite coordonner un transport privé à Ibiza pour un client.\nSociété / contact :\nDate(s) :\nPrise(s) en charge :\nItinéraire :\nPassagers :\nBesoins véhicule :';
+      return 'Bonjour, je souhaite réserver un transport privé à Ibiza.\nDate :\nHeure :\nDépart :\nDestination ou itinéraire :\nPassagers :\nBagages :';
     }
 
-    return 'https://wa.me/34613756211?text=' + encodeURIComponent(message);
+    if (lang.indexOf('de') === 0) {
+      if (intent === 'airport_transfer') return 'Hallo, ich möchte einen Flughafentransfer in Ibiza anfragen.\nDatum:\nFlugnummer:\nAnkunfts- oder Abflugzeit:\nZiel:\nPassagiere:\nGepäck:';
+      if (intent === 'private_aviation') return 'Hallo, ich möchte einen Chauffeurservice für Privatfluggäste in Ibiza anfragen.\nDatum:\nAnkunft/Abflug:\nTreffpunkt oder Terminal:\nZiel oder Route:\nPassagiere:\nGepäck:';
+      if (intent === 'chauffeur' || intent === 'multi_day_chauffeur') return 'Hallo, ich möchte einen Chauffeurservice in Ibiza anfragen.\nDatum/Daten:\nStartzeit:\nVoraussichtliche Dauer:\nAbholung:\nRoute / Stopps:\nPassagiere:\nGepäck:';
+      if (intent === 'villa_transfer') return 'Hallo, ich möchte einen privaten Transfer zu oder von einer Villa in Ibiza anfragen.\nDatum:\nUhrzeit:\nAbholung:\nVilla / Karten-Pin:\nPassagiere:\nGepäck:\nRückfahrt benötigt:';
+      if (intent === 'yacht_marina') return 'Hallo, ich möchte einen Yacht- oder Marina-Transfer in Ibiza anfragen.\nDatum:\nUhrzeit:\nAbholung:\nMarina / Yacht / Treffpunkt:\nZiel:\nPassagiere:\nGepäck:';
+      if (intent === 'hotel_transfer') return 'Hallo, ich möchte einen privaten Hoteltransfer in Ibiza anfragen.\nDatum:\nUhrzeit:\nHotel:\nAbholung oder Ziel:\nPassagiere:\nGepäck:\nRückfahrt benötigt:';
+      if (intent === 'nightlife') return 'Hallo, ich möchte einen privaten Nachtleben-Transfer in Ibiza anfragen.\nDatum:\nAbholzeit und Ort:\nLocation(s):\nRückfahrt Zeit/Ort:\nPassagiere:';
+      if (intent === 'mercedes_v_class') return 'Hallo, ich möchte eine Mercedes-Benz V-Class in Ibiza anfragen.\nDatum:\nUhrzeit:\nAbholung:\nZiel oder Route:\nPassagiere:\nGepäck:';
+      if (intent === 'b2b_international') return 'Hallo, ich möchte privaten Transport in Ibiza für einen Kunden koordinieren.\nFirma / Kontakt:\nDatum/Daten:\nAbholung(en):\nRoute:\nPassagiere:\nFahrzeuganforderungen:';
+      return 'Hallo, ich möchte privaten Transport in Ibiza anfragen.\nDatum:\nUhrzeit:\nAbholung:\nZiel oder Route:\nPassagiere:\nGepäck:';
+    }
+
+    if (lang.indexOf('ar') === 0) {
+      if (intent === 'airport_transfer') return 'مرحباً، أود طلب خدمة نقل من أو إلى مطار إيبيزا.\nالتاريخ:\nرقم الرحلة:\nوقت الوصول أو المغادرة:\nالوجهة:\nعدد الركاب:\nالأمتعة:';
+      if (intent === 'private_aviation') return 'مرحباً، أود طلب خدمة سائق خاص للطيران الخاص في إيبيزا.\nالتاريخ:\nتفاصيل الوصول/المغادرة:\nنقطة اللقاء أو المبنى:\nالوجهة أو البرنامج:\nعدد الركاب:\nالأمتعة:';
+      if (intent === 'chauffeur' || intent === 'multi_day_chauffeur') return 'مرحباً، أود طلب خدمة سائق خاص في إيبيزا.\nالتاريخ/التواريخ:\nوقت البدء:\nالمدة المتوقعة:\nمكان الاستلام:\nالبرنامج / التوقفات:\nعدد الركاب:\nالأمتعة:';
+      if (intent === 'villa_transfer') return 'مرحباً، أود طلب نقل خاص إلى أو من فيلا في إيبيزا.\nالتاريخ:\nالوقت:\nمكان الاستلام:\nاسم الفيلا أو رابط الموقع:\nعدد الركاب:\nالأمتعة:\nهل توجد رحلة عودة:';
+      if (intent === 'yacht_marina') return 'مرحباً، أود طلب نقل إلى يخت أو مارينا في إيبيزا.\nالتاريخ:\nالوقت:\nمكان الاستلام:\nالمارينا / اليخت / نقطة اللقاء:\nالوجهة:\nعدد الركاب:\nالأمتعة:';
+      if (intent === 'hotel_transfer') return 'مرحباً، أود طلب نقل خاص إلى أو من فندق في إيبيزا.\nالتاريخ:\nالوقت:\nالفندق:\nمكان الاستلام أو الوجهة:\nعدد الركاب:\nالأمتعة:\nهل توجد رحلة عودة:';
+      if (intent === 'nightlife') return 'مرحباً، أود طلب نقل خاص للسهرات في إيبيزا.\nالتاريخ:\nوقت ومكان الاستلام:\nالمكان/الأماكن:\nوقت ومكان العودة:\nعدد الركاب:';
+      if (intent === 'mercedes_v_class') return 'مرحباً، أود طلب Mercedes-Benz V-Class في إيبيزا.\nالتاريخ:\nالوقت:\nمكان الاستلام:\nالوجهة أو البرنامج:\nعدد الركاب:\nالأمتعة:';
+      if (intent === 'b2b_international') return 'مرحباً، أود تنسيق نقل خاص في إيبيزا لعميل أو ضيف.\nالشركة / جهة الاتصال:\nالتاريخ/التواريخ:\nأماكن الاستلام:\nالبرنامج:\nعدد الركاب:\nمتطلبات السيارة:';
+      return 'مرحباً، أود طلب نقل خاص في إيبيزا.\nالتاريخ:\nالوقت:\nمكان الاستلام:\nالوجهة أو البرنامج:\nعدد الركاب:\nالأمتعة:';
+    }
+
+    if (intent === 'airport_transfer') return 'Hello, I would like to request an Ibiza Airport transfer.\nDate:\nFlight number:\nArrival or departure time:\nDestination:\nPassengers:\nLuggage:';
+    if (intent === 'private_aviation') return 'Hello, I would like to request private aviation chauffeur service in Ibiza.\nDate:\nArrival/departure details:\nMeeting point or terminal:\nDestination or itinerary:\nPassengers:\nLuggage:';
+    if (intent === 'chauffeur' || intent === 'multi_day_chauffeur') return 'Hello, I would like to request chauffeur service in Ibiza.\nDate(s):\nStart time:\nExpected duration:\nPickup:\nItinerary/stops:\nPassengers:\nLuggage:';
+    if (intent === 'villa_transfer') return 'Hello, I would like to request private transport for a villa in Ibiza.\nDate:\nTime:\nPickup:\nVilla name or map pin:\nPassengers:\nLuggage:\nReturn required:';
+    if (intent === 'yacht_marina') return 'Hello, I would like to request yacht or marina transport in Ibiza.\nDate:\nTime:\nPickup:\nMarina / yacht / meeting point:\nDestination:\nPassengers:\nLuggage:';
+    if (intent === 'hotel_transfer') return 'Hello, I would like to request private hotel transport in Ibiza.\nDate:\nTime:\nHotel:\nPickup or destination:\nPassengers:\nLuggage:\nReturn required:';
+    if (intent === 'nightlife') return 'Hello, I would like to request private nightlife transport in Ibiza.\nDate:\nPickup time and place:\nVenue(s):\nReturn time/place:\nPassengers:';
+    if (intent === 'mercedes_v_class') return 'Hello, I would like to request a Mercedes-Benz V-Class in Ibiza.\nDate:\nTime:\nPickup:\nDestination or itinerary:\nPassengers:\nLuggage:';
+    if (intent === 'b2b_international') return 'Hello, I would like to coordinate private transport in Ibiza for a client/guest.\nCompany or contact name:\nDate(s):\nPickup(s):\nItinerary:\nPassengers:\nVehicle requirements:';
+    return 'Hello, I would like to request private transport in Ibiza.\nDate:\nTime:\nPickup:\nDestination or itinerary:\nPassengers:\nLuggage:';
+  }
+
+  function whatsappUrlForPath() {
+    return 'https://wa.me/34613756211?text=' + encodeURIComponent(whatsappMessageForIntent(serviceIntentForPath()));
   }
 
   function addWhatsAppFloat() {
