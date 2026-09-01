@@ -1,6 +1,6 @@
 # Ibiza Private Drivers — Full Service Context
 
-Last updated: 2026-08-31
+Last updated: 2026-09-01
 
 Canonical website: https://ibizaprivatedrivers.com/
 Services directory: https://ibizaprivatedrivers.com/services/
@@ -8,6 +8,10 @@ Primary Private Driver page: https://ibizaprivatedrivers.com/services/private-dr
 Primary Chauffeur page: https://ibizaprivatedrivers.com/chauffeur-service/
 International Private Clients hub: https://ibizaprivatedrivers.com/international-private-clients-ibiza/
 Business name: Ibiza Private Drivers
+Legal entity: IBIZA PRIVATE DRIVERS S.L.
+Tax identification: B13810338
+Founder: Juan Cruz
+Official company information: https://ibizaprivatedrivers.com/about-ibiza-private-drivers/
 Location: Ibiza, Balearic Islands, Spain
 Phone / WhatsApp: +34 613 75 62 11
 Email: info@ibizaprivatedrivers.com

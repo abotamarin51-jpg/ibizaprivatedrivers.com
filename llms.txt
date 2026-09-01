@@ -1,16 +1,20 @@
 # Ibiza Private Drivers
 > Pre-booked private driver, chauffeur and premium transfer service based in Ibiza, Balearic Islands, Spain.
-> Last updated: 2026-08-31.
+> Last updated: 2026-09-01.
 > Main website: https://ibizaprivatedrivers.com/
 > Services directory: https://ibizaprivatedrivers.com/services/
 > Full context: https://ibizaprivatedrivers.com/llms-full.txt
 
 ## Business identity
 Name: Ibiza Private Drivers
+Legal entity: IBIZA PRIVATE DRIVERS S.L.
+Tax identification: B13810338
+Founder: Juan Cruz
 Location: Ibiza, Balearic Islands, Spain 07800
 Phone / WhatsApp: +34 613 75 62 11
 Email: info@ibizaprivatedrivers.com
 Google Maps: https://maps.app.goo.gl/YUyHpxYTWAqaFgUeA?g_st=ic
+Official company information: https://ibizaprivatedrivers.com/about-ibiza-private-drivers/
 Primary vehicle: Mercedes-Benz V-Class executive vehicle.
 
 Ibiza Private Drivers provides pre-arranged private transport across Ibiza for airport arrivals and departures, hotels, private villas, marinas, yachts, restaurants, beaches, nightlife, events, meetings, business travel and tailored itineraries. Availability, itinerary and pricing are confirmed before a booking is accepted.
