@@ -1,0 +1,101 @@
+/* Shared premium typography system with Ibiza VIP Move.
+   Loaded after page-specific styles so every IPD landing page is consistent. */
+:root {
+  --ipd-heading-font: "Cormorant Garamond", Georgia, serif;
+  --ipd-body-font: Manrope, -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+}
+
+html,
+body,
+button,
+input,
+select,
+textarea {
+  font-family: var(--ipd-body-font) !important;
+}
+
+body {
+  font-size: 16px;
+  font-weight: 300;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--ipd-heading-font) !important;
+  font-weight: 500 !important;
+  line-height: .97 !important;
+  letter-spacing: -.035em !important;
+}
+
+h1 {
+  font-size: clamp(58px, 8.4vw, 118px) !important;
+}
+
+h2 {
+  font-size: clamp(44px, 5.6vw, 78px) !important;
+}
+
+h3 {
+  font-size: 32px !important;
+}
+
+p,
+li,
+summary,
+label,
+a,
+button,
+input,
+select,
+textarea {
+  font-family: var(--ipd-body-font) !important;
+}
+
+/* Cormorant and Manrope do not contain Arabic glyphs. Keep the equivalent
+   premium Arabic pairing instead of forcing an unreadable browser fallback. */
+html[lang="ar"] body,
+html[lang="ar"] p,
+html[lang="ar"] li,
+html[lang="ar"] summary,
+html[lang="ar"] label,
+html[lang="ar"] a,
+html[lang="ar"] button,
+html[lang="ar"] input,
+html[lang="ar"] select,
+html[lang="ar"] textarea {
+  font-family: "Noto Sans Arabic", Arial, sans-serif !important;
+}
+
+html[lang="ar"] h1,
+html[lang="ar"] h2,
+html[lang="ar"] h3 {
+  font-family: "Noto Kufi Arabic", Arial, sans-serif !important;
+  letter-spacing: 0 !important;
+}
+
+@media (max-width: 600px) {
+  h1 {
+    font-size: 59px !important;
+  }
+
+  h2 {
+    font-size: 48px !important;
+  }
+
+  h3 {
+    font-size: 32px !important;
+  }
+
+  p,
+  li,
+  summary,
+  input,
+  select,
+  textarea {
+    font-size: max(16px, 1em);
+  }
+}
