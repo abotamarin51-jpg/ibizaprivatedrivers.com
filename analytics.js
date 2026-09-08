@@ -142,7 +142,7 @@
   function serviceIntentForPath() {
     var path = (window.location.pathname || '/').toLowerCase();
     if (path.indexOf('private-aviation') !== -1) return 'private_aviation';
-    if (path.indexOf('airport') !== -1) return 'airport_transfer';
+    if (path.indexOf('airport') !== -1 || path.indexOf('aeroport') !== -1 || path.indexOf('flughafen') !== -1) return 'airport_transfer';
     if (path.indexOf('multi-day') !== -1) return 'multi_day_chauffeur';
     if (path.indexOf('chauffeur') !== -1 || path.indexOf('chauffeur-prive') !== -1 || path.indexOf('privatchauffeur') !== -1) return 'chauffeur';
     if (path.indexOf('villa') !== -1) return 'villa_transfer';
