@@ -1,6 +1,6 @@
 ---
 layout: default
-title: "Conductor Privado Ibiza | Chófer y Traslados"
+title: "Conductor Privado Ibiza"
 description: "Reserva conductor privado en Ibiza para aeropuerto, hoteles, villas, marinas y vida nocturna, con servicio de chófer en Mercedes-Benz V-Class."
 permalink: /conductor-privado-ibiza/
 ---
