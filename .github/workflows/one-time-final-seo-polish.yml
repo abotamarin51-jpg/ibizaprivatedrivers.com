@@ -1,0 +1,68 @@
+name: One-time final SEO polish
+
+on:
+  push:
+    paths:
+      - '.github/workflows/one-time-final-seo-polish.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  polish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Fix remaining priority low-severity issues
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          # Jekyll theme appends the domain, so keep the source title compact.
+          p = Path('conductor-privado-ibiza.md')
+          text = p.read_text(encoding='utf-8')
+          text, n = re.subn(r'^title:\s*"[^"]*"', 'title: "Conductor Privado Ibiza"', text, count=1, flags=re.M)
+          if n != 1:
+              raise SystemExit('Could not shorten conductor title')
+          p.write_text(text, encoding='utf-8')
+
+          additions = {
+            'de/flughafentransfer-ibiza-formentera/index.html': '<p>Für Gruppen mit viel Gepäck sollten Passagier- und Gepäckangaben vollständig in der Anfrage stehen, damit die passende Fahrzeugplanung geprüft werden kann. Teilen Sie außerdem den bestätigten Hafen beziehungsweise das Terminal mit, falls diese Information bereits vorliegt. Der Chauffeurdienst betrifft die Fahrt auf Ibiza; Fährbetrieb und Fahrplan werden von den jeweiligen Betreibern bestimmt.</p>',
+            'ar/airport-transfer-ibiza-formentera/index.html': '<p>إذا كان مع المجموعة عدد كبير من الحقائب، يرجى ذكر عدد الركاب والأمتعة كاملة عند الطلب حتى يمكن مراجعة السيارة المناسبة. كما يفضل إرسال اسم الميناء أو محطة العبّارة المؤكدة عندما تكون هذه المعلومات متوفرة. خدمة السائق تخص النقل البري داخل إيبيزا، أما تشغيل العبّارات ومواعيدها فتحددها شركات النقل البحري.</p>',
+          }
+          for path, paragraph in additions.items():
+              p = Path(path)
+              text = p.read_text(encoding='utf-8')
+              if 'seo-final-formentera-detail' not in text:
+                  paragraph = '<div class="seo-final-formentera-detail">' + paragraph + '</div>'
+                  idx = text.lower().rfind('</main>')
+                  if idx < 0:
+                      idx = text.lower().rfind('</body>')
+                  if idx < 0:
+                      raise SystemExit(f'No insertion point in {path}')
+                  text = text[:idx] + paragraph + text[idx:]
+                  p.write_text(text, encoding='utf-8')
+
+          sm = Path('sitemap.xml')
+          text = sm.read_text(encoding='utf-8')
+          for url in (
+              'https://ibizaprivatedrivers.com/conductor-privado-ibiza/',
+              'https://ibizaprivatedrivers.com/de/flughafentransfer-ibiza-formentera/',
+              'https://ibizaprivatedrivers.com/ar/airport-transfer-ibiza-formentera/',
+          ):
+              pattern = rf'(<loc>{re.escape(url)}</loc><lastmod>)[^<]+(</lastmod>)'
+              text = re.sub(pattern, rf'\g<1>2026-09-17\g<2>', text, count=1)
+          sm.write_text(text, encoding='utf-8')
+          PY
+      - name: Commit final polish
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add conductor-privado-ibiza.md de/flughafentransfer-ibiza-formentera/index.html ar/airport-transfer-ibiza-formentera/index.html sitemap.xml
+          git commit -m 'Polish remaining multilingual SEO pages'
+          git push
