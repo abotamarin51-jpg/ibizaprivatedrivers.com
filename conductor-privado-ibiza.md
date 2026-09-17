@@ -1,7 +1,7 @@
 ---
 layout: default
-title: "Conductor Privado en Ibiza | Chófer y Traslados Privados"
-description: "Reserva un conductor privado en Ibiza para aeropuerto, hoteles, villas, marinas, restaurantes, eventos y recorridos personalizados. Presupuesto según el itinerario confirmado."
+title: "Conductor Privado Ibiza | Chófer y Traslados"
+description: "Reserva conductor privado en Ibiza para aeropuerto, hoteles, villas, marinas y vida nocturna, con servicio de chófer en Mercedes-Benz V-Class."
 permalink: /conductor-privado-ibiza/
 ---
 
@@ -103,10 +103,10 @@ Se pueden solicitar servicios nocturnos y de madrugada con reserva previa, sujet
       "@type":"WebPage",
       "@id":"https://ibizaprivatedrivers.com/conductor-privado-ibiza/#webpage",
       "url":"https://ibizaprivatedrivers.com/conductor-privado-ibiza/",
-      "name":"Conductor Privado en Ibiza | Chófer y Traslados Privados",
+      "name":"Conductor Privado Ibiza | Chófer y Traslados",
       "description":"Servicio de conductor privado en Ibiza para aeropuerto, hoteles, villas, marinas, restaurantes, eventos e itinerarios personalizados.",
       "inLanguage":"es",
-      "dateModified":"2026-08-25",
+      "dateModified":"2026-09-17",
       "about":{"@id":"https://ibizaprivatedrivers.com/conductor-privado-ibiza/#service"},
       "breadcrumb":{"@id":"https://ibizaprivatedrivers.com/conductor-privado-ibiza/#breadcrumbs"}
     },
