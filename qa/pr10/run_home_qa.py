@@ -257,9 +257,15 @@ def run_one(pw,engine,root,fonts,report,width,height,axe_path,native=False):
             ck('Real font loaded: '+family,any(family in f['family'] and f['status']=='loaded' for f in fonts_state))
         for i in range(page.locator('img').count()):
             image=page.locator('img').nth(i);image.scroll_into_view_if_needed()
-            try:image.evaluate('(el)=>el.decode()')
-            except Exception as e:errors.append('Image decode: '+str(e))
-            ck('Real image decoded '+str(i),image.evaluate('el=>el.complete&&el.naturalWidth>0'))
+            loaded_ok=False
+            for _ in range(30):
+                loaded_ok=image.evaluate('el=>el.complete&&el.naturalWidth>0')
+                if loaded_ok:break
+                page.wait_for_timeout(100)
+            if loaded_ok:
+                try:image.evaluate('(el)=>el.decode()')
+                except Exception as e:errors.append('Image decode after load: '+str(e))
+            ck('Real image decoded '+str(i),loaded_ok,{'src':image.get_attribute('src'),'complete':image.evaluate('el=>el.complete'),'naturalWidth':image.evaluate('el=>el.naturalWidth')})
         page.evaluate('window.scrollTo(0,0)');page.wait_for_timeout(450)
         page.screenshot(path=str(report.out/(prefix+'-closed.png')))
         mobile=page.evaluate("matchMedia('(max-width:768px)').matches")
@@ -276,13 +282,16 @@ def run_one(pw,engine,root,fonts,report,width,height,axe_path,native=False):
             ck('Opening transition is configured',menu.evaluate("el=>getComputedStyle(el).transitionProperty.includes('transform') && parseFloat(getComputedStyle(el).transitionDuration)>0"))
             page.wait_for_timeout(400)
             ck('Open state and aria-expanded',toggle.get_attribute('aria-expanded')=='true' and not menu.evaluate('el=>el.inert'))
-            toggle.focus();page.keyboard.press('Tab')
-            ck('Tab reaches first open link',page.evaluate("document.activeElement===document.querySelector('#navLinks a')"))
+            toggle.focus();page.keyboard.press('Tab');page.wait_for_timeout(80)
+            first_focus=page.evaluate("""() => ({ok:document.activeElement===document.querySelector('#navLinks a'),tag:document.activeElement&&document.activeElement.tagName,id:document.activeElement&&document.activeElement.id,href:document.activeElement&&document.activeElement.getAttribute&&document.activeElement.getAttribute('href'),text:document.activeElement&&document.activeElement.textContent&&document.activeElement.textContent.trim().slice(0,80)})""")
+            ck('Tab reaches first open link',first_focus['ok'],first_focus)
             page.keyboard.press('Shift+Tab')
             ck('Shift+Tab returns to toggle',page.evaluate("document.activeElement.id==='navToggle'"))
             for _ in range(menu.locator('a').count()):page.keyboard.press('Tab')
-            ck('Book Now reached by keyboard',page.evaluate("document.activeElement===document.querySelector('#navLinks .nav-cta')"))
-            ck('Book Now visible after keyboard scrolling',menu.locator('.nav-cta').evaluate(HIT))
+            page.wait_for_timeout(80)
+            book_focus=page.evaluate("""() => ({ok:document.activeElement===document.querySelector('#navLinks .nav-cta'),tag:document.activeElement&&document.activeElement.tagName,id:document.activeElement&&document.activeElement.id,href:document.activeElement&&document.activeElement.getAttribute&&document.activeElement.getAttribute('href'),text:document.activeElement&&document.activeElement.textContent&&document.activeElement.textContent.trim().slice(0,80)})""")
+            ck('Book Now reached by keyboard',book_focus['ok'],book_focus)
+            ck('Book Now visible after keyboard scrolling',menu.locator('.nav-cta').evaluate(HIT),menu.locator('.nav-cta').evaluate('el=>({scrollTop:el.closest("#navLinks").scrollTop,rect:{left:el.getBoundingClientRect().left,right:el.getBoundingClientRect().right,top:el.getBoundingClientRect().top,bottom:el.getBoundingClientRect().bottom},vw:innerWidth,vh:innerHeight})'))
             page.screenshot(path=str(report.out/(prefix+'-open.png')))
             page.keyboard.press('Escape');page.wait_for_timeout(400)
             ck('Escape closes and returns focus',menu.evaluate('el=>el.inert') and page.evaluate("document.activeElement.id==='navToggle'"))
@@ -294,10 +303,18 @@ def run_one(pw,engine,root,fonts,report,width,height,axe_path,native=False):
             ck('Toggle closes menu',menu.evaluate('el=>el.inert'))
         else:ck('Desktop menu is not inert',not menu.evaluate('el=>el.inert'))
         if not native:
-            page.set_viewport_size({'width':1024,'height':900});page.wait_for_timeout(400)
-            ck('Resize to desktop removes inert',not menu.evaluate('el=>el.inert'))
-            page.set_viewport_size({'width':390,'height':844});page.wait_for_timeout(400)
-            ck('Resize to mobile closes and reinstates inert',menu.evaluate('el=>el.inert') and toggle.get_attribute('aria-expanded')=='false')
+            page.set_viewport_size({'width':1024,'height':900})
+            desktop_ready=True
+            try:page.wait_for_function("() => !document.getElementById('navLinks').inert",timeout=2500)
+            except Exception:desktop_ready=False
+            desktop_state=page.evaluate("""() => ({inert:document.getElementById('navLinks').inert,expanded:document.getElementById('navToggle').getAttribute('aria-expanded'),matches:matchMedia('(max-width:768px)').matches})""")
+            ck('Resize to desktop removes inert',desktop_ready and not desktop_state['inert'],desktop_state)
+            page.set_viewport_size({'width':390,'height':844})
+            mobile_ready=True
+            try:page.wait_for_function("() => document.getElementById('navLinks').inert && document.getElementById('navToggle').getAttribute('aria-expanded')==='false'",timeout=2500)
+            except Exception:mobile_ready=False
+            mobile_state=page.evaluate("""() => ({inert:document.getElementById('navLinks').inert,expanded:document.getElementById('navToggle').getAttribute('aria-expanded'),matches:matchMedia('(max-width:768px)').matches})""")
+            ck('Resize to mobile closes and reinstates inert',mobile_ready and mobile_state['inert'] and mobile_state['expanded']=='false',mobile_state)
             page.set_viewport_size({'width':width,'height':height});page.wait_for_timeout(400)
         for i in range(page.locator('.faq-q').count()):
             q=page.locator('.faq-q').nth(i);q.click();
@@ -311,7 +328,8 @@ def run_one(pw,engine,root,fonts,report,width,height,axe_path,native=False):
         page.evaluate('window.scrollTo(0,0)');page.wait_for_timeout(450)
         for i in range(page.locator('.ipd-lang-link').count()):
             el=page.locator('.ipd-lang-link').nth(i)
-            ck('Language control visible '+str(i),el.evaluate(HIT))
+            el.scroll_into_view_if_needed();page.wait_for_timeout(80)
+            ck('Language control visible '+str(i),el.evaluate(HIT),el.evaluate('el=>({position:getComputedStyle(el.parentElement).position,rect:{left:el.getBoundingClientRect().left,right:el.getBoundingClientRect().right,top:el.getBoundingClientRect().top,bottom:el.getBoundingClientRect().bottom},vw:innerWidth,vh:innerHeight})'))
         overflow=page.evaluate('document.documentElement.scrollWidth-document.documentElement.clientWidth')
         ck('No horizontal document overflow',overflow<=0,overflow)
         if axe_path:

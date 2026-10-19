@@ -29,6 +29,9 @@ jobs:
       - name: Install Chromium Firefox and WebKit
         run: python -m playwright install --with-deps chromium firefox webkit
 
+      - name: Install axe-core
+        run: npm install --prefix "$RUNNER_TEMP/ipd-qa-deps" --ignore-scripts --no-audit --no-fund axe-core@4.14.0
+
       - name: Run complete local browser QA
         run: |
           mkdir -p /tmp/ipd-pr10-qa
@@ -37,7 +40,8 @@ jobs:
             --output /tmp/ipd-pr10-qa/full \
             --browser chromium \
             --browser firefox \
-            --browser webkit
+            --browser webkit \
+            --axe "$RUNNER_TEMP/ipd-qa-deps/node_modules/axe-core/axe.min.js"
 
       - name: Print failed QA checks
         if: always()
