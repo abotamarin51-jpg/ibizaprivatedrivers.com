@@ -165,8 +165,8 @@ def preflight(root,baseline,report,check_sha=True):
         actual_sha256=hashlib.sha256(data).hexdigest()
         report.data['candidate_sha256']=actual_sha256
         report.check('Exact candidate Git blob',git_blob(data)==CANDIDATE_BLOB,git_blob(data))
-        decoded=data.decode('utf-8')
-        report.check('Google Fonts CSS2 URL corrected',GOOD_FONT_URL in decoded and BAD_FONT_URL not in decoded)
+        font_hrefs=[u for u in p.assets if urlsplit(u).hostname=='fonts.googleapis.com']
+        report.check('Google Fonts CSS2 URL corrected',GOOD_FONT_URL in font_hrefs and BAD_FONT_URL not in font_hrefs,font_hrefs)
         old=baseline.read_bytes() if baseline else subprocess.check_output(['git','show',PR_HEAD+':index.html'],cwd=root)
         report.check('Baseline matches live PR blob',git_blob(old)==PR_BLOB)
         report.check('SEO, contacts, markup, copy and non-menu scripts unchanged',frozen_signature(p)==frozen_signature(parse(old)))
