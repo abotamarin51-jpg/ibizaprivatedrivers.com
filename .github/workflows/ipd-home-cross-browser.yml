@@ -38,3 +38,26 @@ jobs:
             --browser chromium \
             --browser firefox \
             --browser webkit
+
+      - name: Print failed QA checks
+        if: always()
+        run: |
+          python - <<'PY'
+          import json, pathlib
+          p=pathlib.Path('/tmp/ipd-pr10-qa/full/report.json')
+          if not p.exists():
+              print('QA_REPORT_MISSING')
+              raise SystemExit(0)
+          r=json.loads(p.read_text())
+          failed=[x for x in r.get('checks',[]) if not x.get('passed')]
+          print('QA_STATUS', r.get('status'))
+          print('QA_CHECKS', len(r.get('checks',[])))
+          print('QA_FAILED', len(failed))
+          print('QA_BROWSER_VERSIONS', json.dumps(r.get('browser_versions',{}), ensure_ascii=False))
+          for x in failed:
+              print('QA_FAIL', x.get('name'), 'DETAIL', json.dumps(x.get('detail'), ensure_ascii=False)[:1200])
+          for x in r.get('errors',[]):
+              print('QA_ERROR', str(x)[:1600])
+          for x in r.get('missing_resources',[]):
+              print('QA_MISSING', str(x)[:800])
+          PY
