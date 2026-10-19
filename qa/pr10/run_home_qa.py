@@ -24,7 +24,9 @@ BRANCH = 'fix/home-mobile-nav-focus-inert-2026-10-06'
 MAIN = '35590040c76d6af3ac90143575a4fffd46fc78b9'
 PR_HEAD = 'b64e211906eb30917fe1f4cb6ec5b6a7a52b8550'
 PR_BLOB = 'd07a60c752161cf189d7d93a168b1ac745dd9b5d'
-CANDIDATE = '0068709538998c2966085666d93dfca5afd02b94f253da3206e127ff31bd299a'
+CANDIDATE_BLOB = 'fa7f0eb973873915ebdd4cf54addaad0785e43f1'
+BAD_FONT_URL = 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght;500;600&family=Manrope:wght;400;500;600&display=swap'
+GOOD_FONT_URL = 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Manrope:wght@400;500;600&display=swap'
 ORIGIN = 'http://127.0.0.1:8765'
 SITE_HOSTS = {'127.0.0.1', 'ibizaprivatedrivers.com', 'www.ibizaprivatedrivers.com'}
 FONT_HOSTS = {'fonts.googleapis.com', 'fonts.gstatic.com'}
@@ -78,7 +80,15 @@ def safe_local(root, url):
 
 def frozen_signature(p):
     scripts=[s for s in p.scripts if not ('navToggle' in s and 'navLinks' in s)]
-    return {'markup':p.shape,'visible_text':p.text,'scripts_except_nav':scripts}
+    shape=[]
+    for tag,attrs in p.shape:
+        norm=[]
+        for k,v in attrs:
+            if tag=='link' and k=='href' and v in (BAD_FONT_URL,GOOD_FONT_URL):
+                v='__IPD_GOOGLE_FONTS_STYLESHEET__'
+            norm.append((k,v))
+        shape.append((tag,norm))
+    return {'markup':shape,'visible_text':p.text,'scripts_except_nav':scripts}
 
 class FontsOnlyRedirect(HTTPRedirectHandler):
     def redirect_request(self,req,fp,code,msg,headers,newurl):
@@ -130,7 +140,7 @@ class Report:
     def __init__(self,out):
         self.out=out;out.mkdir(parents=True,exist_ok=True)
         self.data={'status':'RUNNING','scope':'local complete-resource copy, not production',
-          'candidate_sha256':CANDIDATE,'source_pr_head':PR_HEAD,'checks':[],
+          'candidate_sha256':None,'source_pr_head':PR_HEAD,'checks':[],
           'assets':[], 'errors':[], 'blocked_requests':[], 'missing_resources':[],
           'manual_gates':['Review rendered screenshots and animations',
                           'Review accessibility findings against baseline',
@@ -152,7 +162,11 @@ class Report:
 def preflight(root,baseline,report,check_sha=True):
     data=(root/'index.html').read_bytes();p=parse(data)
     if check_sha:
-        report.check('Exact packaged candidate bytes',hashlib.sha256(data).hexdigest()==CANDIDATE)
+        actual_sha256=hashlib.sha256(data).hexdigest()
+        report.data['candidate_sha256']=actual_sha256
+        report.check('Exact candidate Git blob',git_blob(data)==CANDIDATE_BLOB,git_blob(data))
+        decoded=data.decode('utf-8')
+        report.check('Google Fonts CSS2 URL corrected',GOOD_FONT_URL in decoded and BAD_FONT_URL not in decoded)
         old=baseline.read_bytes() if baseline else subprocess.check_output(['git','show',PR_HEAD+':index.html'],cwd=root)
         report.check('Baseline matches live PR blob',git_blob(old)==PR_BLOB)
         report.check('SEO, contacts, markup, copy and non-menu scripts unchanged',frozen_signature(p)==frozen_signature(parse(old)))
