@@ -24,7 +24,7 @@ BRANCH = 'fix/home-mobile-nav-focus-inert-2026-10-06'
 MAIN = '35590040c76d6af3ac90143575a4fffd46fc78b9'
 PR_HEAD = 'b64e211906eb30917fe1f4cb6ec5b6a7a52b8550'
 PR_BLOB = 'd07a60c752161cf189d7d93a168b1ac745dd9b5d'
-CANDIDATE_BLOB = 'fa7f0eb973873915ebdd4cf54addaad0785e43f1'
+CANDIDATE_BLOB = '23737f161776e5b1702885a879c1baf3eaacda42'
 BAD_FONT_URL = 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght;500;600&family=Manrope:wght;400;500;600&display=swap'
 GOOD_FONT_URL = 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Manrope:wght@400;500;600&display=swap'
 ORIGIN = 'http://127.0.0.1:8765'
@@ -83,7 +83,10 @@ def frozen_signature(p):
     shape=[]
     for tag,attrs in p.shape:
         norm=[]
+        attr_map=dict(attrs)
         for k,v in attrs:
+            if tag=='ul' and attr_map.get('id')=='navLinks' and k=='tabindex' and v=='-1':
+                continue
             if tag=='link' and k=='href' and v in (BAD_FONT_URL,GOOD_FONT_URL):
                 v='__IPD_GOOGLE_FONTS_STYLESHEET__'
             norm.append((k,v))
@@ -167,6 +170,8 @@ def preflight(root,baseline,report,check_sha=True):
         report.check('Exact candidate Git blob',git_blob(data)==CANDIDATE_BLOB,git_blob(data))
         font_hrefs=[u for u in p.assets if urlsplit(u).hostname=='fonts.googleapis.com']
         report.check('Google Fonts CSS2 URL corrected',GOOD_FONT_URL in font_hrefs and BAD_FONT_URL not in font_hrefs,font_hrefs)
+        nav_lists=[dict(attrs) for tag,attrs in p.shape if tag=='ul' and dict(attrs).get('id')=='navLinks']
+        report.check('Scrollable mobile nav excluded from sequential tab order',len(nav_lists)==1 and nav_lists[0].get('tabindex')=='-1',nav_lists)
         old=baseline.read_bytes() if baseline else subprocess.check_output(['git','show',PR_HEAD+':index.html'],cwd=root)
         report.check('Baseline matches live PR blob',git_blob(old)==PR_BLOB)
         report.check('SEO, contacts, markup, copy and non-menu scripts unchanged',frozen_signature(p)==frozen_signature(parse(old)))
