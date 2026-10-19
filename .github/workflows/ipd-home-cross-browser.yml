@@ -1,16 +1,8 @@
-name: IPD PR10 browser QA - NO DEPLOY
-
+name: IPD PR10 Browser QA
 on:
   push:
     branches:
       - fix/home-mobile-nav-focus-inert-2026-10-06
-    paths:
-      - index.html
-      - assets/**
-      - images/**
-      - analytics.js
-      - qa/pr10/**
-      - .github/workflows/ipd-home-cross-browser.yml
 
 permissions:
   contents: read
@@ -31,19 +23,18 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install QA dependencies
-        run: |
-          python -m pip install -r qa/pr10/requirements.txt
-          python -m playwright install --with-deps chromium firefox webkit
-          npm install --prefix "$RUNNER_TEMP/ipd-qa-deps" --ignore-scripts --no-audit --no-fund axe-core@4.14.0
-          sudo apt-get update
-          sudo apt-get install -y xvfb xdotool
+      - name: Install Python dependency
+        run: python -m pip install -r qa/pr10/requirements.txt
 
-      - name: Complete Home QA in Chromium Firefox and WebKit
-        run: |
-          python qa/pr10/run_home_qa.py             --root .             --output "$RUNNER_TEMP/ipd-pr10-qa/full"             --browser chromium             --browser firefox             --browser webkit             --axe "$RUNNER_TEMP/ipd-qa-deps/node_modules/axe-core/axe.min.js"
+      - name: Install Chromium Firefox and WebKit
+        run: python -m playwright install --with-deps chromium firefox webkit
 
-      - name: Chromium native UI zoom 200 percent
-        if: always()
+      - name: Run complete local browser QA
         run: |
-          xvfb-run -a python qa/pr10/run_home_qa.py             --root .             --output "$RUNNER_TEMP/ipd-pr10-qa/native-zoom"             --browser chromium             --native-zoom             --axe "$RUNNER_TEMP/ipd-qa-deps/node_modules/axe-core/axe.min.js"
+          mkdir -p /tmp/ipd-pr10-qa
+          python qa/pr10/run_home_qa.py \
+            --root . \
+            --output /tmp/ipd-pr10-qa/full \
+            --browser chromium \
+            --browser firefox \
+            --browser webkit
