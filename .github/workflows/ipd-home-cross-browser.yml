@@ -526,14 +526,17 @@ jobs:
             state = nav_state()
             verify('Menu opens and removes inert', not state['inert'] and state['expanded'] == 'true', state)
             verify('Menu has animated transform', js("""return getComputedStyle(document.getElementById('navLinks')).transitionProperty.includes('transform')"""))
+            # Safari default keyboard navigation advances webpage links using
+            # Option+Tab, unless 'Press Tab to highlight each item' is enabled.
+            # Exercise the stock native Safari behavior without changing OS settings.
             driver.execute_script("arguments[0].focus()", toggle)
-            toggle.send_keys(Keys.TAB)
-            verify('Tab reaches first menu link', js("return document.activeElement === document.querySelector('#navLinks a')"), get_focus())
+            ActionChains(driver).key_down(Keys.ALT).send_keys(Keys.TAB).key_up(Keys.ALT).perform()
+            verify('Native Safari Option+Tab reaches first menu link', js("return document.activeElement === document.querySelector('#navLinks a')"), get_focus())
             driver.execute_script("arguments[0].focus()", toggle)
             menu_links = driver.find_elements(By.CSS_SELECTOR, '#navLinks a')
             for link in menu_links:
-              ActionChains(driver).send_keys(Keys.TAB).perform()
-            verify('Book Now reachable by keyboard', js("return document.activeElement === document.querySelector('#navLinks .nav-cta')"), get_focus())
+              ActionChains(driver).key_down(Keys.ALT).send_keys(Keys.TAB).key_up(Keys.ALT).perform()
+            verify('Book Now reachable by native Safari Option+Tab', js("return document.activeElement === document.querySelector('#navLinks .nav-cta')"), get_focus())
             verify('Book Now visible inside menu', js("""const e=document.querySelector('#navLinks .nav-cta'),r=e.getBoundingClientRect();
               return r.width>0 && r.height>0 && r.top>=0 && r.bottom<=innerHeight && r.left>=0 && r.right<=innerWidth"""))
             driver.execute_script("window.scrollTo({top:0,left:0,behavior:'instant'})")
