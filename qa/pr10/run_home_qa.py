@@ -261,18 +261,30 @@ def run_one(pw,engine,root,fonts,report,width,height,axe_path,native=False):
             page.bring_to_front()
             subprocess.run(['xdotool','key','--clearmodifiers','ctrl+0'],check=True)
             page.wait_for_timeout(200)
-            initial=page.evaluate('devicePixelRatio')
-            levels=[]
-            ratio=1.0
+            initial=page.evaluate("() => ({dpr:devicePixelRatio,innerWidth,clientWidth:document.documentElement.clientWidth})")
+            levels=[];ratio=1.0;confirmed=False
             for _ in range(12):
                 subprocess.run(['xdotool','key','--clearmodifiers','ctrl+plus'],check=True)
                 page.wait_for_timeout(200)
-                ratio=page.evaluate('devicePixelRatio')/initial
-                levels.append(round(ratio,3))
-                if abs(ratio-2)<0.02 or ratio>2.02:break
-            ck('Native browser UI zoom is exactly 200%',abs(ratio-2)<0.02,
-               {'ratio':ratio,'attempts':len(levels),'observed_ratios':levels})
-            if abs(ratio-2)>=0.02:raise RuntimeError('Native zoom was NOT confirmed; viewport emulation is not accepted')
+                current=page.evaluate("() => ({dpr:devicePixelRatio,innerWidth,clientWidth:document.documentElement.clientWidth})")
+                dpr_ratio=current['dpr']/initial['dpr'] if initial['dpr'] else 1.0
+                viewport_ratio=initial['innerWidth']/current['innerWidth'] if current['innerWidth'] else 1.0
+                ratio=max(dpr_ratio,viewport_ratio)
+                levels.append({'effective':round(ratio,3),'dpr':round(dpr_ratio,3),
+                               'viewport':round(viewport_ratio,3),'innerWidth':current['innerWidth'],
+                               'clientWidth':current['clientWidth']})
+                if abs(ratio-2)<0.02:
+                    confirmed=True;break
+                if ratio>2.02:break
+            detail={'ratio':ratio,'attempts':len(levels),'observed':levels,'initial':initial}
+            report.data.setdefault('native_zoom_attempts',{})[prefix]=detail
+            if not confirmed:
+                report.data['manual_gates'].append(
+                    prefix+': native 200% browser UI zoom could not be confirmed on this Linux/Xvfb runner; '
+                    'no viewport/CSS emulation was substituted'
+                )
+                return
+            ck('Native browser UI zoom is exactly 200%',True,detail)
         # Exercise actual analytics.js banner locally with all remote outputs disabled.
         reject=page.locator('#ipd-consent button[data-consent="denied"]')
         ck('Actual consent banner was executed',reject.count()==1)
@@ -409,25 +421,12 @@ def main():
         fonts=fetch_fonts(font_urls,report.data['assets'])
         from playwright.sync_api import sync_playwright
         with sync_playwright() as pw:
-            requested=args.browser or ['chromium','firefox','webkit']
-            engines=requested
-            if args.native_zoom:
-                # On the Linux/Xvfb runner, xdotool browser-UI zoom is verified only
-                # for Chromium. Firefox and Playwright WebKit ignore these native
-                # browser shortcuts here, so treating ratio=1.0 as a page failure is
-                # a false negative. Keep those native-UI checks as explicit manual
-                # gates; the normal full QA above still exercises Firefox/WebKit.
-                unsupported=[e for e in requested if e!='chromium']
-                for engine in unsupported:
-                    report.data['manual_gates'].append(
-                        engine+': native 200% browser UI zoom not automatable on this Linux/Xvfb runner; '
-                        'requires a supported native-browser environment before merge approval'
-                    )
-                engines=[e for e in requested if e=='chromium']
-                if not engines:
-                    report.data['manual_gates'].append(
-                        'Native 200% zoom requested without Chromium; no native zoom scenario executed'
-                    )
+            # Try the real browser-UI zoom gesture in every requested engine. Detection
+            # uses both device-pixel ratio and the CSS viewport width because engines
+            # expose native zoom differently. If the runner cannot prove 200%, the
+            # scenario remains an explicit manual gate; it is never replaced by CSS or
+            # viewport emulation.
+            engines=args.browser or ['chromium','firefox','webkit']
             for engine in engines:
                 for width,height in ([(390,844),(640,844)] if args.native_zoom else SIZES):
                     try:run_one(pw,engine,root,fonts,report,width,height,args.axe,args.native_zoom)
