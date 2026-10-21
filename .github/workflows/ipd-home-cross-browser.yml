@@ -143,7 +143,7 @@ jobs:
                   time.sleep(.2)
                   base=measure()
                   obs=[]
-                  for _ in range(9):
+                  for _ in range(12):
                       key(shortcut,window)
                       time.sleep(.2)
                       current=measure()
