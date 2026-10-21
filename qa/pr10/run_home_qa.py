@@ -23,7 +23,7 @@ REPO = 'abotamarin51-jpg/ibizaprivatedrivers.com'
 BRANCH = 'fix/home-mobile-nav-focus-inert-2026-10-06'
 MAIN = '35590040c76d6af3ac90143575a4fffd46fc78b9'
 MAIN_BLOB = 'ac53b99ba18ee92275c4c738790de0794a5c36dc'
-CANDIDATE_BLOB = '385e8c9923a8e1e8a051bced4fe6cb9ff0ea0fdd'
+CANDIDATE_BLOB = '558c06161dd936c3e4a8bdc1b1b49ef3574219ea'
 BAD_FONT_URL = 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght;500;600&family=Manrope:wght;400;500;600&display=swap'
 GOOD_FONT_URL = 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Manrope:wght@400;500;600&display=swap'
 ORIGIN = 'http://127.0.0.1:8765'
@@ -403,6 +403,7 @@ def run_one(pw,engine,root,fonts,report,width,height,axe_path,native=False):
             ck('Shift+Tab skips closed links',page.evaluate("!document.getElementById('navLinks').contains(document.activeElement)"))
             toggle.click(timeout=3500)
             page.wait_for_timeout(90)
+            ck('Opened tablet/mobile menu has opaque light surface',menu.evaluate("""el=>{const bg=getComputedStyle(el).backgroundColor.replace(/\\s/g,'');return bg==='rgb(250,250,248)'||bg==='rgba(250,250,248,1)'}"""))
             ck('Opening transition is configured',menu.evaluate("el=>getComputedStyle(el).transitionProperty.includes('transform') && parseFloat(getComputedStyle(el).transitionDuration)>0"))
             page.wait_for_timeout(400)
             ck('Open state and aria-expanded',toggle.get_attribute('aria-expanded')=='true' and not menu.evaluate('el=>el.inert'))
