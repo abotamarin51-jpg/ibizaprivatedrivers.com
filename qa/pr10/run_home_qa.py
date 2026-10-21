@@ -252,53 +252,147 @@ def run_one(pw,engine,root,fonts,report,width,height,axe_path,native=False):
         blocked.append({'url':url,'reason':'not in exact local/font allowlist'});route.abort()
     context.route('**/*',route_handler)
     page=context.new_page();page.on('pageerror',lambda e:errors.append(str(e)))
-    page.goto(ORIGIN+'/',wait_until='networkidle',timeout=30000)
-    page.evaluate('document.fonts.ready')
-    report.data.setdefault('browser_versions',{})[engine]=browser.version
-    if native:
-        page.bring_to_front(); page.keyboard.press('Control+0')
-        before=page.evaluate('devicePixelRatio')
-        observed=[];ratio=1
-        for _ in range(12):
-            page.keyboard.press('Control++');page.wait_for_timeout(200)
-            ratio=page.evaluate('devicePixelRatio')/before;observed.append(round(ratio,3))
-            if abs(ratio-2)<.02 or ratio>2.02:break
-        report.check(f'{engine} native browser zoom reached 200 percent',abs(ratio-2)<.02,observed)
-    page.evaluate('window.scrollTo(0,0)');page.wait_for_timeout(150)
-    toggle=page.locator('#navToggle');menu=page.locator('#navLinks')
-    mobile=width<=768
-    report.check(f'{engine}-{width}x{height}: menu initial inert',page.evaluate("document.querySelector('#navLinks').inert") is mobile)
-    if mobile:
-        toggle.click();page.wait_for_timeout(420)
-        report.check(f'{engine}-{width}x{height}: menu opens',menu.evaluate("e=>e.classList.contains('open')"))
-        report.check(f'{engine}-{width}x{height}: opened menu not inert',not page.evaluate("document.querySelector('#navLinks').inert"))
-        report.check(f'{engine}-{width}x{height}: toggle expanded',toggle.get_attribute('aria-expanded')=='true')
-        report.check(f'{engine}-{width}x{height}: menu within viewport',menu.evaluate(HIT))
-        page.keyboard.press('Shift+Tab');page.keyboard.press('Tab')
-        report.check(f'{engine}-{width}x{height}: tab reaches first menu link',page.evaluate("document.activeElement===document.querySelector('#navLinks a')"))
-        page.keyboard.press('Escape');page.wait_for_timeout(420)
-        report.check(f'{engine}-{width}x{height}: Escape closes',not menu.evaluate("e=>e.classList.contains('open')"))
-        report.check(f'{engine}-{width}x{height}: focus returned to toggle',page.evaluate("document.activeElement===document.querySelector('#navToggle')"))
-        report.check(f'{engine}-{width}x{height}: closed menu inert',page.evaluate("document.querySelector('#navLinks').inert"))
-        toggle.click();page.wait_for_timeout(420);menu.locator('a').first.click();page.wait_for_timeout(420)
-        report.check(f'{engine}-{width}x{height}: link closes menu',not menu.evaluate("e=>e.classList.contains('open')"))
-    else:
-        report.check(f'{engine}-{width}x{height}: desktop menu not inert',not page.evaluate("document.querySelector('#navLinks').inert"))
-    faq=page.locator('.faq-q').first;faq.click()
-    report.check(f'{engine}-{width}x{height}: FAQ opens',faq.get_attribute('aria-expanded')=='true')
-    report.check(f'{engine}-{width}x{height}: no horizontal document overflow',page.evaluate("document.documentElement.scrollWidth<=document.documentElement.clientWidth+1"),page.evaluate("({scrollWidth:document.documentElement.scrollWidth,clientWidth:document.documentElement.clientWidth})"))
-    report.check(f'{engine}-{width}x{height}: body text remains readable',page.evaluate("getComputedStyle(document.body).fontSize")!='0px')
-    report.check(f'{engine}-{width}x{height}: all CTA links exist',page.locator('a[href]').count()>0)
-    report.check(f'{engine}-{width}x{height}: external contact requests intercepted',not any(x for x in blocked if any(h in x['url'] for h in ['wa.me','tel:','mailto:'])))
-    if axe_path:
-        page.add_script_tag(path=str(axe_path))
-        axe=page.evaluate("async()=>await axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa']}})")
-        serious=[v for v in axe['violations'] if v.get('impact') in ('serious','critical')]
-        report.check(f'{engine}-{width}x{height}: No serious/critical automated accessibility findings',not serious,[{'id':v['id'],'impact':v['impact'],'nodes':[n['target'] for n in v['nodes']]} for v in serious])
-        (report.out/f'{engine}-{width}x{height}-axe.json').write_text(json.dumps(axe,ensure_ascii=False,indent=2),encoding='utf-8')
-    report.data['blocked_requests'].extend(blocked);report.data['missing_resources'].extend(missing);report.data['errors'].extend(errors)
-    page.screenshot(path=str(report.out/f'{engine}-{width}x{height}-final.png'),full_page=True)
-    context.close();browser.close();report.save()
+    prefix=f'{engine}-{width}x{height}'+('-native200' if native else '')
+    def ck(name,ok,detail=None):report.check(prefix+': '+name,ok,detail)
+    try:
+        page.goto(ORIGIN+'/',wait_until='networkidle',timeout=30000)
+        page.evaluate('document.fonts.ready')
+        if native:
+            page.bring_to_front()
+            subprocess.run(['xdotool','key','--clearmodifiers','ctrl+0'],check=True)
+            page.wait_for_timeout(200)
+            initial=page.evaluate('devicePixelRatio')
+            levels=[]
+            ratio=1.0
+            for _ in range(12):
+                subprocess.run(['xdotool','key','--clearmodifiers','ctrl+plus'],check=True)
+                page.wait_for_timeout(200)
+                ratio=page.evaluate('devicePixelRatio')/initial
+                levels.append(round(ratio,3))
+                if abs(ratio-2)<0.02 or ratio>2.02:break
+            ck('Native browser UI zoom is exactly 200%',abs(ratio-2)<0.02,
+               {'ratio':ratio,'attempts':len(levels),'observed_ratios':levels})
+            if abs(ratio-2)>=0.02:raise RuntimeError('Native zoom was NOT confirmed; viewport emulation is not accepted')
+        # Exercise actual analytics.js banner locally with all remote outputs disabled.
+        reject=page.locator('#ipd-consent button[data-consent="denied"]')
+        ck('Actual consent banner was executed',reject.count()==1)
+        if reject.count():
+            ck('Essential-only control is visible and unobstructed',reject.evaluate(HIT))
+            reject.click(timeout=3500)
+            ck('Consent rejection closes banner',page.locator('#ipd-consent').count()==0)
+        fonts_state=page.evaluate('''() => [...document.fonts].map(f=>({family:f.family,status:f.status}))''')
+        for family in ['Manrope','Cormorant Garamond']:
+            ck('Real font loaded: '+family,any(family in f['family'] and f['status']=='loaded' for f in fonts_state))
+        for i in range(page.locator('img').count()):
+            image=page.locator('img').nth(i);image.scroll_into_view_if_needed()
+            loaded_ok=False
+            for _ in range(30):
+                loaded_ok=image.evaluate('el=>el.complete&&el.naturalWidth>0')
+                if loaded_ok:break
+                page.wait_for_timeout(100)
+            if loaded_ok:
+                try:image.evaluate('(el)=>el.decode()')
+                except Exception as e:errors.append('Image decode after load: '+str(e))
+            ck('Real image decoded '+str(i),loaded_ok,{'src':image.get_attribute('src'),'complete':image.evaluate('el=>el.complete'),'naturalWidth':image.evaluate('el=>el.naturalWidth')})
+        page.evaluate('window.scrollTo(0,0)');page.wait_for_timeout(450)
+        page.screenshot(path=str(report.out/(prefix+'-closed.png')))
+        mobile=page.evaluate("matchMedia('(max-width:768px)').matches")
+        toggle=page.locator('#navToggle');menu=page.locator('#navLinks')
+        if mobile:
+            ck('Closed menu is inert',menu.evaluate('el=>el.inert'))
+            ck('Toggle fits and can receive pointer input',toggle.evaluate(HIT))
+            toggle.focus();page.keyboard.press('Tab')
+            ck('Tab skips closed links',page.evaluate("!document.getElementById('navLinks').contains(document.activeElement)"))
+            toggle.focus();page.keyboard.press('Shift+Tab')
+            ck('Shift+Tab skips closed links',page.evaluate("!document.getElementById('navLinks').contains(document.activeElement)"))
+            toggle.click(timeout=3500)
+            page.wait_for_timeout(90)
+            ck('Opening transition is configured',menu.evaluate("el=>getComputedStyle(el).transitionProperty.includes('transform') && parseFloat(getComputedStyle(el).transitionDuration)>0"))
+            page.wait_for_timeout(400)
+            ck('Open state and aria-expanded',toggle.get_attribute('aria-expanded')=='true' and not menu.evaluate('el=>el.inert'))
+            toggle.focus();page.keyboard.press('Tab');page.wait_for_timeout(80)
+            first_focus=page.evaluate("""() => ({ok:document.activeElement===document.querySelector('#navLinks a'),tag:document.activeElement&&document.activeElement.tagName,id:document.activeElement&&document.activeElement.id,href:document.activeElement&&document.activeElement.getAttribute&&document.activeElement.getAttribute('href'),text:document.activeElement&&document.activeElement.textContent&&document.activeElement.textContent.trim().slice(0,80)})""")
+            ck('Tab reaches first open link',first_focus['ok'],first_focus)
+            page.keyboard.press('Shift+Tab')
+            ck('Shift+Tab returns to toggle',page.evaluate("document.activeElement.id==='navToggle'"))
+            for _ in range(menu.locator('a').count()):page.keyboard.press('Tab')
+            page.wait_for_timeout(80)
+            book_focus=page.evaluate("""() => ({ok:document.activeElement===document.querySelector('#navLinks .nav-cta'),tag:document.activeElement&&document.activeElement.tagName,id:document.activeElement&&document.activeElement.id,href:document.activeElement&&document.activeElement.getAttribute&&document.activeElement.getAttribute('href'),text:document.activeElement&&document.activeElement.textContent&&document.activeElement.textContent.trim().slice(0,80)})""")
+            ck('Book Now reached by keyboard',book_focus['ok'],book_focus)
+            ck('Book Now visible after keyboard scrolling',menu.locator('.nav-cta').evaluate(HIT),menu.locator('.nav-cta').evaluate('el=>({scrollTop:el.closest("#navLinks").scrollTop,rect:{left:el.getBoundingClientRect().left,right:el.getBoundingClientRect().right,top:el.getBoundingClientRect().top,bottom:el.getBoundingClientRect().bottom},vw:innerWidth,vh:innerHeight})'))
+            page.screenshot(path=str(report.out/(prefix+'-open.png')))
+            # Axe must inspect the OPEN menu, not just its closed end state.
+            if axe_path:
+                page.add_script_tag(path=str(axe_path))
+                open_result=page.evaluate("async()=>await axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa','wcag22aa']}})")
+                (report.out/(prefix+'-axe-open.json')).write_text(json.dumps(open_result,ensure_ascii=False,indent=2),encoding='utf-8')
+                open_serious=[{'id':v['id'],'impact':v.get('impact'),'nodes':[n['target'] for n in v['nodes']]}
+                              for v in open_result['violations'] if v.get('impact') in ('serious','critical')]
+                ck('No serious/critical OPEN-menu axe findings',not open_serious,open_serious)
+                if open_result.get('incomplete'):report.data['manual_gates'].append(prefix+': Review OPEN-menu axe incomplete results')
+            else:
+                ck('Open-menu axe-core available',False,'axe-core unavailable')
+            page.keyboard.press('Escape');page.wait_for_timeout(400)
+            ck('Escape closes and returns focus',menu.evaluate('el=>el.inert') and page.evaluate("document.activeElement.id==='navToggle'"))
+            toggle.click();page.wait_for_timeout(400)
+            ck('Reopening resets scroll',menu.evaluate('el=>el.scrollTop')<1)
+            menu.locator('a').first.click();page.wait_for_timeout(400)
+            ck('Real link handler closes menu without following link',toggle.get_attribute('aria-expanded')=='false')
+            toggle.click();page.wait_for_timeout(400);toggle.click();page.wait_for_timeout(400)
+            ck('Toggle closes menu',menu.evaluate('el=>el.inert'))
+        else:ck('Desktop menu is not inert',not menu.evaluate('el=>el.inert'))
+        if not native:
+            page.set_viewport_size({'width':1024,'height':900})
+            desktop_ready=True
+            try:page.wait_for_function("() => !document.getElementById('navLinks').inert",timeout=2500)
+            except Exception:desktop_ready=False
+            desktop_state=page.evaluate("""() => ({inert:document.getElementById('navLinks').inert,expanded:document.getElementById('navToggle').getAttribute('aria-expanded'),matches:matchMedia('(max-width:768px)').matches})""")
+            ck('Resize to desktop removes inert',desktop_ready and not desktop_state['inert'],desktop_state)
+            page.set_viewport_size({'width':390,'height':844})
+            mobile_ready=True
+            try:page.wait_for_function("() => document.getElementById('navLinks').inert && document.getElementById('navToggle').getAttribute('aria-expanded')==='false'",timeout=2500)
+            except Exception:mobile_ready=False
+            mobile_state=page.evaluate("""() => ({inert:document.getElementById('navLinks').inert,expanded:document.getElementById('navToggle').getAttribute('aria-expanded'),matches:matchMedia('(max-width:768px)').matches})""")
+            ck('Resize to mobile closes and reinstates inert',mobile_ready and mobile_state['inert'] and mobile_state['expanded']=='false',mobile_state)
+            page.set_viewport_size({'width':width,'height':height});page.wait_for_timeout(400)
+        for i in range(page.locator('.faq-q').count()):
+            q=page.locator('.faq-q').nth(i);q.click();
+            ck('FAQ opens '+str(i),q.get_attribute('aria-expanded')=='true')
+            q.click();ck('FAQ closes '+str(i),q.get_attribute('aria-expanded')=='false')
+        for selector in ['.hero-actions .btn-primary','.hero-actions .btn-ghost','.cta-strip .btn-dark']:
+            el=page.locator(selector);el.scroll_into_view_if_needed();page.wait_for_timeout(200)
+            ck('Booking control visible '+selector,el.evaluate(HIT))
+            href=el.get_attribute('href');ck('Approved WhatsApp destination '+selector,bool(href and urlsplit(href).hostname=='wa.me' and urlsplit(href).path=='/34613756211'))
+            el.click(timeout=3500)
+        page.evaluate('window.scrollTo(0,0)');page.wait_for_timeout(450)
+        for i in range(page.locator('.ipd-lang-link').count()):
+            el=page.locator('.ipd-lang-link').nth(i)
+            el.scroll_into_view_if_needed();page.wait_for_timeout(80)
+            ck('Language control visible '+str(i),el.evaluate(HIT),el.evaluate('el=>({position:getComputedStyle(el.parentElement).position,rect:{left:el.getBoundingClientRect().left,right:el.getBoundingClientRect().right,top:el.getBoundingClientRect().top,bottom:el.getBoundingClientRect().bottom},vw:innerWidth,vh:innerHeight})'))
+        overflow=page.evaluate('document.documentElement.scrollWidth-document.documentElement.clientWidth')
+        ck('No horizontal document overflow',overflow<=0,overflow)
+        if axe_path:
+            if page.evaluate('typeof window.axe === "undefined"'): page.add_script_tag(path=str(axe_path))
+            result=page.evaluate("async()=>await axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa','wcag22aa']}})")
+            (report.out/(prefix+'-axe.json')).write_text(json.dumps(result,ensure_ascii=False,indent=2),encoding='utf-8')
+            serious=[{'id':v['id'],'impact':v.get('impact'),'nodes':[n['target'] for n in v['nodes']]} for v in result['violations'] if v.get('impact') in ('serious','critical')]
+            ck('No serious/critical automated accessibility findings',not serious,serious)
+            if result.get('incomplete'):report.data['manual_gates'].append(prefix+': Review axe incomplete results')
+        else:ck('Accessibility engine available',False,'axe-core path missing; contrast must not be marked passed')
+        ck('Actual full CSS and analytics script loaded',all(x in loaded for x in ['assets/photo-proof.css','assets/ivm-typography.css','analytics.js']))
+        ck('No JavaScript execution errors',not errors,errors)
+        ck('No missing runtime assets',not missing,missing)
+        page.screenshot(path=str(report.out/(prefix+'-final.png')))
+    except Exception as e:
+        ck('Scenario completed',False,str(e));errors.append(traceback.format_exc())
+        try:page.screenshot(path=str(report.out/(prefix+'-failure.png')))
+        except Exception:pass
+    finally:
+        report.data.setdefault('browser_versions',{})[engine]=browser.version
+        report.data['blocked_requests'].extend(blocked)
+        report.data['missing_resources'].extend(missing)
+        report.data['errors'].extend(errors)
+        context.close();browser.close();report.save()
 
 def main():
     ap=argparse.ArgumentParser();ap.add_argument('--root',type=Path,default=Path('.'))
@@ -309,18 +403,19 @@ def main():
     try:
         _,font_urls=preflight(root,args.baseline,report)
         if args.preflight_only or any(not c['passed'] for c in report.data['checks']) or report.data['errors']:
-            report.data['status']='PREFLIGHT_ONLY_NOT_BROWSER_VALIDATED' if not report.data['missing_resources'] else 'SETUP_BLOCKED'
+            report.data['status']='PREFLIGHT_ONLY_NOT_BROWSER_VALIDATED' if not report.data['missing_resources'] else 'BLOCKED_INCOMPLETE_RESOURCES'
             report.save();print(report.data['status']);return 2
+        if not font_urls:raise RuntimeError('Real external font stylesheet was not found')
         fonts=fetch_fonts(font_urls,report.data['assets'])
         from playwright.sync_api import sync_playwright
         with sync_playwright() as pw:
             for engine in args.browser or ['chromium','firefox','webkit']:
-                for width,height in ((390,844),(320,568)) if args.native_zoom else SIZES:
+                for width,height in ([(390,844),(640,844)] if args.native_zoom else SIZES):
                     try:run_one(pw,engine,root,fonts,report,width,height,args.axe,args.native_zoom)
                     except Exception as e:
                         report.data['errors'].append(engine+' launch/setup failure: '+str(e));report.save();break
         return report.summary()
     except Exception as e:
         report.data['errors'].append(str(e));report.data['status']='SETUP_BLOCKED';report.save()
-        traceback.print_exc();print('SETUP_BLOCKED');return 2
+        print('SETUP_BLOCKED:',str(e));return 2
 if __name__=='__main__':sys.exit(main())
