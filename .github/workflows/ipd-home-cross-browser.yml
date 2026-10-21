@@ -43,6 +43,37 @@ jobs:
             --browser webkit \
             --axe "$RUNNER_TEMP/ipd-qa-deps/node_modules/axe-core/axe.min.js"
 
+      - name: Install native zoom test dependencies
+        # Do not skip installing prerequisites if contrast checks fail.
+        if: ${{ success() || failure() }}
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y xvfb xdotool
+
+      - name: Exercise native 200-percent browser zoom
+        if: ${{ success() || failure() }}
+        run: |
+          xvfb-run -a --server-args="-screen 0 1920x1080x24" \
+            python qa/pr10/run_home_qa.py \
+            --root . \
+            --output /tmp/ipd-pr10-qa/native200 \
+            --native-zoom \
+            --browser chromium \
+            --browser firefox \
+            --browser webkit \
+            --axe "$RUNNER_TEMP/ipd-qa-deps/node_modules/axe-core/axe.min.js"
+
+      - name: Preserve complete QA reports and visual evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ipd-pr10-home-qa-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            /tmp/ipd-pr10-qa/full/
+            /tmp/ipd-pr10-qa/native200/
+          if-no-files-found: error
+          retention-days: 7
+
       - name: Print failed QA checks
         if: always()
         run: |
