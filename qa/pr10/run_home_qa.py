@@ -236,7 +236,16 @@ def run_one(pw,engine,root,fonts,report,width,height,axe_path,native=False):
         import os
         exe=os.environ.get('IPD_QA_CHROMIUM_EXECUTABLE')
     browser=getattr(pw,engine).launch(headless=not native,executable_path=exe)
-    context=browser.new_context(viewport={'width':width,'height':height},device_scale_factor=1,service_workers='block',accept_downloads=False)
+    # Native Firefox zoom needs a real, OS-sized browser window. Keeping the
+    # Playwright viewport override pinned can mask changes in browser UI zoom.
+    # The standard QA scenarios keep their fixed test viewports unchanged.
+    options={'service_workers':'block','accept_downloads':False}
+    if native and engine=='firefox':
+        options['viewport']=None
+    else:
+        options['viewport']={'width':width,'height':height}
+        options['device_scale_factor']=1
+    context=browser.new_context(**options)
     context.add_init_script(GUARDS)
     errors=[];missing=[];loaded=set();blocked=[]
     def route_handler(route):
@@ -273,10 +282,30 @@ def run_one(pw,engine,root,fonts,report,width,height,axe_path,native=False):
                     if focus.returncode==0:
                         firefox_window=wid
                         break
+                geometry=None
+                resize_status=None
+                if firefox_window:
+                    # Resize the real X11 browser window, never the DOM or CSS.
+                    # Allow room for Firefox's native browser chrome above the page.
+                    resized=subprocess.run(
+                        ['xdotool','windowsize',firefox_window,str(width),str(min(1040,height+100))],
+                        capture_output=True,text=True,check=False)
+                    resize_status={'returncode':resized.returncode,'stderr':resized.stderr[:300]}
+                    page.wait_for_timeout(400)
+                    geometry=page.evaluate("() => ({innerWidth,innerHeight,outerWidth,outerHeight,dpr:devicePixelRatio})")
                 report.data.setdefault('x11_native_zoom_focus',{})[prefix]={
                     'matching_window_count':len(window_ids),
                     'focused_window_found':firefox_window is not None,
+                    'resize_status':resize_status,
+                    'initial_browser_geometry':geometry,
+                    'viewport_emulation_disabled':True,
                 }
+                if not firefox_window or not geometry or abs(geometry['innerWidth']-width)>35:
+                    report.data['manual_gates'].append(
+                        prefix+': could not establish the requested real Firefox OS window width; '
+                        'no CSS viewport emulation substituted (geometry recorded)'
+                    )
+                    return
             def zoom_key(keys):
                 if firefox_window:
                     subprocess.run(['xdotool','windowfocus',firefox_window],check=False)
