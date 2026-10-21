@@ -159,6 +159,15 @@ jobs:
                       break
               if not state['confirmed']:
                   raise RuntimeError('Native zoom at 200% not confirmed in stock Firefox; see attempts')
+              consent=driver.find_element(By.CSS_SELECTOR, '#ipd-consent button[data-consent="denied"]')
+              state['essential_control_visible']=consent.is_displayed()
+              if not state['essential_control_visible']:
+                  raise RuntimeError('Consent rejection control not visible at native 200%')
+              consent.click()
+              time.sleep(.2)
+              state['consent_closed']=not driver.find_elements(By.ID,'ipd-consent')
+              if not state['consent_closed']:
+                  raise RuntimeError('Consent banner did not close after Essential only')
               driver.execute_script("window.scrollTo({top:0,left:0,behavior:'instant'})")
               driver.save_screenshot(str(out/'firefox-stock-native200-closed.png'))
               state['closed_inert']=driver.execute_script("return document.getElementById('navLinks').inert")
@@ -167,8 +176,10 @@ jobs:
               time.sleep(.45)
               state['menu_open']=driver.execute_script("return document.getElementById('navToggle').getAttribute('aria-expanded')==='true' && !document.getElementById('navLinks').inert")
               driver.save_screenshot(str(out/'firefox-stock-native200-open.png'))
-              if not state['closed_inert'] or not state['menu_open']:
-                  raise RuntimeError('Stock Firefox native zoom reached but mobile menu state failed')
+              state['book_now_focus']=driver.execute_script("""const a=document.querySelector('#navLinks .nav-cta'); if(!a)return null; a.focus(); const r=a.getBoundingClientRect(); return {focused:document.activeElement===a,visible:r.top>=0 && r.bottom<=innerHeight,top:r.top,bottom:r.bottom};""")
+              driver.save_screenshot(str(out/'firefox-stock-native200-book-now.png'))
+              if not state['closed_inert'] or not state['menu_open'] or not state['book_now_focus'] or not state['book_now_focus']['focused'] or not state['book_now_focus']['visible']:
+                  raise RuntimeError('Stock Firefox native 200% zoom passed but menu/Book Now accessibility failed')
           except Exception as e:
               state['error']=str(e)
           finally:
