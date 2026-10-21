@@ -503,7 +503,7 @@ jobs:
             url = 'http://127.0.0.1:' + str(server.server_port) + '/'
             driver.get(url)
             WebDriverWait(driver, 12).until(lambda d: d.find_element(By.ID, 'navToggle'))
-            verify('Actual Home loaded', 'Ibiza Private Drivers' in driver.title)
+            verify('Actual Home loaded', 'Private Driver Ibiza' in driver.title and bool(driver.find_elements(By.ID, 'navLinks')), driver.title)
             verify('Actual consent control present', len(driver.find_elements(By.CSS_SELECTOR, '#ipd-consent button[data-consent="denied"]')) == 1)
             driver.find_element(By.CSS_SELECTOR, '#ipd-consent button[data-consent="denied"]').click()
             verify('Consent dialog closed', not driver.find_elements(By.ID, 'ipd-consent'))
