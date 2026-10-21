@@ -280,12 +280,24 @@ def run_one(pw,engine,root,fonts,report,width,height,axe_path,native=False):
             def zoom_key(keys):
                 if firefox_window:
                     subprocess.run(['xdotool','windowfocus',firefox_window],check=False)
-                subprocess.run(['xdotool','key','--clearmodifiers',keys],check=True)
+                if keys=='ctrl+wheel-up':
+                    # A genuine X11 Ctrl+wheel gesture asks Firefox to change
+                    # its native browser page zoom, not a CSS/viewport scale.
+                    # It is a distinct path when keyboard shortcuts are ignored.
+                    if firefox_window:
+                        subprocess.run(['xdotool','mousemove','--window',firefox_window,'120','180'],check=False)
+                        subprocess.run(['xdotool','keydown','Control_L'],check=False)
+                        try:
+                            subprocess.run(['xdotool','click','4'],check=False)
+                        finally:
+                            subprocess.run(['xdotool','keyup','Control_L'],check=False)
+                else:
+                    subprocess.run(['xdotool','key','--clearmodifiers',keys],check=True)
             shortcuts=['ctrl+plus']
             if engine=='firefox':
-                # Firefox/Linux installations may bind zoom-in to the physical
-                # '=' key or keypad '+' rather than the synthetic '+' keysym.
-                shortcuts=['ctrl+plus','ctrl+equal','ctrl+KP_Add']
+                # Browser-native zoom can use keyboard or Control + wheel;
+                # every attempt must be measured, never assumed to have worked.
+                shortcuts=['ctrl+plus','ctrl+equal','ctrl+KP_Add','ctrl+wheel-up']
             confirmed=False;best=None
             for shortcut in shortcuts:
                 zoom_key('ctrl+0')
