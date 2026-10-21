@@ -1,0 +1,707 @@
+name: IPD PR10 Browser QA
+on:
+  push:
+    branches:
+      - fix/home-mobile-nav-focus-inert-2026-10-06
+
+permissions:
+  contents: read
+
+jobs:
+  browser-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout exact branch commit
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Python dependency
+        run: python -m pip install -r qa/pr10/requirements.txt
+
+      - name: Install Chromium Firefox and WebKit
+        run: python -m playwright install --with-deps chromium firefox webkit
+
+      - name: Install axe-core
+        run: npm install --prefix "$RUNNER_TEMP/ipd-qa-deps" --ignore-scripts --no-audit --no-fund axe-core@4.14.0
+
+      - name: Run complete local browser QA
+        run: |
+          mkdir -p /tmp/ipd-pr10-qa
+          python qa/pr10/run_home_qa.py \
+            --root . \
+            --output /tmp/ipd-pr10-qa/full \
+            --browser chromium \
+            --browser firefox \
+            --browser webkit \
+            --axe "$RUNNER_TEMP/ipd-qa-deps/node_modules/axe-core/axe.min.js"
+
+      - name: Install native zoom test dependencies
+        # Do not skip installing prerequisites if contrast checks fail.
+        if: ${{ success() || failure() }}
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y xvfb xdotool
+
+      - name: Exercise native 200-percent browser zoom
+        if: ${{ success() || failure() }}
+        run: |
+          xvfb-run -a --server-args="-screen 0 1920x1080x24" \
+            python qa/pr10/run_home_qa.py \
+            --root . \
+            --output /tmp/ipd-pr10-qa/native200 \
+            --native-zoom \
+            --browser chromium \
+            --browser firefox \
+            --browser webkit \
+            --axe "$RUNNER_TEMP/ipd-qa-deps/node_modules/axe-core/axe.min.js"
+
+      - name: Verify 200-percent zoom in stock Firefox (independent diagnostic)
+        if: ${{ success() || failure() }}
+        run: |
+          python -m pip install --disable-pip-version-check selenium==4.38.0
+          xvfb-run -a --server-args="-screen 0 1920x1080x24" python - <<'PY'
+          import hashlib
+          import json
+          import os
+          import pathlib
+          import shutil
+          import subprocess
+          import threading
+          import time
+          from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+          from selenium import webdriver
+          from selenium.webdriver.firefox.options import Options
+          from selenium.webdriver.firefox.service import Service
+          from selenium.webdriver.common.by import By
+          
+          root = pathlib.Path('.').resolve()
+          out = pathlib.Path('/tmp/ipd-pr10-qa/firefox-stock')
+          out.mkdir(parents=True, exist_ok=True)
+          state = {'scope': 'supplemental stock Firefox native browser zoom (not complete asset certification)',
+                   'candidate_sha256': hashlib.sha256((root/'index.html').read_bytes()).hexdigest(),
+                   'external_requests': 'blocked by browser proxy; localhost only',
+                   'complete_font_validation': 'covered by separate full Playwright QA, not this isolated stock-browser test',
+                   'attempts': [], 'confirmed': False, 'menu_open': False}
+          class LocalOnly(SimpleHTTPRequestHandler):
+              def __init__(self,*args,**kw): super().__init__(*args,directory=str(root),**kw)
+              def do_POST(self): self.send_error(405)
+              def log_message(self,fmt,*args): pass
+          server=ThreadingHTTPServer(('127.0.0.1',0),LocalOnly)
+          threading.Thread(target=server.serve_forever,daemon=True).start()
+          driver=None
+          def measure():
+              return driver.execute_script('return {innerWidth:innerWidth,innerHeight:innerHeight,outerWidth:outerWidth,devicePixelRatio:devicePixelRatio,bodyWidth:document.body.clientWidth}')
+          def key(combo,window):
+              if window: subprocess.run(['xdotool','windowfocus',window],check=False,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+              subprocess.run(['xdotool','key','--clearmodifiers',combo],check=True)
+          try:
+              binary=shutil.which('firefox')
+              driver_bin=shutil.which('geckodriver')
+              candidate=os.environ.get('GECKOWEBDRIVER','')
+              if not driver_bin and candidate:
+                  d=pathlib.Path(candidate)
+                  driver_bin=str(d/'geckodriver' if d.is_dir() else d)
+              if not binary or not driver_bin:
+                  raise RuntimeError('Stock Firefox/geckodriver not installed on runner: '+str((binary,driver_bin)))
+              options=Options()
+              options.binary_location=binary
+              options.add_argument('-private')
+              for k,v in {
+                 'network.proxy.type':1,
+                 'network.proxy.http':'127.0.0.1',
+                 'network.proxy.http_port':9,
+                 'network.proxy.ssl':'127.0.0.1',
+                 'network.proxy.ssl_port':9,
+                 'network.proxy.no_proxies_on':'localhost,127.0.0.1',
+                 'toolkit.telemetry.enabled':False,
+                 'browser.safebrowsing.malware.enabled':False,
+              }.items(): options.set_preference(k,v)
+              os.environ['NO_PROXY']='127.0.0.1,localhost'
+              os.environ['no_proxy']='127.0.0.1,localhost'
+              driver=webdriver.Firefox(options=options,service=Service(executable_path=driver_bin))
+              state['version']=driver.capabilities.get('browserVersion')
+              driver.set_window_rect(width=500,height=920)
+              driver.get('http://127.0.0.1:'+str(server.server_port)+'/')
+              time.sleep(.6)
+              state['exact_html']=(driver.title is not None and bool(driver.find_elements(By.ID,'navToggle')))
+              if not state['exact_html']: raise RuntimeError('Real local Home failed to load')
+              window_search=subprocess.run(['xdotool','search','--onlyvisible','--class','[Ff]irefox'],
+                                           text=True,capture_output=True,check=False)
+              ids=[x for x in window_search.stdout.splitlines() if x.isdecimal()]
+              window=ids[-1] if ids else None
+              state['x11_window_count']=len(ids)
+              for shortcut in ('ctrl+plus','ctrl+equal','ctrl+KP_Add'):
+                  key('ctrl+0',window)
+                  time.sleep(.2)
+                  base=measure()
+                  obs=[]
+                  for _ in range(12):
+                      key(shortcut,window)
+                      time.sleep(.2)
+                      current=measure()
+                      ratio=max(current['devicePixelRatio']/base['devicePixelRatio'],
+                                base['innerWidth']/current['innerWidth'])
+                      obs.append({'ratio':round(ratio,3),'viewport':current['innerWidth']})
+                      if 1.98<=ratio<=2.10: break
+                      if ratio>2.10: break
+                  state['attempts'].append({'shortcut':shortcut,'baseline':base,'observations':obs})
+                  if obs and 1.98<=obs[-1]['ratio']<=2.10:
+                      state['confirmed']=True
+                      state['confirmed_zoom']=obs[-1]
+                      break
+              if not state['confirmed']:
+                  raise RuntimeError('Native zoom at 200% not confirmed in stock Firefox; see attempts')
+              consent=driver.find_element(By.CSS_SELECTOR, '#ipd-consent button[data-consent="denied"]')
+              state['essential_control_visible']=consent.is_displayed()
+              if not state['essential_control_visible']:
+                  raise RuntimeError('Consent rejection control not visible at native 200%')
+              consent.click()
+              time.sleep(.2)
+              state['consent_closed']=not driver.find_elements(By.ID,'ipd-consent')
+              if not state['consent_closed']:
+                  raise RuntimeError('Consent banner did not close after Essential only')
+              driver.execute_script("window.scrollTo({top:0,left:0,behavior:'instant'})")
+              driver.save_screenshot(str(out/'firefox-stock-native200-closed.png'))
+              state['closed_inert']=driver.execute_script("return document.getElementById('navLinks').inert")
+              toggle=driver.find_element(By.ID,'navToggle')
+              toggle.click()
+              time.sleep(.45)
+              state['menu_open']=driver.execute_script("return document.getElementById('navToggle').getAttribute('aria-expanded')==='true' && !document.getElementById('navLinks').inert")
+              driver.save_screenshot(str(out/'firefox-stock-native200-open.png'))
+              state['book_now_focus']=driver.execute_script("""const a=document.querySelector('#navLinks .nav-cta'); if(!a)return null; a.focus(); const r=a.getBoundingClientRect(); return {focused:document.activeElement===a,visible:r.top>=0 && r.bottom<=innerHeight,top:r.top,bottom:r.bottom};""")
+              driver.save_screenshot(str(out/'firefox-stock-native200-book-now.png'))
+              if not state['closed_inert'] or not state['menu_open'] or not state['book_now_focus'] or not state['book_now_focus']['focused'] or not state['book_now_focus']['visible']:
+                  raise RuntimeError('Stock Firefox native 200% zoom passed but menu/Book Now accessibility failed')
+          except Exception as e:
+              state['error']=str(e)
+          finally:
+              if driver:
+                  try: driver.quit()
+                  except Exception: pass
+              server.shutdown()
+              (out/'report.json').write_text(json.dumps(state,ensure_ascii=False,indent=2))
+              print('STOCK_FIREFOX_ZOOM',json.dumps(state,ensure_ascii=False)[:12000])
+          if state.get('error'):
+              raise SystemExit(2)
+          PY
+      - name: Diagnose Chromium native zoom overflow
+        if: ${{ success() || failure() }}
+        run: |
+          xvfb-run -a --server-args="-screen 0 1920x1080x24" python - <<'PY'
+          import json
+          import mimetypes
+          import os
+          import subprocess
+          import sys
+          from pathlib import Path
+
+          sys.path.insert(0, str(Path('qa/pr10').resolve()))
+          import run_home_qa as qa
+
+          root = Path('.').resolve()
+          out = Path('/tmp/ipd-pr10-qa/diagnostic')
+          out.mkdir(parents=True, exist_ok=True)
+          preflight_report = qa.Report(out / 'preflight')
+          _, font_urls = qa.preflight(root, None, preflight_report)
+          failed_preflight = [c for c in preflight_report.data['checks'] if not c['passed']]
+          if failed_preflight or preflight_report.data['errors'] or preflight_report.data['missing_resources']:
+              raise RuntimeError('Diagnostic preflight failed: ' + json.dumps(failed_preflight, ensure_ascii=False))
+          fonts = qa.fetch_fonts(font_urls, preflight_report.data['assets'])
+
+          from playwright.sync_api import sync_playwright
+
+          with sync_playwright() as pw:
+              exe = os.environ.get('IPD_QA_CHROMIUM_EXECUTABLE')
+              browser = pw.chromium.launch(headless=False, executable_path=exe)
+              context = browser.new_context(
+                  viewport={'width': 390, 'height': 844},
+                  device_scale_factor=1,
+                  service_workers='block',
+                  accept_downloads=False,
+              )
+              context.add_init_script(qa.GUARDS)
+
+              def route_handler(route):
+                  request = route.request
+                  url = request.url
+                  if request.method != 'GET':
+                      route.abort()
+                      return
+                  if url in fonts:
+                      body, mime = fonts[url]
+                      route.fulfill(status=200, content_type=mime, body=body)
+                      return
+                  path = qa.safe_local(root, url)
+                  if path and path.is_file():
+                      route.fulfill(
+                          status=200,
+                          content_type=mimetypes.guess_type(path.name)[0] or 'application/octet-stream',
+                          body=path.read_bytes(),
+                      )
+                      return
+                  route.abort()
+
+              context.route('**/*', route_handler)
+              page = context.new_page()
+              page.goto(qa.ORIGIN + '/', wait_until='networkidle', timeout=30000)
+              page.evaluate('document.fonts.ready')
+              page.bring_to_front()
+              subprocess.run(['xdotool', 'key', '--clearmodifiers', 'ctrl+0'], check=True)
+              page.wait_for_timeout(250)
+              initial_dpr = page.evaluate('devicePixelRatio')
+              observed = []
+              ratio = 1.0
+              for _ in range(12):
+                  subprocess.run(['xdotool', 'key', '--clearmodifiers', 'ctrl+plus'], check=True)
+                  page.wait_for_timeout(250)
+                  ratio = page.evaluate('devicePixelRatio') / initial_dpr
+                  observed.append(round(ratio, 3))
+                  if abs(ratio - 2) < 0.02 or ratio > 2.02:
+                      break
+
+              page.evaluate('window.scrollTo(0, 0)')
+              page.wait_for_timeout(300)
+              data = page.evaluate("""() => {
+                const de = document.documentElement;
+                const body = document.body;
+                const vw = de.clientWidth;
+                const describe = el => {
+                  const r = el.getBoundingClientRect();
+                  const cs = getComputedStyle(el);
+                  const classes = [...el.classList].slice(0, 4).map(c => '.' + c).join('');
+                  const selector = el.id ? '#' + el.id : el.tagName.toLowerCase() + classes;
+                  return {
+                    selector,
+                    tag: el.tagName,
+                    id: el.id || null,
+                    className: typeof el.className === 'string' ? el.className : null,
+                    text: (el.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 120),
+                    rect: {left: r.left, right: r.right, top: r.top, bottom: r.bottom, width: r.width, height: r.height},
+                    rightOverflow: Math.max(0, r.right - vw),
+                    leftOverflow: Math.max(0, -r.left),
+                    ownOverflow: Math.max(0, el.scrollWidth - el.clientWidth),
+                    clientWidth: el.clientWidth,
+                    scrollWidth: el.scrollWidth,
+                    display: cs.display,
+                    position: cs.position,
+                    boxSizing: cs.boxSizing,
+                    width: cs.width,
+                    minWidth: cs.minWidth,
+                    maxWidth: cs.maxWidth,
+                    marginLeft: cs.marginLeft,
+                    marginRight: cs.marginRight,
+                    paddingLeft: cs.paddingLeft,
+                    paddingRight: cs.paddingRight,
+                    overflowX: cs.overflowX,
+                    whiteSpace: cs.whiteSpace,
+                    transform: cs.transform,
+                  };
+                };
+                const visible = [de, body, ...document.querySelectorAll('body *')]
+                  .filter(el => {
+                    const r = el.getBoundingClientRect();
+                    const cs = getComputedStyle(el);
+                    return cs.display !== 'none' && cs.visibility !== 'hidden' && r.width > 0 && r.height > 0;
+                  });
+                const raw = visible.map(describe).filter(x =>
+                  x.rightOverflow > 0.5 || x.leftOverflow > 0.5 || x.ownOverflow > 0.5
+                );
+                const nodes = visible.filter(el => {
+                  const x = describe(el);
+                  return x.rightOverflow > 0.5 || x.leftOverflow > 0.5 || x.ownOverflow > 0.5;
+                }).slice(0, 80);
+                const hiding = nodes.map(el => {
+                  const before = describe(el);
+                  const oldStyle = el.getAttribute('style');
+                  el.style.setProperty('display', 'none', 'important');
+                  const overflowWhenHidden = de.scrollWidth - de.clientWidth;
+                  if (oldStyle === null) el.removeAttribute('style');
+                  else el.setAttribute('style', oldStyle);
+                  return {...before, overflowWhenHidden};
+                });
+                hiding.sort((a, b) =>
+                  a.overflowWhenHidden - b.overflowWhenHidden ||
+                  Math.max(b.rightOverflow, b.leftOverflow, b.ownOverflow) -
+                  Math.max(a.rightOverflow, a.leftOverflow, a.ownOverflow)
+                );
+                raw.sort((a, b) =>
+                  Math.max(b.rightOverflow, b.leftOverflow, b.ownOverflow) -
+                  Math.max(a.rightOverflow, a.leftOverflow, a.ownOverflow)
+                );
+                return {
+                  document: {
+                    innerWidth,
+                    outerWidth,
+                    clientWidth: de.clientWidth,
+                    scrollWidth: de.scrollWidth,
+                    bodyClientWidth: body.clientWidth,
+                    bodyScrollWidth: body.scrollWidth,
+                    devicePixelRatio,
+                    visualViewport: window.visualViewport ? {
+                      width: visualViewport.width,
+                      height: visualViewport.height,
+                      scale: visualViewport.scale,
+                      offsetLeft: visualViewport.offsetLeft,
+                      pageLeft: visualViewport.pageLeft,
+                    } : null,
+                  },
+                  rawOffenders: raw.slice(0, 80),
+                  hidingResults: hiding.slice(0, 80),
+                };
+              }""")
+              data['zoom'] = {
+                  'initialDpr': initial_dpr,
+                  'ratio': ratio,
+                  'observedRatios': observed,
+              }
+              (out / 'zoom-overflow.json').write_text(
+                  json.dumps(data, ensure_ascii=False, indent=2), encoding='utf-8'
+              )
+              page.screenshot(path=str(out / 'zoom-overflow.png'), full_page=True)
+              print('OVERFLOW_DIAGNOSTIC', json.dumps(data, ensure_ascii=False))
+              context.close()
+              browser.close()
+          PY
+
+      - name: Preserve complete QA reports and visual evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ipd-pr10-home-qa-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            /tmp/ipd-pr10-qa/full/
+            /tmp/ipd-pr10-qa/native200/
+            /tmp/ipd-pr10-qa/diagnostic/
+            /tmp/ipd-pr10-qa/firefox-stock/
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Print failed QA checks
+        if: always()
+        run: |
+          python - <<'PY'
+          import json, pathlib
+          p=pathlib.Path('/tmp/ipd-pr10-qa/full/report.json')
+          if not p.exists():
+              print('QA_REPORT_MISSING')
+              raise SystemExit(0)
+          r=json.loads(p.read_text())
+          failed=[x for x in r.get('checks',[]) if not x.get('passed')]
+          print('QA_STATUS', r.get('status'))
+          print('QA_CHECKS', len(r.get('checks',[])))
+          print('QA_FAILED', len(failed))
+          print('QA_BROWSER_VERSIONS', json.dumps(r.get('browser_versions',{}), ensure_ascii=False))
+          for x in failed:
+              print('QA_FAIL', x.get('name'), 'DETAIL', json.dumps(x.get('detail'), ensure_ascii=False)[:1200])
+          for x in r.get('errors',[]):
+              print('QA_ERROR', str(x)[:1600])
+          for x in r.get('missing_resources',[]):
+              print('QA_MISSING', str(x)[:800])
+          PY
+
+  safari-native-smoke:
+    name: Native macOS Safari menu focus (CSP-isolated supplemental)
+    runs-on: macos-26
+    timeout-minutes: 18
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout exact PR branch
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Safari test client
+        run: python -m pip install --disable-pip-version-check selenium==4.38.0
+      - name: Enable native Safari WebDriver on ephemeral CI runner
+        run: sudo safaridriver --enable
+      - name: Enable full link keyboard navigation in ephemeral Safari only
+        run: |
+          defaults write com.apple.Safari WebKitTabToLinksPreferenceKey -bool true
+          defaults write com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebKit2TabsToLinks -bool true
+          test "$(defaults read com.apple.Safari WebKitTabToLinksPreferenceKey)" = 1
+          test "$(defaults read com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebKit2TabsToLinks)" = 1
+          echo "Safari tab-to-links preferences enabled on temporary runner"
+      - name: Native Safari local menu validation (no external requests)
+        run: |
+          python - <<'PY'
+          import hashlib
+          import json
+          import os
+          import pathlib
+          import threading
+          import time
+          from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
+          from selenium import webdriver
+          from selenium.webdriver.common.action_chains import ActionChains
+          from selenium.webdriver.common.by import By
+          from selenium.webdriver.common.keys import Keys
+          from selenium.webdriver.support.ui import WebDriverWait
+
+          root = pathlib.Path('.').resolve()
+          output = pathlib.Path('/tmp/ipd-native-safari')
+          output.mkdir(parents=True, exist_ok=True)
+          # Headers apply only to this local ephemeral test server.
+          # Browser CSP blocks tracking, outgoing analytics, external fonts,
+          # external CSS/JS and form submissions before network transmission.
+          # Full real-font QA is performed in the existing Playwright WebKit job.
+          policy = ("default-src 'none'; script-src 'self' 'unsafe-inline'; "
+                    "style-src 'self' 'unsafe-inline'; img-src 'self' data:; "
+                    "font-src 'self'; connect-src 'none'; form-action 'none'; "
+                    "object-src 'none'; base-uri 'self'; frame-src 'none'")
+          checks = []
+          evidence = {
+            'scope': 'native Safari supplemental menu keyboard test (NOT complete Google font certification)',
+            'candidate_sha256': hashlib.sha256((root / 'index.html').read_bytes()).hexdigest(),
+            'source': 'exact checked-out PR branch Home with real local CSS, JS and images',
+            'external_network': 'blocked via HTTP response CSP; no external links or forms activated',
+            'native_zoom_200': 'not attempted; verified separately in Firefox and Playwright WebKit',
+            'checks': checks,
+            'errors': [],
+            'merged': False,
+            'published': False,
+          }
+
+          class LocalOnly(SimpleHTTPRequestHandler):
+            def __init__(self, *args, **kw):
+              super().__init__(*args, directory=str(root), **kw)
+            def end_headers(self):
+              self.send_header('Content-Security-Policy', policy)
+              self.send_header('Cache-Control', 'no-store')
+              super().end_headers()
+            def do_GET(self):
+              # A tiny same-origin keyboard-only control fixture distinguishes
+              # SafariDriver input quirks from any PR10 menu-specific problem.
+              if self.path == '/__safari_focus_control__.html':
+                body = (b'<!doctype html><title>Safari key control</title>'
+                        b'<nav><a id="beforeControl" href="#before">Before</a>'
+                        b'<button id="controlToggle" type="button">Toggle</button>'
+                        b'<a id="firstControl" href="#first">First</a>'
+                        b'<a id="secondControl" href="#second">Second</a></nav>')
+                self.send_response(200)
+                self.send_header('Content-Type', 'text/html; charset=utf-8')
+                self.send_header('Content-Length', str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+                return
+              super().do_GET()
+            def do_POST(self):
+              self.send_error(405)
+            def log_message(self, fmt, *args):
+              pass
+
+          server = ThreadingHTTPServer(('127.0.0.1', 0), LocalOnly)
+          threading.Thread(target=server.serve_forever, daemon=True).start()
+          driver = None
+          def verify(name, ok, detail=None):
+            checks.append({'name': name, 'passed': bool(ok), 'detail': detail})
+            if not ok:
+              raise AssertionError(name + (': '+str(detail) if detail is not None else ''))
+          def js(code):
+            return driver.execute_script(code)
+          def get_focus():
+            return js("return document.activeElement && (document.activeElement.id || document.activeElement.getAttribute('href') || document.activeElement.tagName)")
+          def nav_state():
+            return js("""return {mobile:matchMedia('(max-width:1120px)').matches,
+              inert:document.getElementById('navLinks').inert,
+              expanded:document.getElementById('navToggle').getAttribute('aria-expanded'),
+              width:innerWidth}""")
+          try:
+            driver = webdriver.Safari(options=webdriver.SafariOptions())
+            evidence['safari_version'] = driver.capabilities.get('browserVersion')
+            evidence['driver_name'] = driver.capabilities.get('browserName')
+            driver.set_page_load_timeout(25)
+            driver.set_window_rect(width=500, height=920)
+            url = 'http://127.0.0.1:' + str(server.server_port) + '/'
+            # Before Home: identical native WebDriver commands on a simple
+            # fixture with no inert, overlay, scroll, animation or site CSS.
+            driver.get(url + '__safari_focus_control__.html')
+            control = driver.find_element(By.ID, 'controlToggle')
+            control_results = {}
+            for mode in ('tab','option_tab','shift_tab','option_shift_tab'):
+              driver.execute_script("arguments[0].focus()", control)
+              focus_start = js("return document.activeElement.id")
+              action = ActionChains(driver)
+              if 'option' in mode:
+                action.key_down(Keys.ALT)
+              if 'shift' in mode:
+                action.key_down(Keys.SHIFT)
+              action.send_keys(Keys.TAB)
+              if 'shift' in mode:
+                action.key_up(Keys.SHIFT)
+              if 'option' in mode:
+                action.key_up(Keys.ALT)
+              action.perform()
+              control_results[mode] = {
+                'before':focus_start,
+                'after':js("return document.activeElement && document.activeElement.id"),
+              }
+            evidence['native_safari_simple_keyboard_control'] = control_results
+            evidence['simple_control_forward_tab_works'] = any(
+              control_results[m]['after']=='firstControl' for m in ('tab','option_tab')
+            )
+            driver.get(url)
+            WebDriverWait(driver, 12).until(lambda d: d.find_element(By.ID, 'navToggle'))
+            verify('Actual Home loaded', 'Private Driver Ibiza' in driver.title and bool(driver.find_elements(By.ID, 'navLinks')), driver.title)
+            driver.execute_script("""window.__ipdKeyboardLog=[];
+              document.addEventListener('keydown', e => window.__ipdKeyboardLog.push({
+                type:'down',key:e.key,alt:e.altKey,shift:e.shiftKey,
+                ctrl:e.ctrlKey,active:document.activeElement?.id||''
+              }),true);
+              document.addEventListener('keyup', e => window.__ipdKeyboardLog.push({
+                type:'up',key:e.key,alt:e.altKey,shift:e.shiftKey,
+                ctrl:e.ctrlKey,active:document.activeElement?.id||''
+              }),true);""")
+            verify('Actual consent control present', len(driver.find_elements(By.CSS_SELECTOR, '#ipd-consent button[data-consent="denied"]')) == 1)
+            driver.find_element(By.CSS_SELECTOR, '#ipd-consent button[data-consent="denied"]').click()
+            verify('Consent dialog closed', not driver.find_elements(By.ID, 'ipd-consent'))
+            verify('External resources not loaded', not js("""return performance.getEntriesByType('resource').some(r =>
+              r.name.startsWith('http') && !r.name.startsWith(location.origin))"""))
+            state = nav_state()
+            evidence['initial_viewport'] = state
+            verify('Actual Safari mobile breakpoint reached', state['mobile'] and state['width'] <= 1120, state)
+            verify('Closed menu removes keyboard focus via inert', state['inert'] and state['expanded'] == 'false', state)
+            toggle = driver.find_element(By.ID, 'navToggle')
+            toggle.send_keys(Keys.TAB)
+            verify('Tab skips closed menu', js("return !document.getElementById('navLinks').contains(document.activeElement)"), get_focus())
+            driver.execute_script("arguments[0].focus()", toggle)
+            ActionChains(driver).key_down(Keys.SHIFT).send_keys(Keys.TAB).key_up(Keys.SHIFT).perform()
+            verify('Shift+Tab skips closed menu', js("return !document.getElementById('navLinks').contains(document.activeElement)"), get_focus())
+            driver.execute_script("window.scrollTo({top:0,left:0,behavior:'instant'})")
+            driver.save_screenshot(str(output / 'safari-closed.png'))
+            toggle.click()
+            time.sleep(.42)
+            state = nav_state()
+            verify('Menu opens and removes inert', not state['inert'] and state['expanded'] == 'true', state)
+            verify('Menu has animated transform', js("""return getComputedStyle(document.getElementById('navLinks')).transitionProperty.includes('transform')"""))
+            # Safari uses a user-selectable keyboard preference for Tab to
+            # reach links. Enable it only on this disposable CI runner, never
+            # in production or on the owner's computer. REQUIRE genuine
+            # Selenium native key events; no JS-programmed Tab/focus skipping.
+            menu_links = driver.find_elements(By.CSS_SELECTOR, '#navLinks a')
+            expected_hrefs = [link.get_dom_attribute('href') for link in menu_links]
+            focus_paths = {}
+            winning_mode = None
+            for mode in ('tab','option_tab'):
+              driver.execute_script("arguments[0].focus()", toggle)
+              before = js("return document.activeElement.id")
+              trace = [{'initial_focus':before}]
+              action = ActionChains(driver)
+              if mode == 'option_tab':
+                action.key_down(Keys.ALT)
+              action.send_keys(Keys.TAB)
+              if mode == 'option_tab':
+                action.key_up(Keys.ALT)
+              action.perform()
+              first = js("""const x=document.activeElement;return x &&
+                  {href:x.getAttribute('href'),id:x.id,
+                  inMenu:document.getElementById('navLinks').contains(x)}""")
+              trace.append(first)
+              if before == 'navToggle' and first and first['inMenu'] and first['href'] == expected_hrefs[0]:
+                for href in expected_hrefs[1:]:
+                  action = ActionChains(driver)
+                  if mode == 'option_tab':
+                    action.key_down(Keys.ALT)
+                  action.send_keys(Keys.TAB)
+                  if mode == 'option_tab':
+                    action.key_up(Keys.ALT)
+                  action.perform()
+                  entry = js("""const x=document.activeElement;return x &&
+                    {href:x.getAttribute('href'),id:x.id,
+                     inMenu:document.getElementById('navLinks').contains(x)}""")
+                  trace.append(entry)
+                  if not entry or not entry['inMenu'] or entry['href'] != href:
+                    break
+                if len(trace) == len(expected_hrefs)+1 and all(
+                    trace[i+1] and trace[i+1]['inMenu'] and trace[i+1]['href'] == expected_hrefs[i]
+                    for i in range(len(expected_hrefs))
+                ):
+                  winning_mode = mode
+              focus_paths[mode] = trace
+              if winning_mode:
+                break
+            evidence['safari_native_focus_paths'] = focus_paths
+            evidence['safari_key_events'] = js("return window.__ipdKeyboardLog||[]")
+            driver.save_screenshot(str(output / 'safari-open-focus-path.png'))
+            verify('Native Safari forward keyboard reaches EVERY open menu link in order',
+                   winning_mode is not None,
+                   {'winning_mode':winning_mode, 'expected':expected_hrefs, 'traces':focus_paths})
+            verify('Book Now reached by native Safari keyboard',
+                   js("return document.activeElement === document.querySelector('#navLinks .nav-cta')"),
+                   get_focus())
+            # The reverse key must return from Book Now to the preceding link.
+            back = ActionChains(driver)
+            if winning_mode == 'option_tab':
+              back.key_down(Keys.ALT)
+            back.key_down(Keys.SHIFT).send_keys(Keys.TAB).key_up(Keys.SHIFT)
+            if winning_mode == 'option_tab':
+              back.key_up(Keys.ALT)
+            back.perform()
+            verify('Native Safari Shift+Tab returns to previous OPEN menu link',
+                   js("return document.activeElement === [...document.querySelectorAll('#navLinks a')].at(-2)"),
+                   get_focus())
+            # Restore real keyboard focus to Book Now for visibility check and
+            # keyboard Escape closing, without clicking its external URL.
+            forward = ActionChains(driver)
+            if winning_mode == 'option_tab':
+              forward.key_down(Keys.ALT)
+            forward.send_keys(Keys.TAB)
+            if winning_mode == 'option_tab':
+              forward.key_up(Keys.ALT)
+            forward.perform()
+            verify('Native Safari forward key returns to Book Now',
+                   js("return document.activeElement === document.querySelector('#navLinks .nav-cta')"),
+                   get_focus())
+            verify('Book Now visible inside menu', js("""const e=document.querySelector('#navLinks .nav-cta'),r=e.getBoundingClientRect();
+              return r.width>0 && r.height>0 && r.top>=0 && r.bottom<=innerHeight && r.left>=0 && r.right<=innerWidth"""))
+            driver.execute_script("window.scrollTo({top:0,left:0,behavior:'instant'})")
+            driver.save_screenshot(str(output / 'safari-open.png'))
+            ActionChains(driver).send_keys(Keys.ESCAPE).perform()
+            time.sleep(.42)
+            state = nav_state()
+            verify('Escape closes, re-enables inert, returns focus', state['inert'] and state['expanded']=='false' and js("return document.activeElement.id==='navToggle'"), state)
+            driver.set_window_rect(width=1250, height=900)
+            time.sleep(.4)
+            state = nav_state()
+            verify('Desktop removes inert', not state['mobile'] and not state['inert'], state)
+            driver.set_window_rect(width=500, height=920)
+            time.sleep(.4)
+            state = nav_state()
+            verify('Mobile resize restores inert', state['mobile'] and state['inert'], state)
+            evidence['status'] = 'NATIVE_SAFARI_SUPPLEMENT_PASSED_NOT_PRODUCTION_APPROVAL'
+          except Exception as exc:
+            evidence['errors'].append(type(exc).__name__ + ': ' + str(exc))
+            evidence['status'] = 'NATIVE_SAFARI_SUPPLEMENT_FAILED'
+          finally:
+            if driver:
+              try: driver.quit()
+              except Exception: pass
+            server.shutdown()
+            (output / 'report.json').write_text(json.dumps(evidence, indent=2, ensure_ascii=False), encoding='utf-8')
+            print('NATIVE_SAFARI_REPORT', json.dumps({
+              'status': evidence['status'], 'version': evidence.get('safari_version'),
+              'checks': len(checks), 'failures': [x for x in checks if not x['passed']],
+              'errors': evidence['errors'], 'viewport': evidence.get('initial_viewport')
+            }, ensure_ascii=False))
+          if evidence['errors']:
+            raise SystemExit(2)
+          PY
+      - name: Preserve native Safari screenshots and report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ipd-pr10-native-safari
+          path: /tmp/ipd-native-safari/
+          if-no-files-found: warn
+          retention-days: 7
