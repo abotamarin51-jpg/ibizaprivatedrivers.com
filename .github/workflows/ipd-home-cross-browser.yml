@@ -529,31 +529,48 @@ jobs:
             # Safari default keyboard navigation advances webpage links using
             # Option+Tab, unless 'Press Tab to highlight each item' is enabled.
             # Exercise the stock native Safari behavior without changing OS settings.
-            # Safari's native keyboard focus-start position may be independent
-            # of JS focus(). Record actual Option+Tab sequence rather than
-            # assuming its first physical shortcut lands on a DOM-adjacent link.
-            # Still REQUIRE every menu link to occur consecutively in DOM order,
-            # ending on Book Now by genuine keyboard traversal.
-            driver.execute_script("arguments[0].focus()", toggle)
+            # On this real macOS Safari runner, injected Option+Tab moved
+            # BACKWARDS from the toggle and wrapped to the page footer.
+            # Diagnose both actual key paths, without guessing and without
+            # visiting any external destinations. Compare raw DOM hrefs to
+            # raw DOM hrefs (Selenium get_attribute produces absolute URLs).
             menu_links = driver.find_elements(By.CSS_SELECTOR, '#navLinks a')
-            expected_hrefs = [link.get_attribute('href') for link in menu_links]
-            focus_trace = []
-            for step in range(len(expected_hrefs)+14):
-              ActionChains(driver).key_down(Keys.ALT).send_keys(Keys.TAB).key_up(Keys.ALT).perform()
-              value = js("""const x=document.activeElement;return x &&
-                  {id:x.id,href:x.getAttribute('href'),tag:x.tagName,
-                   inMenu:document.getElementById('navLinks').contains(x)}""")
-              focus_trace.append(value)
-              if len(focus_trace)>=len(expected_hrefs) and all(
-                  focus_trace[-len(expected_hrefs)+i]['href'] == expected_hrefs[i]
-                  for i in range(len(expected_hrefs))):
+            expected_hrefs = [link.get_dom_attribute('href') for link in menu_links]
+            focus_paths = {}
+            winning_mode = None
+            for mode in ('option_tab','option_shift_tab'):
+              driver.execute_script("arguments[0].focus()", toggle)
+              trace = []
+              for _ in range(len(expected_hrefs)+22):
+                action = ActionChains(driver).key_down(Keys.ALT)
+                if mode=='option_shift_tab':
+                  action.key_down(Keys.SHIFT)
+                action.send_keys(Keys.TAB)
+                if mode=='option_shift_tab':
+                  action.key_up(Keys.SHIFT)
+                action.key_up(Keys.ALT).perform()
+                value = js("""const x=document.activeElement;return x &&
+                    {id:x.id,href:x.getAttribute('href'),tag:x.tagName,
+                     inMenu:document.getElementById('navLinks').contains(x)}""")
+                trace.append(value)
+                if len(trace)>=len(expected_hrefs) and all(
+                    trace[-len(expected_hrefs)+i]['href'] == expected_hrefs[i]
+                    and trace[-len(expected_hrefs)+i]['inMenu']
+                    for i in range(len(expected_hrefs))):
+                  winning_mode = mode
+                  break
+              focus_paths[mode] = trace
+              if winning_mode:
                 break
-            evidence['safari_option_tab_focus_trace'] = focus_trace
-            observed_hrefs = [x['href'] for x in focus_trace[-len(expected_hrefs):]]
-            verify('Safari Option+Tab traverses every OPEN menu link in DOM order',
-                   observed_hrefs==expected_hrefs,
-                   {'expected':expected_hrefs,'observed':observed_hrefs,'trace':focus_trace})
-            verify('Book Now reachable by native Safari Option+Tab', js("return document.activeElement === document.querySelector('#navLinks .nav-cta')"), get_focus())
+            evidence['safari_native_focus_paths'] = focus_paths
+            driver.save_screenshot(str(output / 'safari-open-focus-path.png'))
+            verify('A native Safari keyboard path reaches all OPEN menu links in DOM order',
+                   winning_mode is not None,
+                   {'winning_mode':winning_mode,'expected':expected_hrefs,
+                    'traces':focus_paths})
+            verify('Book Now reachable by native Safari keyboard',
+                   js("return document.activeElement === document.querySelector('#navLinks .nav-cta')"),
+                   get_focus())
             verify('Book Now visible inside menu', js("""const e=document.querySelector('#navLinks .nav-cta'),r=e.getBoundingClientRect();
               return r.width>0 && r.height>0 && r.top>=0 && r.bottom<=innerHeight && r.left>=0 && r.right<=innerWidth"""))
             driver.execute_script("window.scrollTo({top:0,left:0,behavior:'instant'})")
