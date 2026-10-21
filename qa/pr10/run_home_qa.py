@@ -23,7 +23,7 @@ REPO = 'abotamarin51-jpg/ibizaprivatedrivers.com'
 BRANCH = 'fix/home-mobile-nav-focus-inert-2026-10-06'
 MAIN = '35590040c76d6af3ac90143575a4fffd46fc78b9'
 MAIN_BLOB = 'ac53b99ba18ee92275c4c738790de0794a5c36dc'
-CANDIDATE_BLOB = '937d9ece4a1d3ee63de50df24c471ef0d6de71db'
+CANDIDATE_BLOB = '385e8c9923a8e1e8a051bced4fe6cb9ff0ea0fdd'
 BAD_FONT_URL = 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght;500;600&family=Manrope:wght;400;500;600&display=swap'
 GOOD_FONT_URL = 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Manrope:wght@400;500;600&display=swap'
 ORIGIN = 'http://127.0.0.1:8765'
@@ -32,7 +32,7 @@ FONT_HOSTS = {'fonts.googleapis.com', 'fonts.gstatic.com'}
 TRACKING_HOSTS = {'www.googletagmanager.com', 'www.google-analytics.com', 'region1.google-analytics.com'}
 URL_RE = re.compile(r'''url\(\s*['"]?([^'"\)]+)['"]?\s*\)''', re.I)
 UA = 'Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36'
-SIZES = [(390,844), (320,568), (195,422), (844,390), (720,900), (768,900), (769,900), (1280,900)]
+SIZES = [(390,844), (320,568), (195,422), (844,390), (720,900), (768,900), (769,900), (1120,900), (1121,900), (1280,900)]
 
 class Markup(HTMLParser):
     def __init__(self):
@@ -392,7 +392,7 @@ def run_one(pw,engine,root,fonts,report,width,height,axe_path,native=False):
         closed_scroll=page.evaluate('window.scrollY')
         ck('Closed screenshot starts at document top',abs(closed_scroll)<=1,{'scrollY':closed_scroll})
         page.screenshot(path=str(report.out/(prefix+'-closed.png')))
-        mobile=page.evaluate("matchMedia('(max-width:768px)').matches")
+        mobile=page.evaluate("matchMedia('(max-width:1120px)').matches")
         toggle=page.locator('#navToggle');menu=page.locator('#navLinks')
         if mobile:
             ck('Closed menu is inert',menu.evaluate('el=>el.inert'))
@@ -439,19 +439,32 @@ def run_one(pw,engine,root,fonts,report,width,height,axe_path,native=False):
             ck('Real link handler closes menu without following link',toggle.get_attribute('aria-expanded')=='false')
             toggle.click();page.wait_for_timeout(400);toggle.click();page.wait_for_timeout(400)
             ck('Toggle closes menu',menu.evaluate('el=>el.inert'))
-        else:ck('Desktop menu is not inert',not menu.evaluate('el=>el.inert'))
+        else:
+            ck('Desktop menu is not inert',not menu.evaluate('el=>el.inert'))
+            nav_bounds=page.evaluate("""() => {
+                const nav=document.querySelector('body>nav[aria-label="Main navigation"]');
+                const r=nav.getBoundingClientRect();
+                const elements=[nav.querySelector('.nav-logo'),...nav.querySelectorAll('#navLinks a')];
+                const rects=elements.map(el=>{const b=el.getBoundingClientRect();
+                    return {label:(el.textContent||'').trim(),x:b.left,y:b.top,w:b.width,h:b.height,
+                        fits:b.left>=r.left-1&&b.right<=r.right+1&&b.top>=r.top-1&&b.bottom<=r.bottom+1,
+                        singleLine:b.height<=45}});
+                return {width:innerWidth,navHeight:r.height,items:rects,
+                        passed:rects.every(x=>x.fits&&x.singleLine)};
+            }""")
+            ck('Desktop navigation and booking CTA fit on one line',nav_bounds['passed'],nav_bounds)
         if not native:
-            page.set_viewport_size({'width':1024,'height':900})
+            page.set_viewport_size({'width':1280,'height':900})
             desktop_ready=True
             try:page.wait_for_function("() => !document.getElementById('navLinks').inert",timeout=2500)
             except Exception:desktop_ready=False
-            desktop_state=page.evaluate("""() => ({inert:document.getElementById('navLinks').inert,expanded:document.getElementById('navToggle').getAttribute('aria-expanded'),matches:matchMedia('(max-width:768px)').matches})""")
+            desktop_state=page.evaluate("""() => ({inert:document.getElementById('navLinks').inert,expanded:document.getElementById('navToggle').getAttribute('aria-expanded'),matches:matchMedia('(max-width:1120px)').matches})""")
             ck('Resize to desktop removes inert',desktop_ready and not desktop_state['inert'],desktop_state)
             page.set_viewport_size({'width':390,'height':844})
             mobile_ready=True
             try:page.wait_for_function("() => document.getElementById('navLinks').inert && document.getElementById('navToggle').getAttribute('aria-expanded')==='false'",timeout=2500)
             except Exception:mobile_ready=False
-            mobile_state=page.evaluate("""() => ({inert:document.getElementById('navLinks').inert,expanded:document.getElementById('navToggle').getAttribute('aria-expanded'),matches:matchMedia('(max-width:768px)').matches})""")
+            mobile_state=page.evaluate("""() => ({inert:document.getElementById('navLinks').inert,expanded:document.getElementById('navToggle').getAttribute('aria-expanded'),matches:matchMedia('(max-width:1120px)').matches})""")
             ck('Resize to mobile closes and reinstates inert',mobile_ready and mobile_state['inert'] and mobile_state['expanded']=='false',mobile_state)
             page.set_viewport_size({'width':width,'height':height});page.wait_for_timeout(400)
         for i in range(page.locator('.faq-q').count()):

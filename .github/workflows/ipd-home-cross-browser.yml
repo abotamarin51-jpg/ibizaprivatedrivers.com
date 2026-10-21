@@ -513,7 +513,7 @@ jobs:
           def get_focus():
             return js("return document.activeElement && (document.activeElement.id || document.activeElement.getAttribute('href') || document.activeElement.tagName)")
           def nav_state():
-            return js("""return {mobile:matchMedia('(max-width:768px)').matches,
+            return js("""return {mobile:matchMedia('(max-width:1120px)').matches,
               inert:document.getElementById('navLinks').inert,
               expanded:document.getElementById('navToggle').getAttribute('aria-expanded'),
               width:innerWidth}""")
@@ -570,7 +570,7 @@ jobs:
               r.name.startsWith('http') && !r.name.startsWith(location.origin))"""))
             state = nav_state()
             evidence['initial_viewport'] = state
-            verify('Actual Safari mobile breakpoint reached', state['mobile'] and state['width'] <= 768, state)
+            verify('Actual Safari mobile breakpoint reached', state['mobile'] and state['width'] <= 1120, state)
             verify('Closed menu removes keyboard focus via inert', state['inert'] and state['expanded'] == 'false', state)
             toggle = driver.find_element(By.ID, 'navToggle')
             toggle.send_keys(Keys.TAB)
