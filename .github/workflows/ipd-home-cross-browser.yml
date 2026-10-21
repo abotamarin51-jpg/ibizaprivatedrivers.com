@@ -480,6 +480,22 @@ jobs:
               self.send_header('Content-Security-Policy', policy)
               self.send_header('Cache-Control', 'no-store')
               super().end_headers()
+            def do_GET(self):
+              # A tiny same-origin keyboard-only control fixture distinguishes
+              # SafariDriver input quirks from any PR10 menu-specific problem.
+              if self.path == '/__safari_focus_control__.html':
+                body = (b'<!doctype html><title>Safari key control</title>'
+                        b'<nav><a id="beforeControl" href="#before">Before</a>'
+                        b'<button id="controlToggle" type="button">Toggle</button>'
+                        b'<a id="firstControl" href="#first">First</a>'
+                        b'<a id="secondControl" href="#second">Second</a></nav>')
+                self.send_response(200)
+                self.send_header('Content-Type', 'text/html; charset=utf-8')
+                self.send_header('Content-Length', str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+                return
+              super().do_GET()
             def do_POST(self):
               self.send_error(405)
             def log_message(self, fmt, *args):
@@ -508,9 +524,45 @@ jobs:
             driver.set_page_load_timeout(25)
             driver.set_window_rect(width=500, height=920)
             url = 'http://127.0.0.1:' + str(server.server_port) + '/'
+            # Before Home: identical native WebDriver commands on a simple
+            # fixture with no inert, overlay, scroll, animation or site CSS.
+            driver.get(url + '__safari_focus_control__.html')
+            control = driver.find_element(By.ID, 'controlToggle')
+            control_results = {}
+            for mode in ('tab','option_tab','shift_tab','option_shift_tab'):
+              driver.execute_script("arguments[0].focus()", control)
+              focus_start = js("return document.activeElement.id")
+              action = ActionChains(driver)
+              if 'option' in mode:
+                action.key_down(Keys.ALT)
+              if 'shift' in mode:
+                action.key_down(Keys.SHIFT)
+              action.send_keys(Keys.TAB)
+              if 'shift' in mode:
+                action.key_up(Keys.SHIFT)
+              if 'option' in mode:
+                action.key_up(Keys.ALT)
+              action.perform()
+              control_results[mode] = {
+                'before':focus_start,
+                'after':js("return document.activeElement && document.activeElement.id"),
+              }
+            evidence['native_safari_simple_keyboard_control'] = control_results
+            evidence['simple_control_forward_tab_works'] = any(
+              control_results[m]['after']=='firstControl' for m in ('tab','option_tab')
+            )
             driver.get(url)
             WebDriverWait(driver, 12).until(lambda d: d.find_element(By.ID, 'navToggle'))
             verify('Actual Home loaded', 'Private Driver Ibiza' in driver.title and bool(driver.find_elements(By.ID, 'navLinks')), driver.title)
+            driver.execute_script("""window.__ipdKeyboardLog=[];
+              document.addEventListener('keydown', e => window.__ipdKeyboardLog.push({
+                type:'down',key:e.key,alt:e.altKey,shift:e.shiftKey,
+                ctrl:e.ctrlKey,active:document.activeElement?.id||''
+              }),true);
+              document.addEventListener('keyup', e => window.__ipdKeyboardLog.push({
+                type:'up',key:e.key,alt:e.altKey,shift:e.shiftKey,
+                ctrl:e.ctrlKey,active:document.activeElement?.id||''
+              }),true);""")
             verify('Actual consent control present', len(driver.find_elements(By.CSS_SELECTOR, '#ipd-consent button[data-consent="denied"]')) == 1)
             driver.find_element(By.CSS_SELECTOR, '#ipd-consent button[data-consent="denied"]').click()
             verify('Consent dialog closed', not driver.find_elements(By.ID, 'ipd-consent'))
@@ -524,7 +576,7 @@ jobs:
             toggle.send_keys(Keys.TAB)
             verify('Tab skips closed menu', js("return !document.getElementById('navLinks').contains(document.activeElement)"), get_focus())
             driver.execute_script("arguments[0].focus()", toggle)
-            toggle.send_keys(Keys.SHIFT, Keys.TAB)
+            ActionChains(driver).key_down(Keys.SHIFT).send_keys(Keys.TAB).key_up(Keys.SHIFT).perform()
             verify('Shift+Tab skips closed menu', js("return !document.getElementById('navLinks').contains(document.activeElement)"), get_focus())
             driver.execute_script("window.scrollTo({top:0,left:0,behavior:'instant'})")
             driver.save_screenshot(str(output / 'safari-closed.png'))
@@ -580,6 +632,7 @@ jobs:
               if winning_mode:
                 break
             evidence['safari_native_focus_paths'] = focus_paths
+            evidence['safari_key_events'] = js("return window.__ipdKeyboardLog||[]")
             driver.save_screenshot(str(output / 'safari-open-focus-path.png'))
             verify('Native Safari forward keyboard reaches EVERY open menu link in order',
                    winning_mode is not None,
