@@ -22,8 +22,7 @@ from urllib.request import Request, build_opener, HTTPRedirectHandler
 REPO = 'abotamarin51-jpg/ibizaprivatedrivers.com'
 BRANCH = 'fix/home-mobile-nav-focus-inert-2026-10-06'
 MAIN = '35590040c76d6af3ac90143575a4fffd46fc78b9'
-PR_HEAD = 'b64e211906eb30917fe1f4cb6ec5b6a7a52b8550'
-PR_BLOB = 'd07a60c752161cf189d7d93a168b1ac745dd9b5d'
+MAIN_BLOB = 'ac53b99ba18ee92275c4c738790de0794a5c36dc'
 CANDIDATE_BLOB = '23737f161776e5b1702885a879c1baf3eaacda42'
 BAD_FONT_URL = 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght;500;600&family=Manrope:wght;400;500;600&display=swap'
 GOOD_FONT_URL = 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Manrope:wght@400;500;600&display=swap'
@@ -38,12 +37,13 @@ SIZES = [(390,844), (320,568), (195,422), (844,390), (720,900), (768,900), (769,
 class Markup(HTMLParser):
     def __init__(self):
         super().__init__(convert_charrefs=True)
-        self.assets=[]; self.links=[]; self.shape=[]; self.text=[]; self.scripts=[]
-        self.block=None; self.script_text=[]
+        self.assets=[]; self.links=[]; self.shape=[]; self.text=[]; self.scripts=[]; self.styles=[]
+        self.block=None; self.script_text=[]; self.style_text=[]
     def handle_starttag(self, tag, attrs):
         a=dict(attrs)
         if tag in ('script','style'):
             self.block=tag
+            if tag=='style': self.style_text=[]
             if tag=='script':
                 self.script_text=[]
                 if a.get('src'): self.assets.append(a['src'])
@@ -59,9 +59,11 @@ class Markup(HTMLParser):
     def handle_endtag(self,tag):
         if tag==self.block:
             if tag=='script': self.scripts.append(''.join(self.script_text))
+            if tag=='style': self.styles.append(''.join(self.style_text))
             self.block=None
     def handle_data(self,data):
         if self.block=='script': self.script_text.append(data)
+        elif self.block=='style': self.style_text.append(data)
         elif self.block is None and data.strip(): self.text.append(' '.join(data.split()))
 
 def parse(data):
@@ -143,7 +145,7 @@ class Report:
     def __init__(self,out):
         self.out=out;out.mkdir(parents=True,exist_ok=True)
         self.data={'status':'RUNNING','scope':'local complete-resource copy, not production',
-          'candidate_sha256':None,'source_pr_head':PR_HEAD,'checks':[],
+          'candidate_sha256':None,'source_pr_head':None,'checks':[],
           'assets':[], 'errors':[], 'blocked_requests':[], 'missing_resources':[],
           'manual_gates':['Review rendered screenshots and animations',
                           'Review accessibility findings against baseline',
@@ -172,16 +174,31 @@ def preflight(root,baseline,report,check_sha=True):
         report.check('Google Fonts CSS2 URL corrected',GOOD_FONT_URL in font_hrefs and BAD_FONT_URL not in font_hrefs,font_hrefs)
         nav_lists=[dict(attrs) for tag,attrs in p.shape if tag=='ul' and dict(attrs).get('id')=='navLinks']
         report.check('Scrollable mobile nav excluded from sequential tab order',len(nav_lists)==1 and nav_lists[0].get('tabindex')=='-1',nav_lists)
-        old=baseline.read_bytes() if baseline else subprocess.check_output(['git','show',PR_HEAD+':index.html'],cwd=root)
-        report.check('Baseline matches live PR blob',git_blob(old)==PR_BLOB)
+        old=baseline.read_bytes() if baseline else subprocess.check_output(['git','show',MAIN+':index.html'],cwd=root)
+        report.check('Baseline matches verified main blob',git_blob(old)==MAIN_BLOB)
         report.check('SEO, contacts, markup, copy and non-menu scripts unchanged',frozen_signature(p)==frozen_signature(parse(old)))
+        # CSS is excluded from frozen_signature by design; explicitly report it.
+        old_markup=parse(old)
+        css_before='\n'.join(old_markup.styles).encode('utf-8')
+        css_after='\n'.join(p.styles).encode('utf-8')
+        css_modified=css_before!=css_after
+        report.data['inline_css_comparison']={
+            'changed':css_modified,
+            'main_sha256':hashlib.sha256(css_before).hexdigest(),
+            'candidate_sha256':hashlib.sha256(css_after).hexdigest(),
+            'main_blocks':len(old_markup.styles),
+            'candidate_blocks':len(p.styles),
+        }
+        if css_modified:
+            report.data['manual_gates'].append('Review changed inline CSS vs main at mobile, desktop and native 200% zoom')
         if baseline is None:
             def git(*a):return subprocess.check_output(['git',*a],cwd=root,text=True).strip()
             report.data['tested_commit']=git('rev-parse','HEAD')
+            report.data['source_pr_head']=report.data['tested_commit']
             report.check('Live main has not invalidated the baseline',git('rev-parse','origin/main')==MAIN)
             remote=git('config','--get','remote.origin.url').rstrip('/')
             report.check('Exact intended repository checkout',remote in ('https://github.com/'+REPO,'https://github.com/'+REPO+'.git'))
-            paths=git('diff','--name-only',PR_HEAD,'HEAD').splitlines()
+            paths=git('diff','--name-only',MAIN,'HEAD').splitlines()
             unexpected=[x for x in paths if x!='index.html' and x!='.github/workflows/ipd-home-cross-browser.yml' and not x.startswith('qa/pr10/')]
             report.check('No unrelated files or site configuration changed',not unexpected,unexpected)
     mandatory={'/assets/photo-proof.css','/assets/ivm-typography.css','/analytics.js'}
@@ -242,13 +259,19 @@ def run_one(pw,engine,root,fonts,report,width,height,axe_path,native=False):
         page.evaluate('document.fonts.ready')
         if native:
             page.bring_to_front()
-            initial=page.evaluate('devicePixelRatio')
             subprocess.run(['xdotool','key','--clearmodifiers','ctrl+0'],check=True)
-            for _ in range(5):
+            page.wait_for_timeout(200)
+            initial=page.evaluate('devicePixelRatio')
+            levels=[]
+            ratio=1.0
+            for _ in range(12):
                 subprocess.run(['xdotool','key','--clearmodifiers','ctrl+plus'],check=True)
-                page.wait_for_timeout(150)
-            ratio=page.evaluate('devicePixelRatio')/initial
-            ck('Native browser UI zoom is exactly 200%',abs(ratio-2)<0.02,ratio)
+                page.wait_for_timeout(200)
+                ratio=page.evaluate('devicePixelRatio')/initial
+                levels.append(round(ratio,3))
+                if abs(ratio-2)<0.02 or ratio>2.02:break
+            ck('Native browser UI zoom is exactly 200%',abs(ratio-2)<0.02,
+               {'ratio':ratio,'attempts':len(levels),'observed_ratios':levels})
             if abs(ratio-2)>=0.02:raise RuntimeError('Native zoom was NOT confirmed; viewport emulation is not accepted')
         # Exercise actual analytics.js banner locally with all remote outputs disabled.
         reject=page.locator('#ipd-consent button[data-consent="denied"]')
@@ -298,6 +321,17 @@ def run_one(pw,engine,root,fonts,report,width,height,axe_path,native=False):
             ck('Book Now reached by keyboard',book_focus['ok'],book_focus)
             ck('Book Now visible after keyboard scrolling',menu.locator('.nav-cta').evaluate(HIT),menu.locator('.nav-cta').evaluate('el=>({scrollTop:el.closest("#navLinks").scrollTop,rect:{left:el.getBoundingClientRect().left,right:el.getBoundingClientRect().right,top:el.getBoundingClientRect().top,bottom:el.getBoundingClientRect().bottom},vw:innerWidth,vh:innerHeight})'))
             page.screenshot(path=str(report.out/(prefix+'-open.png')))
+            # Axe must inspect the OPEN menu, not just its closed end state.
+            if axe_path:
+                page.add_script_tag(path=str(axe_path))
+                open_result=page.evaluate("async()=>await axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa','wcag22aa']}})")
+                (report.out/(prefix+'-axe-open.json')).write_text(json.dumps(open_result,ensure_ascii=False,indent=2),encoding='utf-8')
+                open_serious=[{'id':v['id'],'impact':v.get('impact'),'nodes':[n['target'] for n in v['nodes']]}
+                              for v in open_result['violations'] if v.get('impact') in ('serious','critical')]
+                ck('No serious/critical OPEN-menu axe findings',not open_serious,open_serious)
+                if open_result.get('incomplete'):report.data['manual_gates'].append(prefix+': Review OPEN-menu axe incomplete results')
+            else:
+                ck('Open-menu axe-core available',False,'axe-core unavailable')
             page.keyboard.press('Escape');page.wait_for_timeout(400)
             ck('Escape closes and returns focus',menu.evaluate('el=>el.inert') and page.evaluate("document.activeElement.id==='navToggle'"))
             toggle.click();page.wait_for_timeout(400)
@@ -338,7 +372,7 @@ def run_one(pw,engine,root,fonts,report,width,height,axe_path,native=False):
         overflow=page.evaluate('document.documentElement.scrollWidth-document.documentElement.clientWidth')
         ck('No horizontal document overflow',overflow<=0,overflow)
         if axe_path:
-            page.add_script_tag(path=str(axe_path))
+            if page.evaluate('typeof window.axe === "undefined"'): page.add_script_tag(path=str(axe_path))
             result=page.evaluate("async()=>await axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa','wcag22aa']}})")
             (report.out/(prefix+'-axe.json')).write_text(json.dumps(result,ensure_ascii=False,indent=2),encoding='utf-8')
             serious=[{'id':v['id'],'impact':v.get('impact'),'nodes':[n['target'] for n in v['nodes']]} for v in result['violations'] if v.get('impact') in ('serious','critical')]
