@@ -409,7 +409,26 @@ def main():
         fonts=fetch_fonts(font_urls,report.data['assets'])
         from playwright.sync_api import sync_playwright
         with sync_playwright() as pw:
-            for engine in args.browser or ['chromium','firefox','webkit']:
+            requested=args.browser or ['chromium','firefox','webkit']
+            engines=requested
+            if args.native_zoom:
+                # On the Linux/Xvfb runner, xdotool browser-UI zoom is verified only
+                # for Chromium. Firefox and Playwright WebKit ignore these native
+                # browser shortcuts here, so treating ratio=1.0 as a page failure is
+                # a false negative. Keep those native-UI checks as explicit manual
+                # gates; the normal full QA above still exercises Firefox/WebKit.
+                unsupported=[e for e in requested if e!='chromium']
+                for engine in unsupported:
+                    report.data['manual_gates'].append(
+                        engine+': native 200% browser UI zoom not automatable on this Linux/Xvfb runner; '
+                        'requires a supported native-browser environment before merge approval'
+                    )
+                engines=[e for e in requested if e=='chromium']
+                if not engines:
+                    report.data['manual_gates'].append(
+                        'Native 200% zoom requested without Chromium; no native zoom scenario executed'
+                    )
+            for engine in engines:
                 for width,height in ([(390,844),(640,844)] if args.native_zoom else SIZES):
                     try:run_one(pw,engine,root,fonts,report,width,height,args.axe,args.native_zoom)
                     except Exception as e:
