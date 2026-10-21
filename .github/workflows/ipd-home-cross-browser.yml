@@ -426,6 +426,13 @@ jobs:
         run: python -m pip install --disable-pip-version-check selenium==4.38.0
       - name: Enable native Safari WebDriver on ephemeral CI runner
         run: sudo safaridriver --enable
+      - name: Enable full link keyboard navigation in ephemeral Safari only
+        run: |
+          defaults write com.apple.Safari WebKitTabToLinksPreferenceKey -bool true
+          defaults write com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebKit2TabsToLinks -bool true
+          test "$(defaults read com.apple.Safari WebKitTabToLinksPreferenceKey)" = 1
+          test "$(defaults read com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebKit2TabsToLinks)" = 1
+          echo "Safari tab-to-links preferences enabled on temporary runner"
       - name: Native Safari local menu validation (no external requests)
         run: |
           python - <<'PY'
@@ -526,49 +533,81 @@ jobs:
             state = nav_state()
             verify('Menu opens and removes inert', not state['inert'] and state['expanded'] == 'true', state)
             verify('Menu has animated transform', js("""return getComputedStyle(document.getElementById('navLinks')).transitionProperty.includes('transform')"""))
-            # Safari default keyboard navigation advances webpage links using
-            # Option+Tab, unless 'Press Tab to highlight each item' is enabled.
-            # Exercise the stock native Safari behavior without changing OS settings.
-            # On this real macOS Safari runner, injected Option+Tab moved
-            # BACKWARDS from the toggle and wrapped to the page footer.
-            # Diagnose both actual key paths, without guessing and without
-            # visiting any external destinations. Compare raw DOM hrefs to
-            # raw DOM hrefs (Selenium get_attribute produces absolute URLs).
+            # Safari uses a user-selectable keyboard preference for Tab to
+            # reach links. Enable it only on this disposable CI runner, never
+            # in production or on the owner's computer. REQUIRE genuine
+            # Selenium native key events; no JS-programmed Tab/focus skipping.
             menu_links = driver.find_elements(By.CSS_SELECTOR, '#navLinks a')
             expected_hrefs = [link.get_dom_attribute('href') for link in menu_links]
             focus_paths = {}
             winning_mode = None
-            for mode in ('option_tab','option_shift_tab'):
+            for mode in ('tab','option_tab'):
               driver.execute_script("arguments[0].focus()", toggle)
-              trace = []
-              for _ in range(len(expected_hrefs)+22):
-                action = ActionChains(driver).key_down(Keys.ALT)
-                if mode=='option_shift_tab':
-                  action.key_down(Keys.SHIFT)
-                action.send_keys(Keys.TAB)
-                if mode=='option_shift_tab':
-                  action.key_up(Keys.SHIFT)
-                action.key_up(Keys.ALT).perform()
-                value = js("""const x=document.activeElement;return x &&
-                    {id:x.id,href:x.getAttribute('href'),tag:x.tagName,
+              before = js("return document.activeElement.id")
+              trace = [{'initial_focus':before}]
+              action = ActionChains(driver)
+              if mode == 'option_tab':
+                action.key_down(Keys.ALT)
+              action.send_keys(Keys.TAB)
+              if mode == 'option_tab':
+                action.key_up(Keys.ALT)
+              action.perform()
+              first = js("""const x=document.activeElement;return x &&
+                  {href:x.getAttribute('href'),id:x.id,
+                  inMenu:document.getElementById('navLinks').contains(x)}""")
+              trace.append(first)
+              if before == 'navToggle' and first and first['inMenu'] and first['href'] == expected_hrefs[0]:
+                for href in expected_hrefs[1:]:
+                  action = ActionChains(driver)
+                  if mode == 'option_tab':
+                    action.key_down(Keys.ALT)
+                  action.send_keys(Keys.TAB)
+                  if mode == 'option_tab':
+                    action.key_up(Keys.ALT)
+                  action.perform()
+                  entry = js("""const x=document.activeElement;return x &&
+                    {href:x.getAttribute('href'),id:x.id,
                      inMenu:document.getElementById('navLinks').contains(x)}""")
-                trace.append(value)
-                if len(trace)>=len(expected_hrefs) and all(
-                    trace[-len(expected_hrefs)+i]['href'] == expected_hrefs[i]
-                    and trace[-len(expected_hrefs)+i]['inMenu']
-                    for i in range(len(expected_hrefs))):
+                  trace.append(entry)
+                  if not entry or not entry['inMenu'] or entry['href'] != href:
+                    break
+                if len(trace) == len(expected_hrefs)+1 and all(
+                    trace[i+1] and trace[i+1]['inMenu'] and trace[i+1]['href'] == expected_hrefs[i]
+                    for i in range(len(expected_hrefs))
+                ):
                   winning_mode = mode
-                  break
               focus_paths[mode] = trace
               if winning_mode:
                 break
             evidence['safari_native_focus_paths'] = focus_paths
             driver.save_screenshot(str(output / 'safari-open-focus-path.png'))
-            verify('A native Safari keyboard path reaches all OPEN menu links in DOM order',
+            verify('Native Safari forward keyboard reaches EVERY open menu link in order',
                    winning_mode is not None,
-                   {'winning_mode':winning_mode,'expected':expected_hrefs,
-                    'traces':focus_paths})
-            verify('Book Now reachable by native Safari keyboard',
+                   {'winning_mode':winning_mode, 'expected':expected_hrefs, 'traces':focus_paths})
+            verify('Book Now reached by native Safari keyboard',
+                   js("return document.activeElement === document.querySelector('#navLinks .nav-cta')"),
+                   get_focus())
+            # The reverse key must return from Book Now to the preceding link.
+            back = ActionChains(driver)
+            if winning_mode == 'option_tab':
+              back.key_down(Keys.ALT)
+            back.key_down(Keys.SHIFT).send_keys(Keys.TAB).key_up(Keys.SHIFT)
+            if winning_mode == 'option_tab':
+              back.key_up(Keys.ALT)
+            back.perform()
+            verify('Native Safari Shift+Tab returns to previous OPEN menu link',
+                   js("return document.activeElement === [...document.querySelectorAll('#navLinks a')].at(-2)"),
+                   get_focus())
+            # Restore real keyboard focus to Book Now for visibility check and
+            # keyboard Escape closing, without clicking its external URL.
+            forward = ActionChains(driver)
+            if winning_mode == 'option_tab':
+              forward.key_down(Keys.ALT)
+            forward.send_keys(Keys.TAB)
+            if winning_mode == 'option_tab':
+              forward.key_up(Keys.ALT)
+            forward.perform()
+            verify('Native Safari forward key returns to Book Now',
                    js("return document.activeElement === document.querySelector('#navLinks .nav-cta')"),
                    get_focus())
             verify('Book Now visible inside menu', js("""const e=document.querySelector('#navLinks .nav-cta'),r=e.getBoundingClientRect();
