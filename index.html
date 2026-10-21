@@ -413,6 +413,8 @@ document.querySelectorAll('.faq-q').forEach(function(btn){btn.addEventListener('
 .services .section-eyebrow,.why-inner>div:first-child>.section-eyebrow,.international .section-eyebrow,.faq .section-eyebrow,.service-card .service-link,.why-num,.ipd-photo-proof__eyebrow{color:#715638}
 .faq-sidebar a[href="https://wa.me/34613756211"]{color:#715638!important}
 .cta-strip p{color:#1a1814}
+/* Home mobile: opaque navigation surface keeps menu text contrast deterministic over the hero. */
+@media(max-width:720px){body>nav[aria-label="Main navigation"]{background:#fafaf8!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}body>nav[aria-label="Main navigation"] .nav-links{background:#fafaf8!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}}
 /* Home: prevent narrow-screen language controls being clipped or covered by the fixed booking shortcut. */
 @media(max-width:340px){.ipd-lang-links{flex-wrap:wrap!important;padding-bottom:calc(6rem + env(safe-area-inset-bottom))!important}}
 </style>
