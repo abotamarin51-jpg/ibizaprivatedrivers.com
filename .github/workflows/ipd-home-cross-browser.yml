@@ -63,6 +63,185 @@ jobs:
             --browser webkit \
             --axe "$RUNNER_TEMP/ipd-qa-deps/node_modules/axe-core/axe.min.js"
 
+      - name: Diagnose Chromium native zoom overflow
+        if: ${{ success() || failure() }}
+        run: |
+          xvfb-run -a --server-args="-screen 0 1920x1080x24" python - <<'PY'
+          import json
+          import mimetypes
+          import os
+          import subprocess
+          import sys
+          from pathlib import Path
+
+          sys.path.insert(0, str(Path('qa/pr10').resolve()))
+          import run_home_qa as qa
+
+          root = Path('.').resolve()
+          out = Path('/tmp/ipd-pr10-qa/diagnostic')
+          out.mkdir(parents=True, exist_ok=True)
+          preflight_report = qa.Report(out / 'preflight')
+          _, font_urls = qa.preflight(root, None, preflight_report)
+          failed_preflight = [c for c in preflight_report.data['checks'] if not c['passed']]
+          if failed_preflight or preflight_report.data['errors'] or preflight_report.data['missing_resources']:
+              raise RuntimeError('Diagnostic preflight failed: ' + json.dumps(failed_preflight, ensure_ascii=False))
+          fonts = qa.fetch_fonts(font_urls, preflight_report.data['assets'])
+
+          from playwright.sync_api import sync_playwright
+
+          with sync_playwright() as pw:
+              exe = os.environ.get('IPD_QA_CHROMIUM_EXECUTABLE')
+              browser = pw.chromium.launch(headless=False, executable_path=exe)
+              context = browser.new_context(
+                  viewport={'width': 390, 'height': 844},
+                  device_scale_factor=1,
+                  service_workers='block',
+                  accept_downloads=False,
+              )
+              context.add_init_script(qa.GUARDS)
+
+              def route_handler(route):
+                  request = route.request
+                  url = request.url
+                  if request.method != 'GET':
+                      route.abort()
+                      return
+                  if url in fonts:
+                      body, mime = fonts[url]
+                      route.fulfill(status=200, content_type=mime, body=body)
+                      return
+                  path = qa.safe_local(root, url)
+                  if path and path.is_file():
+                      route.fulfill(
+                          status=200,
+                          content_type=mimetypes.guess_type(path.name)[0] or 'application/octet-stream',
+                          body=path.read_bytes(),
+                      )
+                      return
+                  route.abort()
+
+              context.route('**/*', route_handler)
+              page = context.new_page()
+              page.goto(qa.ORIGIN + '/', wait_until='networkidle', timeout=30000)
+              page.evaluate('document.fonts.ready')
+              page.bring_to_front()
+              subprocess.run(['xdotool', 'key', '--clearmodifiers', 'ctrl+0'], check=True)
+              page.wait_for_timeout(250)
+              initial_dpr = page.evaluate('devicePixelRatio')
+              observed = []
+              ratio = 1.0
+              for _ in range(12):
+                  subprocess.run(['xdotool', 'key', '--clearmodifiers', 'ctrl+plus'], check=True)
+                  page.wait_for_timeout(250)
+                  ratio = page.evaluate('devicePixelRatio') / initial_dpr
+                  observed.append(round(ratio, 3))
+                  if abs(ratio - 2) < 0.02 or ratio > 2.02:
+                      break
+
+              page.evaluate('window.scrollTo(0, 0)')
+              page.wait_for_timeout(300)
+              data = page.evaluate("""() => {
+                const de = document.documentElement;
+                const body = document.body;
+                const vw = de.clientWidth;
+                const describe = el => {
+                  const r = el.getBoundingClientRect();
+                  const cs = getComputedStyle(el);
+                  const classes = [...el.classList].slice(0, 4).map(c => '.' + c).join('');
+                  const selector = el.id ? '#' + el.id : el.tagName.toLowerCase() + classes;
+                  return {
+                    selector,
+                    tag: el.tagName,
+                    id: el.id || null,
+                    className: typeof el.className === 'string' ? el.className : null,
+                    text: (el.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 120),
+                    rect: {left: r.left, right: r.right, top: r.top, bottom: r.bottom, width: r.width, height: r.height},
+                    rightOverflow: Math.max(0, r.right - vw),
+                    leftOverflow: Math.max(0, -r.left),
+                    ownOverflow: Math.max(0, el.scrollWidth - el.clientWidth),
+                    clientWidth: el.clientWidth,
+                    scrollWidth: el.scrollWidth,
+                    display: cs.display,
+                    position: cs.position,
+                    boxSizing: cs.boxSizing,
+                    width: cs.width,
+                    minWidth: cs.minWidth,
+                    maxWidth: cs.maxWidth,
+                    marginLeft: cs.marginLeft,
+                    marginRight: cs.marginRight,
+                    paddingLeft: cs.paddingLeft,
+                    paddingRight: cs.paddingRight,
+                    overflowX: cs.overflowX,
+                    whiteSpace: cs.whiteSpace,
+                    transform: cs.transform,
+                  };
+                };
+                const visible = [de, body, ...document.querySelectorAll('body *')]
+                  .filter(el => {
+                    const r = el.getBoundingClientRect();
+                    const cs = getComputedStyle(el);
+                    return cs.display !== 'none' && cs.visibility !== 'hidden' && r.width > 0 && r.height > 0;
+                  });
+                const raw = visible.map(describe).filter(x =>
+                  x.rightOverflow > 0.5 || x.leftOverflow > 0.5 || x.ownOverflow > 0.5
+                );
+                const nodes = visible.filter(el => {
+                  const x = describe(el);
+                  return x.rightOverflow > 0.5 || x.leftOverflow > 0.5 || x.ownOverflow > 0.5;
+                }).slice(0, 80);
+                const hiding = nodes.map(el => {
+                  const before = describe(el);
+                  const oldStyle = el.getAttribute('style');
+                  el.style.setProperty('display', 'none', 'important');
+                  const overflowWhenHidden = de.scrollWidth - de.clientWidth;
+                  if (oldStyle === null) el.removeAttribute('style');
+                  else el.setAttribute('style', oldStyle);
+                  return {...before, overflowWhenHidden};
+                });
+                hiding.sort((a, b) =>
+                  a.overflowWhenHidden - b.overflowWhenHidden ||
+                  Math.max(b.rightOverflow, b.leftOverflow, b.ownOverflow) -
+                  Math.max(a.rightOverflow, a.leftOverflow, a.ownOverflow)
+                );
+                raw.sort((a, b) =>
+                  Math.max(b.rightOverflow, b.leftOverflow, b.ownOverflow) -
+                  Math.max(a.rightOverflow, a.leftOverflow, a.ownOverflow)
+                );
+                return {
+                  document: {
+                    innerWidth,
+                    outerWidth,
+                    clientWidth: de.clientWidth,
+                    scrollWidth: de.scrollWidth,
+                    bodyClientWidth: body.clientWidth,
+                    bodyScrollWidth: body.scrollWidth,
+                    devicePixelRatio,
+                    visualViewport: window.visualViewport ? {
+                      width: visualViewport.width,
+                      height: visualViewport.height,
+                      scale: visualViewport.scale,
+                      offsetLeft: visualViewport.offsetLeft,
+                      pageLeft: visualViewport.pageLeft,
+                    } : null,
+                  },
+                  rawOffenders: raw.slice(0, 80),
+                  hidingResults: hiding.slice(0, 80),
+                };
+              }""")
+              data['zoom'] = {
+                  'initialDpr': initial_dpr,
+                  'ratio': ratio,
+                  'observedRatios': observed,
+              }
+              (out / 'zoom-overflow.json').write_text(
+                  json.dumps(data, ensure_ascii=False, indent=2), encoding='utf-8'
+              )
+              page.screenshot(path=str(out / 'zoom-overflow.png'), full_page=True)
+              print('OVERFLOW_DIAGNOSTIC', json.dumps(data, ensure_ascii=False))
+              context.close()
+              browser.close()
+          PY
+
       - name: Preserve complete QA reports and visual evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -71,6 +250,7 @@ jobs:
           path: |
             /tmp/ipd-pr10-qa/full/
             /tmp/ipd-pr10-qa/native200/
+            /tmp/ipd-pr10-qa/diagnostic/
           if-no-files-found: error
           retention-days: 7
 
