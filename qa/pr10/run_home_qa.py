@@ -259,6 +259,28 @@ def run_one(pw,engine,root,fonts,report,width,height,axe_path,native=False):
         page.evaluate('document.fonts.ready')
         if native:
             page.bring_to_front()
+            # In Xvfb, bringing the Playwright page to front may not give
+            # Firefox's actual X11 window keyboard focus. Focus a real Firefox
+            # window before native shortcut input; do not emulate zoom via CSS.
+            firefox_window=None
+            if engine=='firefox':
+                matches=subprocess.run(
+                    ['xdotool','search','--onlyvisible','--class','[Ff]irefox'],
+                    capture_output=True,text=True,check=False)
+                window_ids=[wid for wid in matches.stdout.splitlines() if wid.isdecimal()]
+                for wid in reversed(window_ids):
+                    focus=subprocess.run(['xdotool','windowfocus',wid],capture_output=True,text=True,check=False)
+                    if focus.returncode==0:
+                        firefox_window=wid
+                        break
+                report.data.setdefault('x11_native_zoom_focus',{})[prefix]={
+                    'matching_window_count':len(window_ids),
+                    'focused_window_found':firefox_window is not None,
+                }
+            def zoom_key(keys):
+                if firefox_window:
+                    subprocess.run(['xdotool','windowfocus',firefox_window],check=False)
+                subprocess.run(['xdotool','key','--clearmodifiers',keys],check=True)
             shortcuts=['ctrl+plus']
             if engine=='firefox':
                 # Firefox/Linux installations may bind zoom-in to the physical
@@ -266,12 +288,12 @@ def run_one(pw,engine,root,fonts,report,width,height,axe_path,native=False):
                 shortcuts=['ctrl+plus','ctrl+equal','ctrl+KP_Add']
             confirmed=False;best=None
             for shortcut in shortcuts:
-                subprocess.run(['xdotool','key','--clearmodifiers','ctrl+0'],check=True)
+                zoom_key('ctrl+0')
                 page.wait_for_timeout(250)
                 initial=page.evaluate("() => ({dpr:devicePixelRatio,innerWidth,clientWidth:document.documentElement.clientWidth})")
                 levels=[];ratio=1.0
                 for _ in range(12):
-                    subprocess.run(['xdotool','key','--clearmodifiers',shortcut],check=True)
+                    zoom_key(shortcut)
                     page.wait_for_timeout(250)
                     current=page.evaluate("() => ({dpr:devicePixelRatio,innerWidth,clientWidth:document.documentElement.clientWidth})")
                     dpr_ratio=current['dpr']/initial['dpr'] if initial['dpr'] else 1.0
@@ -320,7 +342,14 @@ def run_one(pw,engine,root,fonts,report,width,height,axe_path,native=False):
                 try:image.evaluate('(el)=>el.decode()')
                 except Exception as e:errors.append('Image decode after load: '+str(e))
             ck('Real image decoded '+str(i),loaded_ok,{'src':image.get_attribute('src'),'complete':image.evaluate('el=>el.complete'),'naturalWidth':image.evaluate('el=>el.naturalWidth')})
-        page.evaluate('window.scrollTo(0,0)');page.wait_for_timeout(450)
+        # The Home CSS uses scroll-behavior:smooth. After visiting each real
+        # image, a smooth scrollTo(0,0) can still be travelling from the footer
+        # when Chromium captures a viewport: the screenshot then looks blank.
+        # Use a synchronous scroll for evidence, without changing site CSS.
+        page.evaluate("window.scrollTo({top:0,left:0,behavior:'instant'})")
+        page.wait_for_timeout(150)
+        closed_scroll=page.evaluate('window.scrollY')
+        ck('Closed screenshot starts at document top',abs(closed_scroll)<=1,{'scrollY':closed_scroll})
         page.screenshot(path=str(report.out/(prefix+'-closed.png')))
         mobile=page.evaluate("matchMedia('(max-width:768px)').matches")
         toggle=page.locator('#navToggle');menu=page.locator('#navLinks')
@@ -346,6 +375,9 @@ def run_one(pw,engine,root,fonts,report,width,height,axe_path,native=False):
             book_focus=page.evaluate("""() => ({ok:document.activeElement===document.querySelector('#navLinks .nav-cta'),tag:document.activeElement&&document.activeElement.tagName,id:document.activeElement&&document.activeElement.id,href:document.activeElement&&document.activeElement.getAttribute&&document.activeElement.getAttribute('href'),text:document.activeElement&&document.activeElement.textContent&&document.activeElement.textContent.trim().slice(0,80)})""")
             ck('Book Now reached by keyboard',book_focus['ok'],book_focus)
             ck('Book Now visible after keyboard scrolling',menu.locator('.nav-cta').evaluate(HIT),menu.locator('.nav-cta').evaluate('el=>({scrollTop:el.closest("#navLinks").scrollTop,rect:{left:el.getBoundingClientRect().left,right:el.getBoundingClientRect().right,top:el.getBoundingClientRect().top,bottom:el.getBoundingClientRect().bottom},vw:innerWidth,vh:innerHeight})'))
+            page.evaluate("window.scrollTo({top:0,left:0,behavior:'instant'})")
+            open_scroll=page.evaluate('window.scrollY')
+            ck('Open screenshot starts at document top',abs(open_scroll)<=1,{'scrollY':open_scroll})
             page.screenshot(path=str(report.out/(prefix+'-open.png')))
             # Axe must inspect the OPEN menu, not just its closed end state.
             if axe_path:
@@ -408,6 +440,9 @@ def run_one(pw,engine,root,fonts,report,width,height,axe_path,native=False):
         ck('Actual full CSS and analytics script loaded',all(x in loaded for x in ['assets/photo-proof.css','assets/ivm-typography.css','analytics.js']))
         ck('No JavaScript execution errors',not errors,errors)
         ck('No missing runtime assets',not missing,missing)
+        page.evaluate("window.scrollTo({top:0,left:0,behavior:'instant'})")
+        final_scroll=page.evaluate('window.scrollY')
+        ck('Final screenshot starts at document top',abs(final_scroll)<=1,{'scrollY':final_scroll})
         page.screenshot(path=str(report.out/(prefix+'-final.png')))
     except Exception as e:
         ck('Scenario completed',False,str(e));errors.append(traceback.format_exc())
