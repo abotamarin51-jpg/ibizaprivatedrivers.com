@@ -259,32 +259,46 @@ def run_one(pw,engine,root,fonts,report,width,height,axe_path,native=False):
         page.evaluate('document.fonts.ready')
         if native:
             page.bring_to_front()
-            subprocess.run(['xdotool','key','--clearmodifiers','ctrl+0'],check=True)
-            page.wait_for_timeout(200)
-            initial=page.evaluate("() => ({dpr:devicePixelRatio,innerWidth,clientWidth:document.documentElement.clientWidth})")
-            levels=[];ratio=1.0;confirmed=False
-            for _ in range(12):
-                subprocess.run(['xdotool','key','--clearmodifiers','ctrl+plus'],check=True)
-                page.wait_for_timeout(200)
-                current=page.evaluate("() => ({dpr:devicePixelRatio,innerWidth,clientWidth:document.documentElement.clientWidth})")
-                dpr_ratio=current['dpr']/initial['dpr'] if initial['dpr'] else 1.0
-                viewport_ratio=initial['innerWidth']/current['innerWidth'] if current['innerWidth'] else 1.0
-                ratio=max(dpr_ratio,viewport_ratio)
-                levels.append({'effective':round(ratio,3),'dpr':round(dpr_ratio,3),
-                               'viewport':round(viewport_ratio,3),'innerWidth':current['innerWidth'],
-                               'clientWidth':current['clientWidth']})
-                if abs(ratio-2)<0.02:
-                    confirmed=True;break
-                if ratio>2.02:break
-            detail={'ratio':ratio,'attempts':len(levels),'observed':levels,'initial':initial}
-            report.data.setdefault('native_zoom_attempts',{})[prefix]=detail
+            shortcuts=['ctrl+plus']
+            if engine=='firefox':
+                # Firefox/Linux installations may bind zoom-in to the physical
+                # '=' key or keypad '+' rather than the synthetic '+' keysym.
+                shortcuts=['ctrl+plus','ctrl+equal','ctrl+KP_Add']
+            confirmed=False;best=None
+            for shortcut in shortcuts:
+                subprocess.run(['xdotool','key','--clearmodifiers','ctrl+0'],check=True)
+                page.wait_for_timeout(250)
+                initial=page.evaluate("() => ({dpr:devicePixelRatio,innerWidth,clientWidth:document.documentElement.clientWidth})")
+                levels=[];ratio=1.0
+                for _ in range(12):
+                    subprocess.run(['xdotool','key','--clearmodifiers',shortcut],check=True)
+                    page.wait_for_timeout(250)
+                    current=page.evaluate("() => ({dpr:devicePixelRatio,innerWidth,clientWidth:document.documentElement.clientWidth})")
+                    dpr_ratio=current['dpr']/initial['dpr'] if initial['dpr'] else 1.0
+                    viewport_ratio=initial['innerWidth']/current['innerWidth'] if current['innerWidth'] else 1.0
+                    ratio=max(dpr_ratio,viewport_ratio)
+                    levels.append({'effective':round(ratio,3),'dpr':round(dpr_ratio,3),
+                                   'viewport':round(viewport_ratio,3),'innerWidth':current['innerWidth'],
+                                   'clientWidth':current['clientWidth']})
+                    # Browser-native zoom levels are discrete. A native level from
+                    # 198% through 210% is accepted as exercising at least the
+                    # requested 200% condition; the exact measured ratio is retained.
+                    if 1.98<=ratio<=2.10:
+                        confirmed=True;break
+                    if ratio>2.10:break
+                attempt={'shortcut':shortcut,'ratio':ratio,'steps':len(levels),
+                         'observed':levels,'initial':initial}
+                if best is None or abs(ratio-2)<abs(best['ratio']-2):best=attempt
+                if confirmed:
+                    best=attempt;break
+            report.data.setdefault('native_zoom_attempts',{})[prefix]=best
             if not confirmed:
                 report.data['manual_gates'].append(
-                    prefix+': native 200% browser UI zoom could not be confirmed on this Linux/Xvfb runner; '
+                    prefix+': native browser UI zoom >=200% could not be confirmed on this Linux/Xvfb runner; '
                     'no viewport/CSS emulation was substituted'
                 )
                 return
-            ck('Native browser UI zoom is exactly 200%',True,detail)
+            ck('Native browser UI zoom reached at least 200%',True,best)
         # Exercise actual analytics.js banner locally with all remote outputs disabled.
         reject=page.locator('#ipd-consent button[data-consent="denied"]')
         ck('Actual consent banner was executed',reject.count()==1)
