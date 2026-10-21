@@ -406,3 +406,173 @@ jobs:
           for x in r.get('missing_resources',[]):
               print('QA_MISSING', str(x)[:800])
           PY
+
+  safari-native-smoke:
+    name: Native macOS Safari menu focus (CSP-isolated supplemental)
+    runs-on: macos-26
+    timeout-minutes: 18
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout exact PR branch
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Safari test client
+        run: python -m pip install --disable-pip-version-check selenium==4.38.0
+      - name: Enable native Safari WebDriver on ephemeral CI runner
+        run: sudo safaridriver --enable
+      - name: Native Safari local menu validation (no external requests)
+        run: |
+          python - <<'PY'
+          import hashlib
+          import json
+          import os
+          import pathlib
+          import threading
+          import time
+          from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
+          from selenium import webdriver
+          from selenium.webdriver.common.action_chains import ActionChains
+          from selenium.webdriver.common.by import By
+          from selenium.webdriver.common.keys import Keys
+          from selenium.webdriver.support.ui import WebDriverWait
+
+          root = pathlib.Path('.').resolve()
+          output = pathlib.Path('/tmp/ipd-native-safari')
+          output.mkdir(parents=True, exist_ok=True)
+          # Headers apply only to this local ephemeral test server.
+          # Browser CSP blocks tracking, outgoing analytics, external fonts,
+          # external CSS/JS and form submissions before network transmission.
+          # Full real-font QA is performed in the existing Playwright WebKit job.
+          policy = ("default-src 'none'; script-src 'self' 'unsafe-inline'; "
+                    "style-src 'self' 'unsafe-inline'; img-src 'self' data:; "
+                    "font-src 'self'; connect-src 'none'; form-action 'none'; "
+                    "object-src 'none'; base-uri 'self'; frame-src 'none'")
+          checks = []
+          evidence = {
+            'scope': 'native Safari supplemental menu keyboard test (NOT complete Google font certification)',
+            'candidate_sha256': hashlib.sha256((root / 'index.html').read_bytes()).hexdigest(),
+            'source': 'exact checked-out PR branch Home with real local CSS, JS and images',
+            'external_network': 'blocked via HTTP response CSP; no external links or forms activated',
+            'native_zoom_200': 'not attempted; verified separately in Firefox and Playwright WebKit',
+            'checks': checks,
+            'errors': [],
+            'merged': False,
+            'published': False,
+          }
+
+          class LocalOnly(SimpleHTTPRequestHandler):
+            def __init__(self, *args, **kw):
+              super().__init__(*args, directory=str(root), **kw)
+            def end_headers(self):
+              self.send_header('Content-Security-Policy', policy)
+              self.send_header('Cache-Control', 'no-store')
+              super().end_headers()
+            def do_POST(self):
+              self.send_error(405)
+            def log_message(self, fmt, *args):
+              pass
+
+          server = ThreadingHTTPServer(('127.0.0.1', 0), LocalOnly)
+          threading.Thread(target=server.serve_forever, daemon=True).start()
+          driver = None
+          def verify(name, ok, detail=None):
+            checks.append({'name': name, 'passed': bool(ok), 'detail': detail})
+            if not ok:
+              raise AssertionError(name + (': '+str(detail) if detail is not None else ''))
+          def js(code):
+            return driver.execute_script(code)
+          def get_focus():
+            return js("return document.activeElement && (document.activeElement.id || document.activeElement.getAttribute('href') || document.activeElement.tagName)")
+          def nav_state():
+            return js("""return {mobile:matchMedia('(max-width:768px)').matches,
+              inert:document.getElementById('navLinks').inert,
+              expanded:document.getElementById('navToggle').getAttribute('aria-expanded'),
+              width:innerWidth}""")
+          try:
+            driver = webdriver.Safari(options=webdriver.SafariOptions())
+            evidence['safari_version'] = driver.capabilities.get('browserVersion')
+            evidence['driver_name'] = driver.capabilities.get('browserName')
+            driver.set_page_load_timeout(25)
+            driver.set_window_rect(width=500, height=920)
+            url = 'http://127.0.0.1:' + str(server.server_port) + '/'
+            driver.get(url)
+            WebDriverWait(driver, 12).until(lambda d: d.find_element(By.ID, 'navToggle'))
+            verify('Actual Home loaded', 'Ibiza Private Drivers' in driver.title)
+            verify('Actual consent control present', len(driver.find_elements(By.CSS_SELECTOR, '#ipd-consent button[data-consent="denied"]')) == 1)
+            driver.find_element(By.CSS_SELECTOR, '#ipd-consent button[data-consent="denied"]').click()
+            verify('Consent dialog closed', not driver.find_elements(By.ID, 'ipd-consent'))
+            verify('External resources not loaded', not js("""return performance.getEntriesByType('resource').some(r =>
+              r.name.startsWith('http') && !r.name.startsWith(location.origin))"""))
+            state = nav_state()
+            evidence['initial_viewport'] = state
+            verify('Actual Safari mobile breakpoint reached', state['mobile'] and state['width'] <= 768, state)
+            verify('Closed menu removes keyboard focus via inert', state['inert'] and state['expanded'] == 'false', state)
+            toggle = driver.find_element(By.ID, 'navToggle')
+            toggle.send_keys(Keys.TAB)
+            verify('Tab skips closed menu', js("return !document.getElementById('navLinks').contains(document.activeElement)"), get_focus())
+            driver.execute_script("arguments[0].focus()", toggle)
+            toggle.send_keys(Keys.SHIFT, Keys.TAB)
+            verify('Shift+Tab skips closed menu', js("return !document.getElementById('navLinks').contains(document.activeElement)"), get_focus())
+            driver.execute_script("window.scrollTo({top:0,left:0,behavior:'instant'})")
+            driver.save_screenshot(str(output / 'safari-closed.png'))
+            toggle.click()
+            time.sleep(.42)
+            state = nav_state()
+            verify('Menu opens and removes inert', not state['inert'] and state['expanded'] == 'true', state)
+            verify('Menu has animated transform', js("""return getComputedStyle(document.getElementById('navLinks')).transitionProperty.includes('transform')"""))
+            driver.execute_script("arguments[0].focus()", toggle)
+            toggle.send_keys(Keys.TAB)
+            verify('Tab reaches first menu link', js("return document.activeElement === document.querySelector('#navLinks a')"), get_focus())
+            driver.execute_script("arguments[0].focus()", toggle)
+            menu_links = driver.find_elements(By.CSS_SELECTOR, '#navLinks a')
+            for link in menu_links:
+              ActionChains(driver).send_keys(Keys.TAB).perform()
+            verify('Book Now reachable by keyboard', js("return document.activeElement === document.querySelector('#navLinks .nav-cta')"), get_focus())
+            verify('Book Now visible inside menu', js("""const e=document.querySelector('#navLinks .nav-cta'),r=e.getBoundingClientRect();
+              return r.width>0 && r.height>0 && r.top>=0 && r.bottom<=innerHeight && r.left>=0 && r.right<=innerWidth"""))
+            driver.execute_script("window.scrollTo({top:0,left:0,behavior:'instant'})")
+            driver.save_screenshot(str(output / 'safari-open.png'))
+            ActionChains(driver).send_keys(Keys.ESCAPE).perform()
+            time.sleep(.42)
+            state = nav_state()
+            verify('Escape closes, re-enables inert, returns focus', state['inert'] and state['expanded']=='false' and js("return document.activeElement.id==='navToggle'"), state)
+            driver.set_window_rect(width=1250, height=900)
+            time.sleep(.4)
+            state = nav_state()
+            verify('Desktop removes inert', not state['mobile'] and not state['inert'], state)
+            driver.set_window_rect(width=500, height=920)
+            time.sleep(.4)
+            state = nav_state()
+            verify('Mobile resize restores inert', state['mobile'] and state['inert'], state)
+            evidence['status'] = 'NATIVE_SAFARI_SUPPLEMENT_PASSED_NOT_PRODUCTION_APPROVAL'
+          except Exception as exc:
+            evidence['errors'].append(type(exc).__name__ + ': ' + str(exc))
+            evidence['status'] = 'NATIVE_SAFARI_SUPPLEMENT_FAILED'
+          finally:
+            if driver:
+              try: driver.quit()
+              except Exception: pass
+            server.shutdown()
+            (output / 'report.json').write_text(json.dumps(evidence, indent=2, ensure_ascii=False), encoding='utf-8')
+            print('NATIVE_SAFARI_REPORT', json.dumps({
+              'status': evidence['status'], 'version': evidence.get('safari_version'),
+              'checks': len(checks), 'failures': [x for x in checks if not x['passed']],
+              'errors': evidence['errors'], 'viewport': evidence.get('initial_viewport')
+            }, ensure_ascii=False))
+          if evidence['errors']:
+            raise SystemExit(2)
+          PY
+      - name: Preserve native Safari screenshots and report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ipd-pr10-native-safari
+          path: /tmp/ipd-native-safari/
+          if-no-files-found: warn
+          retention-days: 7
