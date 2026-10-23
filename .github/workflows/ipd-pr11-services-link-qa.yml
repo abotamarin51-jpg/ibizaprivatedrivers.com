@@ -1,0 +1,135 @@
+name: IPD PR11 Services Link QA
+on:
+  push:
+    branches:
+      - seo/services-ibiza-transfers-context-2026-10-21
+
+permissions:
+  contents: read
+
+jobs:
+  services-link:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout candidate with baseline
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Verify exact change, SEO invariants and destination
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import pathlib
+          import subprocess
+          import re
+          
+          base = "30699bb9f272bf8569496caa0a7b55ce0a4b009c"
+          original = subprocess.check_output(["git", "show", base + ":services/index.html"]).decode("utf-8")
+          candidate = pathlib.Path("services/index.html").read_text(encoding="utf-8")
+          old = 'For several hours or multiple stops, use <a href="/chauffeur-service/"><strong>Chauffeur Ibiza</strong></a>.'
+          extra = ' For direct point-to-point journeys, see <a href="/ibiza-transfers/"><strong>Ibiza Private Transfers</strong></a>.'
+          assert original.count(old) == 1, "The expected source sentence changed"
+          assert candidate == original.replace(old, old + extra), "Changes outside the one contextual sentence"
+          assert candidate.count('href="/ibiza-transfers/"') == 1, "Wrong number of transfer links"
+          assert pathlib.Path("ibiza-transfers/index.html").is_file(), "Transfer target missing"
+          target = pathlib.Path("ibiza-transfers/index.html").read_text(encoding="utf-8")
+          assert '<link rel="canonical" href="https://ibizaprivatedrivers.com/ibiza-transfers/">' in target
+          assert re.search(r'<h1[^>]*>Ibiza private transfers and car service</h1>', target, re.I)
+          diff = set(subprocess.check_output(["git", "diff", "--name-only", base, "HEAD"], text=True).splitlines())
+          assert diff == {
+              "services/index.html",
+              ".github/workflows/ipd-pr11-services-link-qa.yml"
+          }, "Unexpected files changed: " + repr(diff)
+          print("PASS: exact reversible SEO change, unchanged previous content and booking links, existing canonical target, only expected files")
+          PY
+
+      - name: Install isolated Chromium for local interaction checks
+        shell: bash
+        run: |
+          python3 -m pip install --disable-pip-version-check playwright==1.57.0
+          python3 -m playwright install --with-deps chromium
+
+      - name: Test visible link, keyboard order and internal navigation
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import http.server
+          import threading
+          from pathlib import Path
+          from urllib.parse import urlsplit
+          from playwright.sync_api import sync_playwright
+          
+          root = Path(".").resolve()
+          class ReadOnly(http.server.SimpleHTTPRequestHandler):
+              def __init__(self, *args, **kwargs):
+                  super().__init__(*args, directory=str(root), **kwargs)
+              def do_POST(self):
+                  self.send_error(405)
+              def log_message(self, format, *args):
+                  pass
+          server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), ReadOnly)
+          thread = threading.Thread(target=server.serve_forever, daemon=True)
+          thread.start()
+          origin = "http://127.0.0.1:" + str(server.server_port)
+          checks = 0
+          
+          try:
+              with sync_playwright() as p:
+                  browser = p.chromium.launch()
+                  for width in (375, 768, 1280):
+                      ctx = browser.new_context(
+                          viewport={"width": width, "height": 900},
+                          service_workers="block",
+                          accept_downloads=False
+                      )
+                      blocked = []
+                      def intercept(route):
+                          url = route.request.url
+                          u = urlsplit(url)
+                          if route.request.method == "GET" and u.hostname == "127.0.0.1" and u.port == server.server_port:
+                              route.continue_()
+                          else:
+                              blocked.append(url)
+                              route.abort()
+                      ctx.route("**/*", intercept)
+                      ctx.add_init_script("""(() => {
+                          navigator.sendBeacon = () => false;
+                          window.open = () => null;
+                          HTMLFormElement.prototype.submit = () => {};
+                      })()""")
+                      page = ctx.new_page()
+                      response = page.goto(origin + "/services/", wait_until="networkidle", timeout=30000)
+                      assert response and response.status == 200, "Services page not loaded"
+                      checks += 1
+                      consent = page.locator("#ipd-consent")
+                      if consent.count():
+                          decline = consent.locator('button[data-consent="denied"]')
+                          if decline.count():
+                              decline.click(timeout=5000)
+                      link = page.locator('p.intro a[href="/ibiza-transfers/"]')
+                      assert link.count() == 1 and link.is_visible(), "New link not visible"
+                      checks += 1
+                      box = link.bounding_box()
+                      assert box and box["x"] >= -1 and box["x"] + box["width"] <= width + 1, "New link is clipped horizontally"
+                      checks += 1
+                      prev = page.locator('p.intro a[href="/chauffeur-service/"]')
+                      assert prev.count() == 1, "Previous contextual link missing"
+                      prev.focus()
+                      page.keyboard.press("Tab")
+                      assert link.evaluate("(el) => document.activeElement === el"), "Tab did not reach the new link"
+                      checks += 1
+                      link.click(timeout=5000)
+                      assert page.url.rstrip("/") == origin + "/ibiza-transfers", "New link did not navigate locally"
+                      checks += 1
+                      assert page.locator('link[rel="canonical"]').get_attribute("href") == "https://ibizaprivatedrivers.com/ibiza-transfers/"
+                      checks += 1
+                      ctx.close()
+                  browser.close()
+          finally:
+              server.shutdown()
+              server.server_close()
+          print(f"PASS: {checks} real browser assertions across 375, 768 and 1280 pixels; no external requests or contact tests permitted")
+          PY
