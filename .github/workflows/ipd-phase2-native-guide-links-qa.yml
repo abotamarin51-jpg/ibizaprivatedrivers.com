@@ -155,3 +155,36 @@ jobs:
               server.server_close()
           print("PASS:", count, "browser assertions with external contacts, analytics and form posts blocked")
           PY
+
+      - name: Check live FR DE AR pages and guides without executing scripts
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import urllib.request
+          from urllib.parse import urlparse
+
+          origin = "https://ibizaprivatedrivers.com"
+          paths = [
+              ("/fr/chauffeur-prive-ibiza/", "fr"),
+              ("/de/privatchauffeur-ibiza/", "de"),
+              ("/ar/private-chauffeur-ibiza/", "ar"),
+              ("/fr/guides/chauffeur-prive-ibiza-2026/", "fr"),
+              ("/de/guides/privatchauffeur-ibiza-2026/", "de"),
+              ("/ar/guides/private-chauffeur-ibiza-2026/", "ar"),
+          ]
+          for path, lang in paths:
+              req = urllib.request.Request(
+                  origin + path,
+                  headers={"User-Agent": "IbizaPrivateDrivers-GitHub-QA/1.0", "Accept": "text/html"},
+                  method="GET",
+              )
+              with urllib.request.urlopen(req, timeout=18) as response:
+                  assert response.status == 200, (path, response.status)
+                  assert urlparse(response.url).path == path, (path, response.url)
+                  html = response.read(1000000).decode("utf-8")
+              assert '<html lang="' + lang + '"' in html, path + ": language"
+              assert 'rel="canonical" href="' + origin + path + '"' in html, path + ": canonical"
+              assert 'name="robots" content="index,follow' in html, path + ": robots"
+              assert 'https://wa.me/34613756211' in html, path + ": booking CTA"
+              print("PASS public HTTP 200, canonical, lang, robots, CTA:", path)
+          PY
