@@ -1,0 +1,190 @@
+name: IPD Phase 2 Native Guide Links QA
+
+on:
+  push:
+    branches:
+      - seo/phase2-native-guide-links-2026-10-23
+
+permissions:
+  contents: read
+
+jobs:
+  native-guide-links:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact branch and baseline
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Check only intended HTML additions and targets
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import pathlib
+          import subprocess
+
+          base = "4389f23bfb60c83d3b5d46aa5d852fac333b96ce"
+          workflow = ".github/workflows/ipd-phase2-native-guide-links-qa.yml"
+          entries = [
+              (
+                  "fr/chauffeur-prive-ibiza/index.html",
+                  "/fr/guides/chauffeur-prive-ibiza-2026/",
+                  '<p>Pour comparer les options à l’heure, à la demi-journée ou à la journée, consultez notre <a href="/fr/guides/chauffeur-prive-ibiza-2026/">guide pratique du chauffeur privé à Ibiza</a>.</p>',
+              ),
+              (
+                  "de/privatchauffeur-ibiza/index.html",
+                  "/de/guides/privatchauffeur-ibiza-2026/",
+                  '<p>Wenn Sie stundenweise, halbtags oder ganztags buchen möchten, hilft unser <a href="/de/guides/privatchauffeur-ibiza-2026/">Ratgeber zum Privatchauffeur auf Ibiza</a> bei der Planung.</p>',
+              ),
+              (
+                  "ar/private-chauffeur-ibiza/index.html",
+                  "/ar/guides/private-chauffeur-ibiza-2026/",
+                  '<p>لمقارنة خيارات الحجز بالساعة أو لنصف يوم أو ليوم كامل، راجع <a href="/ar/guides/private-chauffeur-ibiza-2026/">دليل السائق الخاص في إيبيزا</a> قبل إرسال تفاصيل الرحلة.</p>',
+              ),
+          ]
+          marker = '</p></div><div class="cards">'
+          for path, link, paragraph in entries:
+              before = subprocess.check_output(["git", "show", base + ":" + path]).decode("utf-8")
+              after = pathlib.Path(path).read_text(encoding="utf-8")
+              assert before.count(marker) == 1, path + ": missing insertion point"
+              assert before.count('href="' + link + '"') == 0, path + ": pre-existing link"
+              assert after == before.replace(marker, '</p>' + paragraph + '</div><div class="cards">'), path + ": unexpected content change"
+              assert after.count('href="' + link + '"') == 1, path + ": link count"
+              target = pathlib.Path(link.lstrip("/")) / "index.html"
+              assert target.is_file(), "Missing guide: " + link
+              guide = target.read_text(encoding="utf-8")
+              assert 'rel="canonical" href="https://ibizaprivatedrivers.com' + link + '"' in guide, link + ": canonical mismatch"
+              assert 'name="robots"' in guide and 'index' in guide.lower(), link + ": indexing metadata"
+          changed = set(subprocess.check_output(["git", "diff", "--name-only", base, "HEAD"], text=True).splitlines())
+          assert changed == {workflow, *(entry[0] for entry in entries)}, repr(changed)
+          print("PASS: 3 exact reversible contextual links; canonical targets exist; no unrelated changes")
+          PY
+
+      - name: Install isolated Chromium
+        shell: bash
+        run: |
+          python3 -m pip install --disable-pip-version-check playwright==1.57.0
+          python3 -m playwright install --with-deps chromium
+
+      - name: Verify keyboard, visibility, and local guide navigation
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import http.server
+          import threading
+          from pathlib import Path
+          from urllib.parse import urlparse
+          from playwright.sync_api import sync_playwright
+
+          root = Path(".").resolve()
+          entries = [
+              ("/fr/chauffeur-prive-ibiza/", "/fr/guides/chauffeur-prive-ibiza-2026/"),
+              ("/de/privatchauffeur-ibiza/", "/de/guides/privatchauffeur-ibiza-2026/"),
+              ("/ar/private-chauffeur-ibiza/", "/ar/guides/private-chauffeur-ibiza-2026/"),
+          ]
+
+          class ReadOnly(http.server.SimpleHTTPRequestHandler):
+              def __init__(self, *args, **kwargs):
+                  super().__init__(*args, directory=str(root), **kwargs)
+              def do_POST(self):
+                  self.send_error(405)
+              def log_message(self, fmt, *args):
+                  pass
+
+          server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), ReadOnly)
+          threading.Thread(target=server.serve_forever, daemon=True).start()
+          origin = "http://127.0.0.1:" + str(server.server_port)
+          count = 0
+          try:
+              with sync_playwright() as p:
+                  browser = p.chromium.launch()
+                  for width in (375, 768, 1280):
+                      for source, destination in entries:
+                          context = browser.new_context(
+                              viewport={"width": width, "height": 900},
+                              service_workers="block",
+                              accept_downloads=False
+                          )
+                          def route_handler(route):
+                              request = route.request
+                              url = urlparse(request.url)
+                              if request.method == "GET" and url.hostname == "127.0.0.1" and url.port == server.server_port:
+                                  route.continue_()
+                              else:
+                                  route.abort()
+                          context.route("**/*", route_handler)
+                          context.add_init_script("""(() => {
+                              navigator.sendBeacon = () => false;
+                              window.open = () => null;
+                              HTMLFormElement.prototype.submit = () => {};
+                          })()""")
+                          page = context.new_page()
+                          response = page.goto(origin + source, wait_until="networkidle", timeout=30000)
+                          assert response and response.status == 200, source + ": missing page"
+                          count += 1
+                          consent = page.locator("#ipd-consent")
+                          if consent.count():
+                              deny = consent.locator('button[data-consent="denied"]')
+                              if deny.count():
+                                  deny.click(timeout=5000)
+                          link = page.locator('.prose a[href="' + destination + '"]')
+                          assert link.count() == 1 and link.is_visible(), destination + ": link hidden"
+                          count += 1
+                          link.scroll_into_view_if_needed()
+                          box = link.bounding_box()
+                          assert box and box["x"] >= -1 and box["x"] + box["width"] <= width + 1, destination + ": link clipped"
+                          count += 1
+                          nearby = page.locator(".prose a[href]")
+                          assert nearby.count() >= 2
+                          nearby.nth(nearby.count() - 2).focus()
+                          page.keyboard.press("Tab")
+                          assert link.evaluate("(el) => el === document.activeElement"), destination + ": keyboard access failed"
+                          count += 1
+                          link.click(timeout=5000)
+                          assert page.url.rstrip("/") == (origin + destination).rstrip("/"), destination + ": incorrect route"
+                          count += 1
+                          assert page.locator('link[rel="canonical"]').get_attribute("href") == "https://ibizaprivatedrivers.com" + destination
+                          count += 1
+                          context.close()
+                  browser.close()
+          finally:
+              server.shutdown()
+              server.server_close()
+          print("PASS:", count, "browser assertions with external contacts, analytics and form posts blocked")
+          PY
+
+      - name: Check live FR DE AR pages and guides without executing scripts
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import urllib.request
+          from urllib.parse import urlparse
+
+          origin = "https://ibizaprivatedrivers.com"
+          paths = [
+              ("/fr/chauffeur-prive-ibiza/", "fr"),
+              ("/de/privatchauffeur-ibiza/", "de"),
+              ("/ar/private-chauffeur-ibiza/", "ar"),
+              ("/fr/guides/chauffeur-prive-ibiza-2026/", "fr"),
+              ("/de/guides/privatchauffeur-ibiza-2026/", "de"),
+              ("/ar/guides/private-chauffeur-ibiza-2026/", "ar"),
+          ]
+          for path, lang in paths:
+              req = urllib.request.Request(
+                  origin + path,
+                  headers={"User-Agent": "IbizaPrivateDrivers-GitHub-QA/1.0", "Accept": "text/html"},
+                  method="GET",
+              )
+              with urllib.request.urlopen(req, timeout=18) as response:
+                  assert response.status == 200, (path, response.status)
+                  assert urlparse(response.url).path == path, (path, response.url)
+                  html = response.read(1000000).decode("utf-8")
+              assert '<html lang="' + lang + '"' in html, path + ": language"
+              assert 'rel="canonical" href="' + origin + path + '"' in html, path + ": canonical"
+              assert 'name="robots" content="index,follow' in html, path + ": robots"
+              assert 'https://wa.me/34613756211' in html, path + ": booking CTA"
+              print("PASS public HTTP 200, canonical, lang, robots, CTA:", path)
+          PY
