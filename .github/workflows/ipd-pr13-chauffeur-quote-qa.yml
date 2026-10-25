@@ -1,0 +1,196 @@
+name: IPD PR13 Chauffeur Quote QA
+
+on:
+  push:
+    branches:
+      - qa/chauffeur-quote-clarity-2026-10-24
+
+permissions:
+  contents: read
+
+jobs:
+  chauffeur-quote-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Install cross-browser QA dependencies
+        run: |
+          python3 -m pip install playwright==1.55.0
+          python3 -m playwright install --with-deps chromium firefox webkit
+
+      - name: Verify exact CTA-only HTML diff and test-only workflow
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re, subprocess
+          from urllib.parse import urlparse, parse_qs
+
+          base_sha = "8f1a230b8339bf13535e3d4e8a01ec3fa7d1b534"
+          filename = "chauffeur-service/index.html"
+          changed = set(subprocess.check_output(
+              ["git", "diff", "--name-only", base_sha, "HEAD"], text=True
+          ).splitlines())
+          expected_files = {
+              filename,
+              ".github/workflows/ipd-pr13-chauffeur-quote-qa.yml",
+          }
+          assert changed == expected_files, (changed, expected_files)
+          original = subprocess.check_output(
+              ["git", "show", f"{base_sha}:{filename}"], text=True
+          )
+          candidate = Path(filename).read_text(encoding="utf-8")
+          old_url = (
+              "https://wa.me/34613756211?text=Hello%2C%20I%20would%20like%20"
+              "a%20private%20chauffeur%20in%20Ibiza.%0ADate%3A%0AStart%20time%3A"
+              "%0APickup%3A%0AEstimated%20duration%3A%0AItinerary%3A%0APassengers%3A"
+          )
+          new_url = old_url.replace(
+              "%0APassengers%3A",
+              "%0AFinal%20return%3A%0APassengers%3A%0ALuggage%3A"
+          )
+          assert original.count(old_url) == 3
+          assert candidate == original.replace(old_url, new_url)
+          targets = re.findall(r'href="(https://wa\.me/[^"]+)"', candidate)
+          assert targets == [new_url] * 3
+          for url in targets:
+              parsed = urlparse(url)
+              assert (parsed.scheme, parsed.netloc, parsed.path) == (
+                  "https", "wa.me", "/34613756211"
+              )
+              assert set(parse_qs(parsed.query)) == {"text"}
+              message = parse_qs(parsed.query)["text"][0]
+              for field in (
+                  "Date:", "Start time:", "Pickup:", "Estimated duration:",
+                  "Itinerary:", "Final return:", "Passengers:", "Luggage:"
+              ):
+                  assert message.count(field) == 1, (field, message)
+              assert len(message) < 300
+          print("PASS: exact two-file PR scope; three safe WhatsApp template substitutions")
+          PY
+
+      - name: Check full page in Chromium Firefox and WebKit without outbound requests
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import contextlib
+          import http.server
+          import threading
+          from urllib.parse import urlparse
+          from playwright.sync_api import sync_playwright
+
+          class QuietServer(http.server.SimpleHTTPRequestHandler):
+              def log_message(self, *args):
+                  return
+
+          server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), QuietServer)
+          threading.Thread(target=server.serve_forever, daemon=True).start()
+          origin = f"http://127.0.0.1:{server.server_port}"
+          page_url = origin + "/chauffeur-service/"
+          expected_link = "https://wa.me/34613756211?text="
+          tries = 0
+
+          try:
+              with sync_playwright() as p:
+                  for engine in ("chromium", "firefox", "webkit"):
+                      browser = getattr(p, engine).launch(headless=True)
+                      try:
+                          for width in (375, 440, 768, 1280):
+                              context = browser.new_context(
+                                  viewport={"width": width, "height": 850},
+                                  service_workers="block",
+                              )
+                              page = context.new_page()
+                              external_requests = []
+                              local_asset_failures = []
+
+                              def safe_route(route):
+                                  u = urlparse(route.request.url)
+                                  if u.scheme not in ("http", "https"):
+                                      route.abort()
+                                  elif u.hostname != "127.0.0.1":
+                                      external_requests.append(route.request.url)
+                                      route.abort()
+                                  elif any(t in u.path.lower() for t in (
+                                      "analytics", "gtag", "track", "pixel"
+                                  )):
+                                      route.abort()
+                                  else:
+                                      route.continue_()
+
+                              page.route("**/*", safe_route)
+                              page.add_init_script("""
+                                document.addEventListener('click', function(event) {
+                                  const a = event.target.closest && event.target.closest('a');
+                                  if (a && a.href.startsWith('https://wa.me/')) {
+                                    event.preventDefault();
+                                    event.stopImmediatePropagation();
+                                    window.__interceptedQuoteClicks =
+                                      (window.__interceptedQuoteClicks || 0) + 1;
+                                  }
+                                }, true);
+                              """)
+                              response = page.goto(page_url, wait_until="load")
+                              assert response and response.status == 200
+                              assert page.locator("h1").count() == 1
+                              assert "Chauffeur" in page.locator("h1").inner_text()
+                              assert page.locator('link[rel="canonical"]').get_attribute("href") == "https://ibizaprivatedrivers.com/chauffeur-service/"
+                              assert page.locator('a[hreflang="fr"]').count() == 1
+                              assert page.locator('a[hreflang="de"]').count() == 1
+                              assert page.locator('a[hreflang="ar"]').count() == 1
+                              assert page.locator('link[rel="stylesheet"][href*="ivm-typography"]').count() == 1
+
+                              ctas = page.locator('a[href^="' + expected_link + '"]')
+                              assert ctas.count() == 3, (engine, width, ctas.count())
+                              for i in range(3):
+                                  link = ctas.nth(i)
+                                  assert link.is_visible(), (engine, width, i)
+                                  assert link.get_attribute("target") == "_blank"
+                                  assert "noopener" in link.get_attribute("rel").split()
+                                  link.scroll_into_view_if_needed()
+                                  link.focus()
+                                  assert link.evaluate("(el) => document.activeElement === el")
+                                  link.press("Enter")
+                                  link.click()
+                              assert page.evaluate("window.__interceptedQuoteClicks || 0") == 6
+                              assert page.url == page_url
+
+                              faq = page.locator(".faq details").first
+                              faq.locator("summary").click()
+                              assert faq.get_attribute("open") is not None
+                              assert page.locator('a[href="/airport-transfers/"]').count() >= 1
+                              assert page.locator('a[href="/services/"]').count() >= 1
+
+                              imgs = page.locator(".ipd-photo-proof img")
+                              assert imgs.count() == 2
+                              for i in range(2):
+                                  img = imgs.nth(i)
+                                  img.scroll_into_view_if_needed()
+                                  ok = img.evaluate("""(node) => new Promise(resolve => {
+                                    if (node.complete) return resolve(node.naturalWidth > 0);
+                                    node.addEventListener('load', () => resolve(node.naturalWidth > 0), {once:true});
+                                    node.addEventListener('error', () => resolve(false), {once:true});
+                                  })""")
+                                  assert ok, (engine, width, i)
+
+                              layout = page.evaluate("""() => ({
+                                scroll: document.documentElement.scrollWidth,
+                                client: document.documentElement.clientWidth
+                              })""")
+                              assert layout["scroll"] <= layout["client"] + 2, (
+                                  engine, width, layout
+                              )
+                              print(f"PASS {engine} {width}px: CTA focus/clicks intercepted, FAQ, resources, layout")
+                              context.close()
+                      finally:
+                          browser.close()
+              print("PASS: three engines x four widths, local site resources only")
+          finally:
+              server.shutdown()
+          PY
