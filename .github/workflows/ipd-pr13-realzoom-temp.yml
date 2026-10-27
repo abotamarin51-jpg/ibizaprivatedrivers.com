@@ -1,0 +1,133 @@
+name: IPD PR13 Real Browser 200pct Zoom QA Temporary
+on:
+  push:
+    branches:
+      - qa/chauffeur-quote-clarity-2026-10-24
+    paths:
+      - .github/workflows/ipd-pr13-realzoom-temp.yml
+permissions:
+  contents: read
+jobs:
+  chromium-ui-zoom:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install GUI and Chromium QA dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq xvfb xauth
+          python -m pip install --quiet playwright pyautogui python-xlib
+          python -m playwright install --with-deps chromium
+      - name: Real browser UI zoom to 200pct on complete repo page
+        run: |
+          xvfb-run -a -s "-screen 0 1800x1200x24" python - <<'PY'
+          import hashlib, json, re, shutil, subprocess, threading, time
+          from pathlib import Path
+          from urllib.parse import urlsplit
+          from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+          from playwright.sync_api import sync_playwright
+          import pyautogui
+          
+          root=Path.cwd().resolve()
+          pagefile="chauffeur-service/index.html"
+          p=subprocess.run(["git","fetch","--quiet","--depth=1","origin","main"],check=True)
+          main_sha=subprocess.check_output(["git","rev-parse","FETCH_HEAD"],text=True).strip()
+          assert main_sha=="8f1a230b8339bf13535e3d4e8a01ec3fa7d1b534",f"Main moved: {main_sha}"
+          baseline=subprocess.check_output(["git","show","FETCH_HEAD:"+pagefile],text=True)
+          candidate=(root/pagefile).read_text()
+          old="%0AItinerary%3A%0APassengers%3A"
+          new="%0AItinerary%3A%0AFinal%20return%3A%0APassengers%3A%0ALuggage%3A"
+          assert baseline.count(old)==3 and candidate.count(new)==3
+          assert candidate.replace(new,old)==baseline,"Other page changes detected"
+          blob=subprocess.run(["git","hash-object",pagefile],text=True,capture_output=True,check=True).stdout.strip()
+          assert blob=="cf1cb3a4c73c05f34390fc4c1f19b2ce371dd3c3",f"Unexpected candidate blob {blob}"
+          def isolate(html):
+            html=re.sub(r"<script\b(?![^>]*application/ld\+json)[^>]*>.*?</script>", "", html, flags=re.S|re.I)
+            html=re.sub(r'<link\b[^>]*href="https?://[^"]+"[^>]*>', "", html, flags=re.I)
+            return html
+          baseline=isolate(baseline)
+          candidate=isolate(candidate)
+          class Handler(SimpleHTTPRequestHandler):
+            def __init__(self,*a,**kw): super().__init__(*a,directory=str(root),**kw)
+            def log_message(self,*args): pass
+            def do_GET(self):
+              path=urlsplit(self.path).path
+              if path=="/__baseline__/chauffeur-service/": data=baseline.encode("utf-8")
+              elif path=="/__candidate__/chauffeur-service/": data=candidate.encode("utf-8")
+              else: return super().do_GET()
+              self.send_response(200);self.send_header("Content-Type","text/html; charset=utf-8")
+              self.send_header("Content-Length",str(len(data)));self.end_headers();self.wfile.write(data)
+          server=ThreadingHTTPServer(("127.0.0.1",0),Handler)
+          threading.Thread(target=server.serve_forever,daemon=True).start()
+          origin=f"http://127.0.0.1:{server.server_address[1]}"
+          def inspect(page):
+            return page.evaluate("""() => ({
+              dpr: window.devicePixelRatio,
+              innerWidth: window.innerWidth,
+              clientWidth: document.documentElement.clientWidth,
+              scrollWidth: document.documentElement.scrollWidth,
+              overflow: Math.max(0,document.documentElement.scrollWidth-document.documentElement.clientWidth),
+              ctas: [...document.querySelectorAll('a[href^="https://wa.me/34613756211?"]')].map(a=>({
+                text:a.textContent.trim(),href:a.getAttribute('href'),visible:!!a.getClientRects().length,
+                x:Math.round(a.getBoundingClientRect().left),right:Math.round(a.getBoundingClientRect().right)
+              })),
+              images:[...document.querySelectorAll('img')].map(i=>({src:i.getAttribute('src'),loaded:i.complete&&i.naturalWidth>0}))
+            })""")
+          results=[]
+          try:
+            with sync_playwright() as p:
+              browser=p.chromium.launch(headless=False,args=[
+                "--no-sandbox","--disable-background-networking","--disable-features=MediaRouter",
+                "--no-first-run","--disable-default-apps"])
+              for width in [375,440,768,1280]:
+                for variant in ["baseline","candidate"]:
+                  context=browser.new_context(viewport={"width":width,"height":760},device_scale_factor=1)
+                  blocked=[]
+                  def intercept(route):
+                    url=route.request.url
+                    if url.startswith(origin+"/"):route.continue_()
+                    else: blocked.append(url);route.abort()
+                  context.route("**/*",intercept)
+                  page=context.new_page()
+                  page.goto(origin+f"/__{variant}__/chauffeur-service/",wait_until="load",timeout=30000)
+                  page.bring_to_front()
+                  pyautogui.hotkey("ctrl","0")
+                  page.wait_for_timeout(250)
+                  a=inspect(page)
+                  assert abs(a["dpr"]-1)<.05 and abs(a["innerWidth"]-width)<=1,("100pct not reset",a)
+                  assert len(a["ctas"])==3 and all(x["visible"] for x in a["ctas"]),("CTA missing",a)
+                  want=(variant=="candidate")
+                  assert all(("%0AFinal%20return%3A" in x["href"])==want for x in a["ctas"])
+                  assert all(("%0ALuggage%3A" in x["href"])==want for x in a["ctas"])
+                  for _ in range(5):
+                    pyautogui.hotkey("ctrl","+")
+                    page.wait_for_timeout(150)
+                  z=inspect(page)
+                  assert abs(z["dpr"]-2)<.05 and abs(z["innerWidth"]-width/2)<=2,("not real 200pct zoom",width,variant,z)
+                  assert len(z["ctas"])==3 and all(x["visible"] for x in z["ctas"]),("CTA lost at 200pct",z)
+                  results.append(dict(variant=variant,physicalWidth=width,at100=dict(cssWidth=a["innerWidth"],overflow=a["overflow"]),
+                    at200=dict(dpr=z["dpr"],cssWidth=z["innerWidth"],scrollWidth=z["scrollWidth"],overflow=z["overflow"]),
+                    imageCount=len(z["images"]),imagesLoaded=sum(x["loaded"] for x in z["images"]),outboundBlocked=len(blocked)))
+                  context.close()
+              browser.close()
+          finally:
+            server.shutdown();server.server_close()
+          print("NATIVE_CHROMIUM_GUI_REAL_ZOOM_RESULTS="+json.dumps(results,ensure_ascii=False),flush=True)
+          for width in [375,440,768,1280]:
+            pair=[x for x in results if x["physicalWidth"]==width]
+            assert len(pair)==2
+            assert pair[0]["at100"]==pair[1]["at100"],("100pct regression",width,pair)
+            assert pair[0]["at200"]==pair[1]["at200"],("200pct regression",width,pair)
+          bad=[x for x in results if x["at200"]["overflow"]>1]
+          if bad:
+            raise AssertionError("TRUE 200% zoom causes horizontal overflow in BOTH baseline and candidate; not a PR #13 regression, but reflow gate remains blocked: "+json.dumps(bad))
+          print("PASS: TRUE GUI 200% zoom and no horizontal overflow at all widths, baseline=candidate.",flush=True)
+          PY
