@@ -62,6 +62,9 @@ jobs:
             .top .nav {flex:1 1 100%;min-width:0;justify-content:center;flex-wrap:wrap}
             .top .nav .btn {max-width:100%;text-align:center;overflow-wrap:anywhere;white-space:normal;padding:8px 10px}
             .grid,.steps,.links {grid-template-columns:minmax(0,1fr)}
+            .trust {grid-template-columns:minmax(0,1fr)}
+            .trust div,.trust div:nth-child(2) {border-right:0;border-bottom:1px solid var(--line);overflow-wrap:anywhere}
+            .trust div:last-child {border-bottom:0}
             .card,.step,.links a {min-width:0;overflow-wrap:anywhere;padding:16px}
             .hero h1 {font-size:clamp(1.85rem,10vw,2.5rem)!important;overflow-wrap:anywhere}
             h2 {font-size:clamp(1.65rem,8vw,2.25rem)!important;overflow-wrap:anywhere}
