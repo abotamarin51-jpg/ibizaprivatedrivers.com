@@ -96,7 +96,14 @@ jobs:
               viewport=driver.execute_script('return {width:window.innerWidth,scroll:document.documentElement.scrollWidth}')
               # Safari imposes a minimum outer window width on some runners. Record the actual CSS viewport.
               summary=driver.find_element(By.CSS_SELECTOR,"details summary")
-              summary.click()
+              driver.execute_script("arguments[0].scrollIntoView({block:'center'})",summary)
+              time.sleep(0.4)
+              print("SAFARI FAQ METRICS",json.dumps(driver.execute_script("const x=arguments[0],r=x.getBoundingClientRect(),s=getComputedStyle(x);return {rect:[r.x,r.y,r.width,r.height],viewport:innerWidth,visible:s.visibility,display:s.display,pointerEvents:s.pointerEvents,scroll:document.documentElement.scrollWidth};",summary)),flush=True)
+              try:
+                summary.click()
+              except Exception as exc:
+                print("SAFARI WEBDRIVER CLICK ISSUE:",type(exc).__name__,str(exc)[:180],flush=True)
+                ActionChains(driver).move_to_element(summary).click().perform()
               assert driver.execute_script("return document.querySelector('details').open") is True
               for a in links:
                 driver.execute_script("arguments[0].focus()",a)
