@@ -1,0 +1,165 @@
+name: IPD PR13 Native Safari LaunchServices TEMP
+on:
+  push:
+    branches: [qa/chauffeur-quote-clarity-2026-10-24]
+    paths: [.github/workflows/ipd-pr13-safari-launchservices-temp.yml]
+permissions:
+  contents: read
+jobs:
+  native-safari:
+    runs-on: macos-26-intel
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Prepare native GUI client on disposable runner only
+        run: |
+          python -m pip install --quiet pyobjc-framework-Quartz pyobjc-framework-Cocoa
+          defaults write com.apple.Safari WebKitTabToLinksPreferenceKey -bool true
+          defaults write com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebKit2TabsToLinks -bool true
+      - name: LaunchServices and native browser zoom without WebDriver or Safari AppleEvents
+        run: |
+          mkdir -p /tmp/ipd-safari-launchservices
+          cat > /tmp/ipd-safari-launchservices/test.py <<'PY'
+          import hashlib, html, json, re, subprocess, threading, time, traceback, urllib.request
+          from pathlib import Path
+          from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+          from urllib.parse import urlsplit
+          import AppKit, Quartz
+          root=Path.cwd(); out=Path('/tmp/ipd-safari-launchservices')
+          source=(root/'chauffeur-service/index.html').read_bytes()
+          blob=hashlib.sha1(b'blob '+str(len(source)).encode()+b'\0'+source).hexdigest()
+          assert blob=='6445a3f0bb8726004d50f03f9784773fa5c8f874',blob
+          report={'method':'macos-26-intel Safari via LaunchServices; native Quartz keyboard/window drag; local-only metrics; no WebDriver or AppleScript','blob':blob,'checks':[],'errors':[],'observations':[],'production':'unchanged'}
+          assets={}; latest={}; commands=[]; reports=[]; resources=[]
+          UA='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0 Safari/605.1.15'
+          def retrieve(url):
+              u=urlsplit(url); assert u.scheme=='https' and u.hostname in ('fonts.googleapis.com','fonts.gstatic.com'),url
+              with urllib.request.urlopen(urllib.request.Request(url,headers={'User-Agent':UA}),timeout=25) as r:
+                  assert r.status==200
+                  data=r.read(); report.setdefault('fontDownloads',[]).append({'url':url,'status':r.status,'sha256':hashlib.sha256(data).hexdigest()}); return data
+          font_url=html.unescape(re.search(r'<link[^>]*href="(https://fonts.googleapis.com/[^"]+)"',source.decode())[1])
+          css=retrieve(font_url).decode()
+          for i,url in enumerate(dict.fromkeys(re.findall(r'url\((https://fonts.gstatic.com/[^)]+)\)',css))):
+              path='/__font/'+str(i)+'.woff2'; assets[path]=(retrieve(url),'font/woff2'); css=css.replace(url,path)
+          assets['/__fonts.css']=(css.encode(),'text/css')
+          page=source.decode().replace(re.search(r'(https://fonts.googleapis.com/[^"]+)',source.decode())[1],'/__fonts.css')
+          page=re.sub(r'<script\b(?![^>]*application/ld\+json)[^>]*>.*?</script>','',page,flags=re.I|re.S)
+          js=r'''<script>
+          let clicks=[],keyEvents=[];
+          document.addEventListener('click',e=>{let a=e.target.closest('a');if(a){e.preventDefault();e.stopImmediatePropagation();clicks.push(a.getAttribute('href'));}},true);
+          document.addEventListener('submit',e=>e.preventDefault(),true);
+          document.addEventListener('keydown',e=>keyEvents.push({key:e.key,meta:e.metaKey,shift:e.shiftKey}),true);
+          document.querySelectorAll('img').forEach(i=>i.loading='eager');
+          function metrics(){
+            let cw=document.documentElement.clientWidth;
+            let boxes=[...document.querySelectorAll('a[href^="https://wa.me/"]')].map(a=>{let r=a.getBoundingClientRect(),s=getComputedStyle(a);return {text:a.textContent.trim(),href:a.getAttribute('href'),x:r.x,y:r.y,w:r.width,h:r.height,outline:s.outlineStyle,outlineWidth:s.outlineWidth,focused:a===document.activeElement}});
+            let active=document.activeElement,ranges=[],walk=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT),node;
+            while(node=walk.nextNode()){let p=node.parentElement;if(!node.textContent.trim()||p.closest('script,style')||!p.getClientRects().length)continue;let r=document.createRange();r.selectNodeContents(node);for(let x of r.getClientRects()){if(x.width>0&&(x.left<-.9||x.right>cw+.9))ranges.push({text:node.textContent.trim().slice(0,90),left:x.left,right:x.right});}}
+            return {time:Date.now(),ua:navigator.userAgent,iw:innerWidth,ih:innerHeight,ow:outerWidth,oh:outerHeight,dpr:devicePixelRatio,scale:visualViewport.scale,client:cw,scroll:document.documentElement.scrollWidth,x:scrollX,y:scrollY,title:document.title,buttons:boxes,fonts:[...document.fonts].map(f=>({family:f.family,status:f.status})),images:[...document.images].map(i=>({src:i.getAttribute('src'),loaded:i.complete&&i.naturalWidth>0})),active:{tag:active?.tagName,href:active?.getAttribute('href'),text:active?.textContent?.trim().slice(0,100)},faq:[...document.querySelectorAll('details')].map(d=>d.open),clipped:ranges.slice(0,10),clicks,keyEvents:keyEvents.slice(-12),external:performance.getEntriesByType('resource').filter(r=>!r.name.startsWith(location.origin)).map(r=>r.name)};
+          }
+          async function tick(){try{let cmd=await fetch('/__command').then(r=>r.json());if(cmd.op==='focus'){let a=document.querySelectorAll(cmd.selector)[cmd.index||0];a.focus();a.scrollIntoView({block:'center',behavior:'instant'});}if(cmd.op==='top')scrollTo({top:0,left:0,behavior:'instant'});if(cmd.op==='bottom')scrollTo({top:document.body.scrollHeight,left:0,behavior:'instant'});await document.fonts.ready;await fetch('/__metrics',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(metrics())});}catch(e){}setTimeout(tick,120);}
+          tick();
+          </script>'''
+          page=page.replace('</body>',js+'</body>')
+          policy="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; form-action 'none'; frame-src 'none'; object-src 'none'; base-uri 'self'"
+          class Handler(SimpleHTTPRequestHandler):
+              def __init__(self,*a,**kw):super().__init__(*a,directory=str(root),**kw)
+              def log_message(self,*a):pass
+              def end_headers(self):self.send_header('Content-Security-Policy',policy);self.send_header('Cache-Control','no-store');super().end_headers()
+              def send(self,data,mime):
+                  self.send_response(200);self.send_header('Content-Type',mime);self.send_header('Content-Length',str(len(data)));self.end_headers();self.wfile.write(data)
+              def do_GET(self):
+                  path=urlsplit(self.path).path
+                  if path=='/chauffeur-service/':return self.send(page.encode(),'text/html;charset=utf-8')
+                  if path=='/__command':return self.send(json.dumps(commands.pop(0) if commands else {}).encode(),'application/json')
+                  if path in assets:return self.send(*assets[path])
+                  if path.startswith(('/assets/','/images/')) or path=='/favicon.ico':resources.append(path);return super().do_GET()
+                  self.send_error(404)
+              def do_POST(self):
+                  if self.path!='/__metrics':return self.send_error(405)
+                  data=json.loads(self.rfile.read(int(self.headers.get('Content-Length','0'))));latest.clear();latest.update(data);reports.append(data);self.send(b'{}','application/json')
+          server=ThreadingHTTPServer(('127.0.0.1',0),Handler);threading.Thread(target=server.serve_forever,daemon=True).start()
+          url=f'http://127.0.0.1:{server.server_port}/chauffeur-service/'
+          def check(name,ok,data=None):
+              report['checks'].append({'name':name,'passed':bool(ok),'detail':data})
+              if not ok:raise AssertionError(name+': '+str(data))
+          def wait_for(fn,seconds=15):
+              end=time.monotonic()+seconds
+              while time.monotonic()<end:
+                  if latest and fn(latest):return dict(latest)
+                  time.sleep(.15)
+              raise TimeoutError('Local Safari telemetry condition not met; last='+json.dumps(latest)[:700])
+          def observation(label):
+              time.sleep(.45);d=dict(latest);report['observations'].append({'label':label,**d});return d
+          def command(op,**kw):commands.append({'op':op,**kw});time.sleep(.4)
+          def key(code,flags=0):
+              for down in (True,False):
+                  event=Quartz.CGEventCreateKeyboardEvent(None,code,down);Quartz.CGEventSetFlags(event,flags);Quartz.CGEventPost(Quartz.kCGHIDEventTap,event);time.sleep(.07)
+              time.sleep(.25)
+          def window():
+              ws=Quartz.CGWindowListCopyWindowInfo(Quartz.kCGWindowListOptionOnScreenOnly,Quartz.kCGNullWindowID)
+              ws=[dict(w) for w in ws if w.get('kCGWindowOwnerName')=='Safari' and w.get('kCGWindowLayer')==0 and w.get('kCGWindowBounds',{}).get('Width',0)>300]
+              check('Safari onscreen window exists',bool(ws),ws)
+              return ws[0]
+          def capture(label):
+              try:
+                  w=window();r=subprocess.run(['screencapture','-x','-l',str(w['kCGWindowNumber']),str(out/(label+'.png'))],capture_output=True,text=True,timeout=8)
+                  report.setdefault('screenshots',[]).append({'label':label,'returncode':r.returncode,'error':r.stderr[:500]})
+              except Exception as e:report.setdefault('screenshotErrors',[]).append(str(e))
+          def resize(width):
+              w=window();b=w['kCGWindowBounds'];start=(b['X']+b['Width']-2,b['Y']+b['Height']-2);end=(b['X']+width-2,b['Y']+min(b['Height'],900)-2)
+              for kind,pos in [(Quartz.kCGEventMouseMoved,start),(Quartz.kCGEventLeftMouseDown,start),(Quartz.kCGEventLeftMouseDragged,end),(Quartz.kCGEventLeftMouseUp,end)]:
+                  e=Quartz.CGEventCreateMouseEvent(None,kind,pos,Quartz.kCGMouseButtonLeft);Quartz.CGEventPost(Quartz.kCGHIDEventTap,e);time.sleep(.2)
+              time.sleep(.5)
+          def pagecheck(d,label):
+              check(label+' no horizontal overflow',d['scroll']<=d['client']+1,(d['scroll'],d['client']))
+              check(label+' no clipped text',not d['clipped'],d['clipped'])
+              check(label+' real photos loaded',len(d['images'])==2 and all(i['loaded'] for i in d['images']),d['images'])
+              check(label+' three unchanged contacts and fields',len(d['buttons'])==3 and all(b['href'].startswith('https://wa.me/34613756211?') and 'Final%20return' in b['href'] and 'Luggage' in b['href'] for b in d['buttons']))
+              check(label+' CTA size',all(b['w']>0 and b['h']>=43.9 for b in d['buttons']),d['buttons'])
+              check(label+' fonts loaded',all(any(f['status']=='loaded' and name in f['family'] for f in d['fonts']) for name in ['Manrope','Cormorant Garamond']),d['fonts'])
+              check(label+' no external browser requests',not d['external'],d['external'])
+          try:
+              report['os']=subprocess.check_output(['sw_vers'],text=True)
+              report['postEventAccess']=bool(Quartz.CGPreflightPostEventAccess())
+              report['screenCaptureAccess']=bool(Quartz.CGPreflightScreenCaptureAccess())
+              r=subprocess.run(['open','-a','Safari',url],capture_output=True,text=True,timeout=10)
+              report['launch']={'exit':r.returncode,'stderr':r.stderr};check('LaunchServices accepted Safari URL',r.returncode==0)
+              first=wait_for(lambda d:'Safari/' in d['ua'] and 'Chauffeur' in d['title'],40);capture('initial')
+              apps=AppKit.NSRunningApplication.runningApplicationsWithBundleIdentifier_('com.apple.Safari');check('Native Safari app active',bool(apps));apps[0].activateWithOptions_(AppKit.NSApplicationActivateIgnoringOtherApps)
+              check('Runner permits native keyboard events; no permissions changed',report['postEventAccess'])
+              for width in (375,440,768,1280):
+                  key(29,Quartz.kCGEventFlagMaskCommand);resize(width);command('top');base=observation(str(width)+'-100');pagecheck(base,str(width)+'-100');capture(str(width)+'-100')
+                  for i in range(8):
+                      key(24,Quartz.kCGEventFlagMaskCommand);now=observation(str(width)+'-zoom-step'+str(i))
+                      if base['iw']/now['iw']>=1.99:break
+                  factor=base['iw']/now['iw'];check('Native Safari zoom 200% achieved',1.98<=factor<=2.03,{'factor':factor,'before':base['iw'],'after':now['iw'],'dprBefore':base['dpr'],'dprAfter':now['dpr'],'visualScale':now['scale']})
+                  pagecheck(now,str(width)+'-200');capture(str(width)+'-200')
+                  for i in range(3):
+                      command('focus',selector='a[href^="https://wa.me/"]',index=i);key(48,Quartz.kCGEventFlagMaskShift);key(48)
+                      d=observation(str(width)+'-focus'+str(i));bs=d['buttons'];check('Real Tab reaches visible quote focus',bs[i]['focused'] and float(bs[i]['outlineWidth'].removesuffix('px'))>=3 and bs[i]['outline']!='none',bs[i])
+                      key(36);d=observation('intercepted-enter');check('Native Enter click intercepted',bs[i]['href'] in d['clicks']);check('No external request after Enter',not d['external'])
+                  command('focus',selector='details summary');key(49);d=observation('faq-open');check('Native Space opens FAQ',d['faq'][0]);key(49);d=observation('faq-closed');check('Native Space closes FAQ',not d['faq'][0])
+                  command('bottom');capture(str(width)+'-bottom200')
+              report['result']='NATIVE_SAFARI_QA_PASS_NOT_RELEASE_APPROVAL'
+          except Exception as e:
+              report['errors'].append(str(e));report['traceback']=traceback.format_exc();report['result']='NATIVE_SAFARI_INCOMPLETE_OR_FAILED';capture('failure')
+          finally:
+              report['resourcePaths']=sorted(set(resources));(out/'report.json').write_text(json.dumps(report,indent=2));(out/'telemetry.json').write_text(json.dumps(reports));server.shutdown()
+              print('SAFARI_RESULT',json.dumps({k:report[k] for k in ['result','blob','errors','checks']},ensure_ascii=False))
+          if report['errors']:raise SystemExit(1)
+          PY
+          python /tmp/ipd-safari-launchservices/test.py
+      - name: Preserve diagnostic evidence without font binaries
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ipd-pr13-native-safari-launchservices
+          path: /tmp/ipd-safari-launchservices/
+          retention-days: 7
+          if-no-files-found: warn
