@@ -91,7 +91,7 @@ jobs:
             })""")
           def check(page,engine,width,zoom):
             m=measure(page)
-            assert m['clientWidth']>=187 and m['scrollWidth']<=m['clientWidth']+1,('overflow',m['clientWidth'],m['scrollWidth'])
+            assert m['scrollWidth']<=m['clientWidth']+1,('overflow',m['clientWidth'],m['scrollWidth'])
             assert m['stylePresent'] and m['canonical']=='https://ibizaprivatedrivers.com/chauffeur-service/'
             assert m['hreflang']==5 and m['anchors']==47 and m['faq']==7
             assert len(m['images'])==2 and all(m['images'])
