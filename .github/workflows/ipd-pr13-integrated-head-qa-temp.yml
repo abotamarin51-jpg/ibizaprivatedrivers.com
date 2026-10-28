@@ -135,7 +135,8 @@ jobs:
                     try:
                       page=load(ctx);check(page,engine,width,100)
                       if width in (187,375):
-                        page.screenshot(path=str(out/f'{engine}-{width}.png'),full_page=True)
+                        try:page.screenshot(path=str(out/f'{engine}-{width}.png'),full_page=True,timeout=10000)
+                        except Exception as shot_exc:print('QA_OPTIONAL_SCREENSHOT_FAILED',engine,width,str(shot_exc)[:180],flush=True)
                     except Exception as exc:
                       failures.append({'engine':engine,'width':width,'zoom':100,'error':str(exc)})
                     finally:ctx.close()
