@@ -21,184 +21,48 @@ jobs:
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq xvfb xauth
-          python -m pip install --quiet playwright pyautogui python-xlib
+          python -m pip install --quiet playwright pyautogui python-xlib PyYAML
           python -m playwright install --with-deps chromium firefox webkit
-      - name: Integrated page, real assets, keyboard, browser zoom
+      - name: Reconstruct pinned integrated test and repair only the test copy font URL
         run: |
-          cat > /tmp/ipd-full-page-qa.py <<'PY'
-          """Read-only full-page test. Does not deploy, contact clients, or emit analytics."""
-          import difflib, hashlib, json, os, re, subprocess, threading
+          git fetch --quiet --depth=1 origin 48876ceae54f715268b3a6b833e70a81868f41d0
+          python - <<'PY'
           from pathlib import Path
-          from urllib.parse import urlsplit, unquote
-          from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
-          from playwright.sync_api import sync_playwright
-          
-          ROOT = Path.cwd().resolve()
-          OUT = ROOT / 'ipd-qa-evidence'
-          OUT.mkdir(exist_ok=True)
-          PATH = 'chauffeur-service/index.html'
-          MAIN = '8f1a230b8339bf13535e3d4e8a01ec3fa7d1b534'
-          BLOB = 'cf1cb3a4c73c05f34390fc4c1f19b2ce371dd3c3'
-          subprocess.run(['git','fetch','--quiet','--depth=1','origin','main'],check=True)
-          assert subprocess.check_output(['git','rev-parse','FETCH_HEAD'],text=True).strip() == MAIN, 'Main changed; stop'
-          baseline = subprocess.check_output(['git','show',f'{MAIN}:{PATH}'])
-          candidate = (ROOT/PATH).read_bytes()
-          assert hashlib.sha1(b'blob '+str(len(candidate)).encode()+b'\0'+candidate).hexdigest() == BLOB
-          old=b'%0AItinerary%3A%0APassengers%3A'
-          new=b'%0AItinerary%3A%0AFinal%20return%3A%0APassengers%3A%0ALuggage%3A'
-          assert candidate.count(new)==3 and candidate.replace(new,old)==baseline
-          
-          # Only an experimental, page-local stylesheet; NEVER written into site source.
-          CSS = '''
-          /* Experimental page-scoped repair: append after the shared typography sheet. */
-          body .btn { min-height:44px !important; }
-          body .btn:focus-visible { outline:3px solid #1a1814 !important; outline-offset:3px !important; }
-          body .hero .btn:focus-visible,body .final .btn:focus-visible {
-            outline-color:#c9a96e !important;
-          }
-          @media (max-width:320px) {
-            .wrap {padding-left:12px;padding-right:12px;}
-            .top .wrap {flex-wrap:wrap;align-items:center;justify-content:center;gap:.4rem;padding-top:9px;padding-bottom:9px;}
-            .top .wrap>.brand {max-width:100%;text-align:center;overflow-wrap:anywhere;}
-            .top .nav {flex:1 1 100%;min-width:0;justify-content:center;flex-wrap:wrap;}
-            .top .nav .btn {max-width:100%;text-align:center;overflow-wrap:anywhere;white-space:normal;padding:8px 10px;}
-            .grid,.steps,.links,.trust,.ipd-photo-proof__grid {grid-template-columns:minmax(0,1fr);}
-            .trust div,.trust div:nth-child(2) {border-right:0;border-bottom:1px solid var(--line);overflow-wrap:anywhere;}
-            .trust div:last-child {border-bottom:0;}
-            .card,.step,.links a {min-width:0;overflow-wrap:anywhere;padding:16px;}
-            .hero h1 {font-size:clamp(1.85rem,10vw,2.5rem)!important;overflow-wrap:anywhere;}
-            h2 {font-size:clamp(1.65rem,8vw,2.25rem)!important;overflow-wrap:anywhere;}
-            h3 {font-size:1.5rem!important;overflow-wrap:anywhere;}
-            .service-languages a,.hero p,.eyebrow,.lead,.final p,.faq summary,.footerlinks a,.crumb,.ipd-photo-proof figcaption,.ipd-photo-proof__map {overflow-wrap:anywhere;min-width:0;}
-            .actions .btn {padding:10px 8px;overflow-wrap:anywhere;}
-          }
-          '''
-          style='\n<style id="ipd-chauffeur-reflow-candidate">'+CSS+'</style>\n'
-          head=candidate.decode()
-          assert head.count('</head>')==1
-          patched=head.replace('</head>',style+'</head>')
-          assert patched.replace(style,'')==head
-          (OUT/'candidate.css').write_text(CSS)
-          (OUT/'page-local.patch').write_text(''.join(difflib.unified_diff(head.splitlines(True),patched.splitlines(True),fromfile='a/'+PATH,tofile='b/'+PATH)))
-          # Executable scripts here are analytics only. Remove them ONLY from served test copies;
-          # preserve all markup, source styles, images, fonts, structured data and contact hrefs.
-          def isolate(html):
-              return re.sub(r'<script\b(?![^>]*application/ld\+json)[^>]*>.*?</script>', '', html, flags=re.I|re.S)
-          variants={'baseline':isolate(baseline.decode()),'head':isolate(head),'patched':isolate(patched)}
-          class Handler(SimpleHTTPRequestHandler):
-              def __init__(self,*args,**kw): super().__init__(*args,directory=str(ROOT),**kw)
-              def log_message(self,*args): pass
-              def do_GET(self):
-                  p=urlsplit(self.path).path
-                  if p.startswith('/__qa/'):
-                      name=p.split('/')[2]
-                      data=variants[name].encode()
-                      self.send_response(200);self.send_header('Content-Type','text/html;charset=utf-8');self.send_header('Content-Length',str(len(data)))
-                      self.end_headers();self.wfile.write(data);return
-                  super().do_GET()
-          server=ThreadingHTTPServer(('127.0.0.1',0),Handler)
-          threading.Thread(target=server.serve_forever,daemon=True).start()
-          origin=f'http://127.0.0.1:{server.server_address[1]}'
-          MEASURE='''() => ({width:innerWidth,dpr:devicePixelRatio,cw:document.documentElement.clientWidth,sw:document.documentElement.scrollWidth,overflow:Math.max(0,document.documentElement.scrollWidth-document.documentElement.clientWidth),ctas:[...document.querySelectorAll('a[href^="https://wa.me/"]')].map(e=>({href:e.getAttribute('href'),h:e.getBoundingClientRect().height,w:e.getBoundingClientRect().width,visible:!!e.getClientRects().length})),images:[...document.images].map(i=>({src:i.getAttribute('src'),loaded:i.complete&&i.naturalWidth>0})),fonts:[...document.fonts].map(f=>({family:f.family,status:f.status})),canonical:document.querySelector('link[rel=canonical]').href,links:[...document.querySelectorAll('a')].map(a=>a.getAttribute('href'))})'''
-          results=[]; failures=[]; blocked=set(); font_requests=set()
-          def route(r):
-              u=urlsplit(r.request.url)
-              if r.request.method!='GET':blocked.add(r.request.url);r.abort();return
-              if r.request.url.startswith(origin+'/') and u.path!='/analytics.js':r.continue_();return
-              if u.scheme=='https' and u.hostname in ('fonts.googleapis.com','fonts.gstatic.com') and r.request.resource_type in ('stylesheet','font'):
-                  font_requests.add(r.request.url);r.continue_();return
-              blocked.add(r.request.url);r.abort()
-          def load(ctx,variant):
-              page=ctx.new_page();page.set_default_timeout(15000)
-              page.goto(f'{origin}/__qa/{variant}/chauffeur-service/',wait_until='networkidle')
-              # Lazy-load by actually scrolling to the photographs.
-              for image in page.locator('img').all(): image.scroll_into_view_if_needed()
-              page.wait_for_function('() => [...document.images].every(i=>i.complete&&i.naturalWidth>0)')
-              page.evaluate('() => document.fonts.ready')
-              page.evaluate('window.scrollTo(0,0)');page.wait_for_timeout(200)
-              return page
-          
-          def exercise(page,engine,width,variant,zoom):
-              m=page.evaluate(MEASURE)
-              assert len(m['ctas'])==3 and all(c['visible'] for c in m['ctas']), 'Missing CTA'
-              assert len(m['images'])==2 and all(i['loaded'] for i in m['images']), 'Missing image'
-              assert m['canonical']=='https://ibizaprivatedrivers.com/chauffeur-service/'
-              assert len(m['links'])==47, ('Link count',len(m['links']))
-              expected=variant!='baseline'
-              assert all(('Final return:' in unquote(c['href']))==expected and ('Luggage:' in unquote(c['href']))==expected for c in m['ctas'])
-              loaded_families={f['family'].replace('"','') for f in m['fonts'] if f['status']=='loaded'}
-              assert {'Cormorant Garamond','Manrope'} <= loaded_families, ('Real fonts not loaded',m['fonts'])
-              if variant=='patched':
-                  assert m['overflow']<=1, ('Overflow',m)
-                  assert all(c['h']>=43.99 for c in m['ctas']),('CTA <44',m['ctas'])
-                  # Enter and Space on the real FAQ summaries, without following contact links.
-                  summaries=page.locator('.faq summary')
-                  assert summaries.count()==7
-                  for s in summaries.all():
-                      s.focus();s.press('Enter');assert s.evaluate('e=>e.parentElement.open')
-                      s.press('Space');assert not s.evaluate('e=>e.parentElement.open')
-                  # Real forward/reverse keyboard navigation on the complete document.
-                  page.evaluate('document.activeElement.blur();window.scrollTo(0,0)')
-                  page.locator('a.brand').focus()
-                  reached=set();focus=[]
-                  for _ in range(75):
-                      page.keyboard.press('Tab')
-                      f=page.evaluate('''() => {const e=document.activeElement,s=getComputedStyle(e),r=e.getBoundingClientRect();return {key:[...document.querySelectorAll('.btn')].indexOf(e),tag:e.tagName,href:e.getAttribute('href'),button:e.classList.contains('btn'),focusVisible:e.matches(':focus-visible'),outline:s.outlineStyle,outlineWidth:parseFloat(s.outlineWidth),h:r.height};}''')
-                      if f['button']:
-                          assert f['focusVisible'] and f['outline']!='none' and f['outlineWidth']>=3, ('Focus invisible',f)
-                          assert f['h']>=43.99,('Button height',f)
-                          reached.add(f['key']);focus.append(f)
-                      if len(reached)==4:break
-                  assert len(reached)==4,('Keyboard did not reach four buttons',reached)
-                  page.keyboard.press('Shift+Tab')
-                  assert page.evaluate("document.activeElement.tagName !== 'BODY'")
-                  m['focus']=focus
-                  if width in (375,1280):
-                      page.evaluate('window.scrollTo(0,0)');page.wait_for_timeout(200)
-                      page.screenshot(path=str(OUT/f'{engine}-{width}-{zoom}.png'),full_page=True)
-              results.append({'engine':engine,'initialWidth':width,'variant':variant,'zoom':zoom,'measure':m})
-              print('FULL_PAGE_RESULT='+json.dumps(results[-1]),flush=True)
-          
-          try:
-            with sync_playwright() as p:
-              for name in ['chromium','firefox','webkit']:
-                browser=getattr(p,name).launch(headless=False if name=='chromium' else True)
-                try:
-                  for width in [187,220,320,375,440,768,1280]:
-                    for variant in (['head','patched'] if width in (187,375,1280) else ['patched']):
-                      ctx=browser.new_context(viewport={'width':width,'height':820},device_scale_factor=1,service_workers='block')
-                      ctx.route('**/*',route)
-                      try:
-                        page=load(ctx,variant);exercise(page,name,width,variant,100)
-                      except Exception as e: failures.append({'engine':name,'width':width,'variant':variant,'error':str(e)})
-                      finally:ctx.close()
-                  if name=='chromium':
-                    import pyautogui
-                    for width in [375,440,768,1280]:
-                      for variant in ['head','patched']:
-                        ctx=browser.new_context(viewport={'width':width,'height':820},device_scale_factor=1,service_workers='block');ctx.route('**/*',route)
-                        try:
-                          page=load(ctx,variant);page.bring_to_front();pyautogui.hotkey('ctrl','0');page.wait_for_timeout(150)
-                          initial=page.evaluate('({w:innerWidth,dpr:devicePixelRatio})')
-                          for _ in range(5):pyautogui.hotkey('ctrl','+');page.wait_for_timeout(120)
-                          actual=page.evaluate('({w:innerWidth,dpr:devicePixelRatio})')
-                          assert abs(actual['dpr']/initial['dpr']-2)<.02 and abs(actual['w']-initial['w']/2)<2,('Not native 200%',initial,actual)
-                          exercise(page,name,width,variant,200)
-                        except Exception as e: failures.append({'engine':name,'width':width,'variant':variant,'zoom':200,'error':str(e)})
-                        finally:ctx.close()
-                finally:browser.close()
-          finally:
-            server.shutdown();server.server_close()
-            report={'base':MAIN,'candidateBlob':BLOB,'cssSha256':hashlib.sha256(CSS.encode()).hexdigest(),'results':results,'failures':failures,'blockedRequests':sorted(blocked),'fontRequests':sorted(font_requests),'nativeSafari':'NOT_TESTED','production':'UNCHANGED','releaseApproval':False}
-            (OUT/'report.json').write_text(json.dumps(report,indent=2))
-            print('SUMMARY='+json.dumps({'scenarios':len(results),'failures':failures,'nativeSafari':'NOT_TESTED','production':'UNCHANGED'}),flush=True)
-          assert not failures, 'Integrated checks failed; not release-ready'
+          import subprocess, yaml, py_compile
+          base='48876ceae54f715268b3a6b833e70a81868f41d0'
+          text=subprocess.check_output(['git','show',base+':.github/workflows/ipd-pr13-complete-page-temp.yml'],text=True)
+          original=yaml.safe_load(text)['jobs']['isolated-full-page']['steps'][3]['run']
+          source=original.split("<<'PY'\n",1)[1].rsplit('\nPY\n',1)[0]+'\n'
+          replacements=[
+            ("patched=head.replace('</head>',style+'</head>')\nassert patched.replace(style,'')==head",
+             "# Fix only the malformed font URL in the served test copy.\nfont_old='Cormorant+Garamond:wght;500;600&amp;family=Manrope:wght;400;500;600'\nfont_new='Cormorant+Garamond:wght@500;600&amp;family=Manrope:wght@400;500;600'\nassert head.count(font_old)==1\npatched=head.replace(font_old,font_new).replace('</head>',style+'</head>')\nassert patched.replace(style,'').replace(font_new,font_old)==head"),
+            ('results=[]; failures=[]; blocked=set(); font_requests=set()',
+             'results=[]; failures=[]; blocked=set(); font_requests=set(); font_http=[]'),
+            ('page=ctx.new_page();page.set_default_timeout(15000)',
+             "page=ctx.new_page();page.set_default_timeout(15000)\n    page.on('response',lambda r: font_http.append({'variant':variant,'url':r.url,'status':r.status}) if urlsplit(r.url).hostname=='fonts.googleapis.com' else None)"),
+            ("    assert {'Cormorant Garamond','Manrope'} <= loaded_families, ('Real fonts not loaded',m['fonts'])\n    if variant=='patched':",
+             "    m['intendedFontsLoaded']={'Cormorant Garamond','Manrope'} <= loaded_families\n    # Original HEAD remains a diagnostic baseline, never an approved candidate.\n    if variant=='patched':\n        assert m['intendedFontsLoaded'], ('Real fonts not loaded',m['fonts'])"),
+            ("'fontRequests':sorted(font_requests),'nativeSafari'",
+             "'fontRequests':sorted(font_requests),'fontHttp':font_http,'nativeSafari'")
+          ]
+          for old,new in replacements:
+            assert source.count(old)==1, 'Unexpected pinned test content'
+            source=source.replace(old,new)
+          out=Path('ipd-qa-evidence');out.mkdir(exist_ok=True)
+          script=out/'reproducible-test.py';script.write_text(source)
+          py_compile.compile(str(script),doraise=True)
+          print('Pinned test reconstructed; site HTML and shared resources remain unmodified')
           PY
-          xvfb-run -a -s "-screen 0 1800x1200x24" python /tmp/ipd-full-page-qa.py
+          xvfb-run -a -s "-screen 0 1800x1200x24" python ipd-qa-evidence/reproducible-test.py
       - name: Preserve reproducible evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: ipd-pr13-full-page-evidence
-          path: ipd-qa-evidence/
+          path: |
+            ipd-qa-evidence/*.json
+            ipd-qa-evidence/*.css
+            ipd-qa-evidence/*.patch
+            ipd-qa-evidence/*.png
+            ipd-qa-evidence/*.py
           retention-days: 7
