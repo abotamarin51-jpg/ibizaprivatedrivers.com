@@ -1,0 +1,134 @@
+name: IPD PR13 native Safari page zoom candidate
+on:
+  push:
+    branches: [qa/chauffeur-quote-clarity-2026-10-24]
+    paths: [.github/workflows/ipd-pr13-native-page-zoom-temp.yml]
+permissions:
+  contents: read
+jobs:
+  native-safari-normal-window:
+    runs-on: macos-26
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install YAML reader
+        run: python -m pip install --quiet PyYAML
+      - name: Genuine Safari OS zoom on CSP-isolated complete candidate
+        run: |
+          python - <<'PY'
+          """Native Safari page-zoom evidence without WebDriver's isolated automation window.
+          Ephemeral local page only. No production write, contact, form submission or analytics.
+          """
+          import ast, hashlib, html, json, re, subprocess, threading, time
+          from pathlib import Path
+          from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+          from urllib.parse import urlsplit
+          import yaml
+          ROOT=Path.cwd(); OUT=ROOT/'ipd-native-evidence';OUT.mkdir(exist_ok=True)
+          base='48876ceae54f715268b3a6b833e70a81868f41d0'
+          subprocess.run(['git','fetch','--quiet','--depth=1','origin',base],check=True)
+          yaml_text=subprocess.check_output(['git','show',base+':.github/workflows/ipd-pr13-complete-page-temp.yml'],text=True)
+          block=yaml.safe_load(yaml_text)['jobs']['isolated-full-page']['steps'][3]['run']
+          py=block.split("<<'PY'\n",1)[1].rsplit('\nPY\n',1)[0]
+          css=next(ast.literal_eval(n.value) for n in ast.parse(py).body if isinstance(n,ast.Assign) and any(isinstance(t,ast.Name) and t.id=='CSS' for t in n.targets))
+          source=(ROOT/'chauffeur-service/index.html').read_bytes()
+          assert hashlib.sha1(b'blob '+str(len(source)).encode()+b'\0'+source).hexdigest()=='cf1cb3a4c73c05f34390fc4c1f19b2ce371dd3c3'
+          old='Cormorant+Garamond:wght;500;600&amp;family=Manrope:wght;400;500;600'
+          new='Cormorant+Garamond:wght@500;600&amp;family=Manrope:wght@400;500;600'
+          s=source.decode();assert s.count(old)==1
+          s=s.replace(old,new).replace('</head>','<style>'+css+'</style></head>')
+          s=re.sub(r'<script\b(?![^>]*application/ld\+json)[^>]*>.*?</script>','',s,flags=re.S|re.I)
+          # Browser-native zoom must change actual innerWidth. No CSS zoom/transform or viewport emulation.
+          instrument='''<script>
+          (() => {
+           const label=new URLSearchParams(location.search).get('case');
+           const report=()=>{const v={case:label,t:Date.now(),width:innerWidth,height:innerHeight,dpr:devicePixelRatio,scale:visualViewport.scale,sw:document.documentElement.scrollWidth,cw:document.documentElement.clientWidth,fonts:[...document.fonts].filter(f=>f.status==='loaded').map(f=>f.family),images:[...document.images].map(i=>({src:i.getAttribute('src'),ok:i.complete&&i.naturalWidth>0})),ctas:[...document.querySelectorAll('a[href^="https://wa.me/"]')].map(a=>({href:a.getAttribute('href'),height:a.getBoundingClientRect().height,visible:!!a.getClientRects().length})),canonical:document.querySelector('link[rel="canonical"]').href};fetch('/__evidence__',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(v)}).catch(()=>{});};
+           document.addEventListener('click',e=>{const a=e.target.closest('a');if(a && new URL(a.href,location.href).origin!==location.origin)e.preventDefault();},true);
+           document.addEventListener('submit',e=>e.preventDefault(),true);
+           window.addEventListener('resize',()=>setTimeout(report,250));
+           window.addEventListener('load',async()=>{for(const i of document.images)i.loading='eager';await document.fonts.ready;let n=0;while(n++<100&&![...document.images].every(i=>i.complete&&i.naturalWidth>0))await new Promise(r=>setTimeout(r,100));report();setInterval(report,700);});
+          })();
+          </script>'''
+          s=s.replace('</body>',instrument+'</body>')
+          policy="default-src 'none'; script-src 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; form-action 'none'; frame-src 'none'; object-src 'none'; base-uri 'self'"
+          observations=[]; tests=[]; errors=[]
+          class Handler(SimpleHTTPRequestHandler):
+           def __init__(self,*a,**kw):super().__init__(*a,directory=str(ROOT),**kw)
+           def log_message(self,*a):pass
+           def end_headers(self):self.send_header('Content-Security-Policy',policy);self.send_header('Cache-Control','no-store');super().end_headers()
+           def do_GET(self):
+            if urlsplit(self.path).path=='/__native__/':
+             data=s.encode();self.send_response(200);self.send_header('Content-Type','text/html; charset=utf-8');self.send_header('Content-Length',str(len(data)));self.end_headers();self.wfile.write(data)
+            elif urlsplit(self.path).path=='/analytics.js':self.send_error(403)
+            else:super().do_GET()
+           def do_POST(self):
+            if self.path!='/__evidence__':self.send_error(405);return
+            length=int(self.headers.get('Content-Length','0'))
+            if not 0<length<20000:self.send_error(400);return
+            observations.append(json.loads(self.rfile.read(length)))
+            self.send_response(204);self.end_headers()
+          server=ThreadingHTTPServer(('127.0.0.1',0),Handler);threading.Thread(target=server.serve_forever,daemon=True).start()
+          origin=f'http://127.0.0.1:{server.server_address[1]}'
+          def apple(*lines):
+           args=['osascript']
+           for line in lines:args+=['-e',line]
+           r=subprocess.run(args,text=True,capture_output=True,timeout=15)
+           if r.returncode:raise RuntimeError('Native Safari OS control unavailable: '+r.stderr[:400])
+           return r.stdout
+          def latest(label,after=0):
+           rows=[x for x in observations if x['case']==label and x['t']>after]
+           return rows[-1] if rows else None
+          def wait(label,after=0):
+           for _ in range(150):
+            m=latest(label,after)
+            if m and len(m['images'])==2 and all(i['ok'] for i in m['images']):return m
+            time.sleep(.1)
+           raise RuntimeError('Native Safari local page/resource load timeout')
+          try:
+           # Normal Safari (NOT SafariDriver): avoids the documented WebDriver glass pane.
+           apple('tell application "Safari" to activate')
+           for width in (375,440,768,1280):
+            label=str(width);url=f'{origin}/__native__/?case={label}'
+            apple('tell application "Safari"',f'make new document with properties {{URL:"{url}"}}',f'set bounds of front window to {{0, 24, {width}, 1000}}','activate','end tell')
+            wait(label)
+            apple('tell application "System Events" to tell process "Safari" to set frontmost to true','tell application "System Events" to keystroke "0" using {command down}')
+            time.sleep(.8);before=wait(label)
+            steps=[]
+            for _ in range(8):
+             stamp=int(time.time()*1000)
+             apple('tell application "System Events" to keystroke "+" using {command down}')
+             time.sleep(.6);after=wait(label,stamp);steps.append(after['width'])
+             ratio=before['width']/after['width']
+             if ratio>=1.98:break
+            assert abs(ratio-2)<.025,('Native 200% not established',before['width'],steps)
+            assert after['sw']<=after['cw']+1,('Native Safari reflow overflow',after)
+            families={f.replace('"','') for f in after['fonts']}
+            assert {'Cormorant Garamond','Manrope'}<=families,('Real fonts not loaded',families)
+            assert len(after['ctas'])==3 and all(x['visible'] and x['height']>=43.99 for x in after['ctas'])
+            assert all('Final%20return' in x['href'] and 'Luggage' in x['href'] for x in after['ctas'])
+            assert after['canonical']=='https://ibizaprivatedrivers.com/chauffeur-service/'
+            tests.append({'requestedOuterWidth':width,'actualInitialCSSWidth':before['width'],'actualZoomCSSWidth':after['width'],'nativeZoomRatio':ratio,'zoomSteps':steps,'final':after})
+            subprocess.run(['screencapture','-x',str(OUT/f'safari-{width}.png')],check=True,timeout=10)
+            print('NATIVE_SAFARI_RESULT='+json.dumps(tests[-1]),flush=True)
+            apple('tell application "Safari" to close front window')
+          except Exception as e:
+           errors.append(str(e));print('NATIVE_SAFARI_BLOCKER='+str(e),flush=True)
+          finally:
+           try:apple('tell application "Safari" to quit')
+           except Exception:pass
+           server.shutdown();server.server_close()
+           (OUT/'report.json').write_text(json.dumps({'tests':tests,'errors':errors,'observations':observations,'method':'Native Safari normal window + local CSP-isolated page + OS keyboard zoom; no WebDriver glass pane; no zoom emulation','sourceBlob':'cf1cb3a4c73c05f34390fc4c1f19b2ce371dd3c3','cssSha256':hashlib.sha256(css.encode()).hexdigest(),'production':'UNCHANGED','publicationApproved':False},indent=2))
+          assert not errors and len(tests)==4,'Native Safari evidence incomplete; do not publish'
+          PY
+      - name: Preserve native Safari evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ipd-pr13-native-page-zoom-evidence
+          path: ipd-native-evidence/
+          retention-days: 7
