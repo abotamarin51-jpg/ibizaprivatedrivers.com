@@ -61,7 +61,12 @@ jobs:
               browser=getattr(pw,engine).launch(headless=True)
               for width in (375,440,768,1280):
                 ctx=browser.new_context(viewport={'width':width,'height':900},service_workers='block',accept_downloads=False)
-                ctx.add_init_script(qa.GUARDS)
+                # Keep all original contact/form/tracking guards, but allow only the
+                # known same-origin services link to navigate into local served assets.
+                guard_line="if(a){window.__ipdQA.links.push(a.getAttribute('href')); e.preventDefault();}"
+                allow_line="if(a){window.__ipdQA.links.push(a.getAttribute('href')); if(a.getAttribute('href')!=='/services/') e.preventDefault();}"
+                assert qa.GUARDS.count(guard_line)==1,'Unexpected shared guard; fail closed'
+                ctx.add_init_script(qa.GUARDS.replace(guard_line,allow_line))
                 blocked=[]
                 def route_handler(route):
                   req=route.request;url=req.url
