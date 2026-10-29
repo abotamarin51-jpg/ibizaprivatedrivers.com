@@ -1,0 +1,130 @@
+name: IPD PR14 Home Services Context QA TEMP
+on:
+  push:
+    branches:
+      - seo/home-services-hub-context-2026-10-29
+permissions:
+  contents: read
+jobs:
+  isolated-browser-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install exact browser dependencies
+        run: |
+          python -m pip install --disable-pip-version-check playwright==1.57.0
+          python -m playwright install --with-deps chromium firefox webkit
+          npm install --prefix "$RUNNER_TEMP/pr14-deps" --ignore-scripts --no-audit --no-fund axe-core@4.14.0
+      - name: Verify exact Home diff, assets, browser, keyboard, destination and tracking isolation
+        env:
+          PYTHONUNBUFFERED: "1"
+        run: |
+          python - <<'PY'
+          import hashlib, importlib.util, json, mimetypes, os, pathlib, subprocess
+          from playwright.sync_api import sync_playwright
+          root=pathlib.Path('.').resolve()
+          prior='Our core service pages explain the exact information used to plan different types of journeys.'
+          new='Our <a href="/services/" style="color:inherit;text-underline-offset:.15em">private driver services overview</a> explains the information used to plan different types of journeys.'
+          old=subprocess.check_output(['git','show','ae94d489dbd90194211f20417037fc38d6ad11bf:index.html']).decode()
+          candidate=(root/'index.html').read_text()
+          spec=importlib.util.spec_from_file_location('ipdqa',root/'qa/pr10/run_home_qa.py')
+          qa=importlib.util.module_from_spec(spec);spec.loader.exec_module(qa)
+          assert qa.git_blob(old.encode())=='558c06161dd936c3e4a8bdc1b1b49ef3574219ea'
+          assert qa.git_blob(candidate.encode())=='22823b76085b5958f424c90495c4f5e94c17af92'
+          assert old.count(prior)==1 and candidate==old.replace(prior,new)
+          files=set(subprocess.check_output(['git','diff','--name-only','ae94d489dbd90194211f20417037fc38d6ad11bf','HEAD'],text=True).splitlines())
+          assert files=={'index.html','.github/workflows/ipd-pr14-home-services-context-qa-temp.yml'},files
+          assert (root/'services/index.html').is_file()
+          assert '<link rel="canonical" href="https://ibizaprivatedrivers.com/services/">' in (root/'services/index.html').read_text()
+          print('PASS: only one visible Home sentence changed, valid local hub with canonical',flush=True)
+          report=qa.Report(pathlib.Path('/tmp/ipd-pr14-full'))
+          report.data['candidate_sha256']=hashlib.sha256(candidate.encode()).hexdigest()
+          _,font_urls=qa.preflight(root,None,report,check_sha=False)
+          assert not report.data['errors'] and not report.data['missing_resources'] and all(x['passed'] for x in report.data['checks'])
+          assert font_urls,'Real Google Fonts CSS missing'
+          fonts=qa.fetch_fonts(font_urls,report.data['assets'])
+          axe=pathlib.Path(os.environ['RUNNER_TEMP'])/'pr14-deps/node_modules/axe-core/axe.min.js'
+          assert axe.is_file()
+          count=0
+          with sync_playwright() as pw:
+            for engine in ('chromium','firefox','webkit'):
+              for width in (375,440,768,1280):
+                qa.run_one(pw,engine,root,fonts,report,width,900,axe,native=False)
+                count+=1
+              browser=getattr(pw,engine).launch(headless=True)
+              for width in (375,440,768,1280):
+                ctx=browser.new_context(viewport={'width':width,'height':900},service_workers='block',accept_downloads=False)
+                ctx.add_init_script(qa.GUARDS)
+                blocked=[]
+                def route_handler(route):
+                  req=route.request;url=req.url
+                  if req.method!='GET':blocked.append(url);route.abort();return
+                  if url in fonts:
+                    body,mime=fonts[url];route.fulfill(status=200,content_type=mime,body=body);return
+                  f=qa.safe_local(root,url)
+                  if f and f.is_file():
+                    route.fulfill(status=200,content_type=mimetypes.guess_type(f.name)[0] or 'application/octet-stream',body=f.read_bytes());return
+                  blocked.append(url);route.abort()
+                ctx.route('**/*',route_handler)
+                page=ctx.new_page()
+                page.goto(qa.ORIGIN+'/',wait_until='networkidle',timeout=30000)
+                reject=page.locator('#ipd-consent button[data-consent="denied"]')
+                if reject.count():reject.click()
+                link=page.locator('section.why p.section-intro a[href="/services/"]')
+                assert link.count()==1 and link.is_visible(),(engine,width,'not visible')
+                rect=link.bounding_box()
+                assert rect and rect['x']>=-1 and rect['x']+rect['width']<=width+1,(engine,width,rect)
+                assert link.evaluate('a=>getComputedStyle(a).color===getComputedStyle(a.parentElement).color')
+                link.focus();page.keyboard.press('Shift+Tab');page.keyboard.press('Tab')
+                assert link.evaluate('a=>document.activeElement===a'),(engine,width,'keyboard inaccessible')
+                link.click(timeout=5000)
+                assert page.url.rstrip('/')==qa.ORIGIN+'/services',(engine,width,page.url)
+                assert page.locator('link[rel="canonical"]').get_attribute('href')=='https://ibizaprivatedrivers.com/services/'
+                assert page.locator('h1').count()==1
+                count+=1
+                ctx.close()
+              browser.close()
+          report.save()
+          print('PASS: browser scenarios executed',count,'external unknown/analytics requests intercepted')
+          assert report.summary()==0,'Full page QA found failures; inspect uploaded report'
+          PY
+      - name: Attempt native 200-percent browser zoom on real local Home
+        if: always()
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y xvfb xdotool
+          xvfb-run -a --server-args="-screen 0 1920x1080x24" python - <<'PY'
+          import importlib.util, os, pathlib
+          from playwright.sync_api import sync_playwright
+          root=pathlib.Path('.').resolve()
+          spec=importlib.util.spec_from_file_location('ipdqa',root/'qa/pr10/run_home_qa.py')
+          qa=importlib.util.module_from_spec(spec);spec.loader.exec_module(qa)
+          report=qa.Report(pathlib.Path('/tmp/ipd-pr14-zoom'))
+          _,urls=qa.preflight(root,None,report,check_sha=False)
+          assert not report.data['errors'] and not report.data['missing_resources']
+          fonts=qa.fetch_fonts(urls,report.data['assets'])
+          axe=pathlib.Path(os.environ['RUNNER_TEMP'])/'pr14-deps/node_modules/axe-core/axe.min.js'
+          with sync_playwright() as pw:
+            qa.run_one(pw,'chromium',root,fonts,report,390,844,axe,native=True)
+          report.save()
+          zoom=[c for c in report.data['checks'] if 'Native browser UI zoom reached at least 200%' in c['name'] and c['passed']]
+          print('NATIVE_200_PERCENT_VERIFIED',bool(zoom),'recorded evidence',report.data.get('native_zoom_attempts'))
+          if not zoom or report.summary()!=0:raise SystemExit('Native zoom not verified or layout failed; PR must stay draft')
+          PY
+      - name: Keep reports for independent review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ipd-pr14-isolated-browser-evidence
+          path: |
+            /tmp/ipd-pr14-full
+            /tmp/ipd-pr14-zoom
+          if-no-files-found: warn
+          retention-days: 7
