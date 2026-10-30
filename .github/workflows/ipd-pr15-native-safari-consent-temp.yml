@@ -1,0 +1,201 @@
+name: IPD PR15 Native Safari Consent and Zoom TEMP
+on:
+  push:
+    branches: [qa/services-full-candidate-2026-10-30]
+    paths: [.github/workflows/ipd-pr15-native-safari-consent-temp.yml]
+permissions:
+  contents: read
+jobs:
+  native-safari:
+    runs-on: macos-26-intel
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install safe native GUI client
+        run: python -m pip install --quiet pyobjc-framework-Quartz pyobjc-framework-Cocoa
+      - name: Native Safari consent dismissal and genuine 200 percent zoom, fully local
+        run: |
+          python - <<'PY'
+          import hashlib,html,json,re,subprocess,threading,time,traceback,urllib.request
+          from pathlib import Path
+          from http.server import ThreadingHTTPServer,SimpleHTTPRequestHandler
+          from urllib.parse import urlsplit
+          import AppKit,Quartz
+          
+          root=Path.cwd()
+          out=Path('/tmp/ipd-pr15-safari')
+          out.mkdir(exist_ok=True)
+          raw=(root/'services/index.html').read_bytes()
+          blob=hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest()
+          assert blob=='57a11a3a50a486b95c2981d4bd65f873b82728cd',blob
+          report={'method':'actual macOS Safari via LaunchServices + Quartz, local-only strict CSP; no WebDriver','blob':blob,'checks':[],'errors':[]}
+          assets={}
+          text=raw.decode()
+          font_match=re.search(r'https://fonts.googleapis.com/[^"]+',text)
+          assert font_match,'missing font stylesheet'
+          font_url=html.unescape(font_match.group())
+          ua='Mozilla/5.0 (Macintosh; Intel Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0 Safari/605.1.15'
+          def getfont(url):
+              assert url.startswith(('https://fonts.googleapis.com/','https://fonts.gstatic.com/'))
+              with urllib.request.urlopen(urllib.request.Request(url,headers={'User-Agent':ua}),timeout=25) as r:
+                  assert r.status==200
+                  return r.read()
+          font_css=getfont(font_url).decode()
+          for i,url in enumerate(dict.fromkeys(re.findall(r'url\((https://fonts.gstatic.com/[^)]+)\)',font_css))):
+              local='/__font/'+str(i)+'.woff2'
+              assets[local]=(getfont(url),'font/woff2')
+              font_css=font_css.replace(url,local)
+          assets['/__fonts.css']=(font_css.encode(),'text/css')
+          text=text.replace(font_match.group(),'/__fonts.css')
+          text=re.sub(r'<script\b[^>]*src="https://www\.googletagmanager\.com/[^"]+"[^>]*></script>','',text,flags=re.I)
+          assert 'src="/analytics.js"' in text
+          extra=r"""<script>
+          let lastAck='',testErrors=[];
+          const cta=()=>[...document.querySelectorAll('a[href^="https://wa.me/"]')].find(a=>a.textContent.trim()==='Check availability');
+          function getMetrics(){
+           const a=cta(),r=a?.getBoundingClientRect(),cx=r?Math.max(0,Math.min(innerWidth-1,r.left+r.width/2)):0,cy=r?Math.max(0,Math.min(innerHeight-1,r.top+r.height/2)):0;
+           const hit=document.elementFromPoint(cx,cy);
+           return {ack:lastAck,ua:navigator.userAgent,iw:innerWidth,ih:innerHeight,dpr:devicePixelRatio,client:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth,consent:!!document.querySelector('#ipd-consent'),consentValue:localStorage.getItem('ipd_google_consent_v1'),cta:{found:!!a,focused:a===document.activeElement,text:a?.textContent.trim(),rect:r?{x:r.x,y:r.y,w:r.width,h:r.height}:null,hit:!!a&&!!hit&&(hit===a||a.contains(hit)),inViewport:!!r&&r.top>=0&&r.bottom<=innerHeight,outline:a?getComputedStyle(a).outlineStyle:null},fonts:[...document.fonts].map(f=>({family:f.family,status:f.status})),external:performance.getEntriesByType('resource').filter(e=>!e.name.startsWith(location.origin)).map(e=>e.name),testErrors};
+          }
+          async function poll(){
+           try{
+            const cmd=await fetch('/__command').then(r=>r.json());
+            if(cmd.op==='deny'){const b=document.querySelector('#ipd-consent button[data-consent="denied"]');if(!b)throw Error('consent button missing');b.click();}
+            if(cmd.op==='focus'){const a=cta();if(!a)throw Error('CTA missing');a.scrollIntoView({block:'center',behavior:'instant'});a.focus();}
+            if(cmd.op==='top')scrollTo({top:0,left:0,behavior:'instant'});
+            lastAck=cmd.id||lastAck;await document.fonts.ready;
+            await fetch('/__metrics',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(getMetrics())});
+           }catch(e){testErrors.push(String(e));}
+           setTimeout(poll,130);
+          }
+          poll();
+          </script>"""
+          text=text.replace('</body>',extra+'</body>')
+          policy="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; form-action 'none'; frame-src 'none'; object-src 'none'; base-uri 'self'"
+          queue=[]
+          latest={}
+          all_telemetry=[]
+          class Handler(SimpleHTTPRequestHandler):
+              def __init__(self,*args,**kwargs):super().__init__(*args,directory=str(root),**kwargs)
+              def log_message(self,*args):pass
+              def end_headers(self):
+                  self.send_header('Content-Security-Policy',policy);self.send_header('Cache-Control','no-store');super().end_headers()
+              def send(self,data,mime):
+                  self.send_response(200);self.send_header('Content-Type',mime);self.send_header('Content-Length',str(len(data)));self.end_headers();self.wfile.write(data)
+              def do_GET(self):
+                  p=urlsplit(self.path).path
+                  if p=='/services/':return self.send(text.encode(),'text/html; charset=utf-8')
+                  if p=='/__command':return self.send(json.dumps(queue.pop(0) if queue else {}).encode(),'application/json')
+                  if p in assets:return self.send(*assets[p])
+                  if p=='/analytics.js' or p=='/favicon.ico' or p.startswith(('/assets/','/images/')):return super().do_GET()
+                  self.send_error(404)
+              def do_POST(self):
+                  if self.path!='/__metrics':return self.send_error(405)
+                  d=json.loads(self.rfile.read(int(self.headers['Content-Length'])));latest.clear();latest.update(d);all_telemetry.append(d);self.send(b'{}','application/json')
+          server=ThreadingHTTPServer(('127.0.0.1',0),Handler)
+          threading.Thread(target=server.serve_forever,daemon=True).start()
+          def check(name,ok,detail=None):
+              report['checks'].append({'name':name,'pass':bool(ok),'detail':detail})
+              print('CHECK',name,'PASS' if ok else 'FAIL',str(detail)[:200],flush=True)
+              if not ok:raise AssertionError(name+': '+str(detail)[:400])
+          def wait_for(fn,seconds=22):
+              end=time.monotonic()+seconds
+              while time.monotonic()<end:
+                  if latest and fn(latest):return dict(latest)
+                  time.sleep(.12)
+              raise TimeoutError('Safari telemetry timeout '+str(latest)[:400])
+          def command(op):
+              id=str(time.monotonic_ns());queue.append({'id':id,'op':op})
+              return wait_for(lambda d:d.get('ack')==id)
+          def window():
+              w=[dict(x) for x in Quartz.CGWindowListCopyWindowInfo(Quartz.kCGWindowListOptionOnScreenOnly,Quartz.kCGNullWindowID) if x.get('kCGWindowOwnerName')=='Safari' and x.get('kCGWindowLayer')==0 and x.get('kCGWindowBounds',{}).get('Width',0)>300]
+              check('visible native Safari window',bool(w))
+              return w[0]
+          def capture(label):
+              try:
+                  w=window();p=out/(label+'.png')
+                  r=subprocess.run(['screencapture','-x','-l',str(w['kCGWindowNumber']),str(p)],capture_output=True,text=True,timeout=8)
+                  report.setdefault('screenshots',[]).append({'name':label,'code':r.returncode,'size':p.stat().st_size if p.exists() else 0})
+              except Exception as e:report.setdefault('screenshot_errors',[]).append(str(e))
+          def key(code,flags=0):
+              apps=AppKit.NSRunningApplication.runningApplicationsWithBundleIdentifier_('com.apple.Safari')
+              check('native Safari active',bool(apps))
+              apps[0].activateWithOptions_(AppKit.NSApplicationActivateIgnoringOtherApps)
+              until=time.monotonic()+5
+              while time.monotonic()<until:
+                  front=AppKit.NSWorkspace.sharedWorkspace().frontmostApplication()
+                  if front and front.bundleIdentifier()=='com.apple.Safari':break
+                  time.sleep(.1)
+              else:raise RuntimeError('Safari not foreground')
+              mods=[(55,Quartz.kCGEventFlagMaskCommand),(58,Quartz.kCGEventFlagMaskAlternate),(56,Quartz.kCGEventFlagMaskShift)]
+              def send(c,down,f):
+                  ev=Quartz.CGEventCreateKeyboardEvent(None,c,down);Quartz.CGEventSetFlags(ev,f);Quartz.CGEventPost(Quartz.kCGHIDEventTap,ev);time.sleep(.07)
+              state=0;pressed=[]
+              try:
+                  for c,f in mods:
+                      if flags&f:state|=f;pressed.append((c,f));send(c,True,state)
+                  send(code,True,state);send(code,False,state)
+              finally:
+                  for c,f in reversed(pressed):state &= ~f;send(c,False,state)
+              time.sleep(.35)
+          def resize(width):
+              w=window();b=w['kCGWindowBounds'];start=(b['X']+b['Width']-2,b['Y']+b['Height']-2);end=(b['X']+width-2,b['Y']+min(b['Height'],900)-2)
+              for kind,pos in [(Quartz.kCGEventMouseMoved,start),(Quartz.kCGEventLeftMouseDown,start),(Quartz.kCGEventLeftMouseDragged,end),(Quartz.kCGEventLeftMouseUp,end)]:
+                  e=Quartz.CGEventCreateMouseEvent(None,kind,pos,Quartz.kCGMouseButtonLeft);Quartz.CGEventPost(Quartz.kCGHIDEventTap,e);time.sleep(.18)
+              time.sleep(.5)
+          try:
+              check('native keyboard access',bool(Quartz.CGPreflightPostEventAccess()))
+              u='http://127.0.0.1:'+str(server.server_port)+'/services/'
+              p=subprocess.run(['open','-a','Safari',u],capture_output=True,text=True,timeout=12)
+              check('Safari LaunchServices opened local page',p.returncode==0,p.stderr)
+              d=wait_for(lambda x:'Safari/' in x.get('ua','') and x.get('cta',{}).get('found'),45)
+              check('banner appears before consent',d['consent'])
+              check('pre-consent is not granted',d['consentValue']!='granted',d['consentValue'])
+              check('original CTA preserved',d['cta']['text']=='Check availability')
+              command('deny')
+              d=wait_for(lambda x: not x['consent'] and x['consentValue']=='denied')
+              check('essential only dismisses banner',not d['consent'] and d['consentValue']=='denied')
+              resize(768)
+              key(29,Quartz.kCGEventFlagMaskCommand)
+              base=command('focus')
+              check('CTA unobscured after dismissal at 100%',base['cta']['hit'] and base['cta']['focused'],base['cta'])
+              check('no overflow at 100%',base['scroll']<=base['client']+1,(base['client'],base['scroll']))
+              capture('after-essential-100')
+              zoom=None
+              for i in range(8):
+                  key(24,Quartz.kCGEventFlagMaskCommand)
+                  zoom=command('focus')
+                  if base['iw']/zoom['iw']>=1.98:break
+              ratio=base['iw']/zoom['iw']
+              check('genuine native Safari zoom 200%',1.98<=ratio<=2.04,{'ratio':ratio,'before':base['iw'],'after':zoom['iw'],'dprBefore':base['dpr'],'dprAfter':zoom['dpr']})
+              check('no horizontal overflow at 200%',zoom['scroll']<=zoom['client']+1,(zoom['client'],zoom['scroll']))
+              check('CTA unobscured after Essential only at 200%',zoom['cta']['hit'] and zoom['cta']['focused'] and zoom['cta']['inViewport'],zoom['cta'])
+              check('no external browser resource requests',not zoom['external'],zoom['external'])
+              check('privacy choice stays denied',zoom['consentValue']=='denied' and not zoom['consent'])
+              check('no embedded instrumentation errors',not zoom['testErrors'],zoom['testErrors'])
+              capture('after-essential-native200')
+              report['result']='NATIVE_SAFARI_CONSENT_ZOOM_PASS_NOT_RELEASE_APPROVAL'
+          except Exception as e:
+              report['errors'].append(str(e));report['traceback']=traceback.format_exc()
+              report['result']='NATIVE_SAFARI_INCOMPLETE'
+              capture('failure')
+          finally:
+              report['lastTelemetry']=dict(latest);report['telemetryCount']=len(all_telemetry)
+              (out/'report.json').write_text(json.dumps(report,indent=2,default=str))
+              server.shutdown()
+              print('SAFARI_RESULT',json.dumps({'result':report['result'],'blob':blob,'errors':report['errors'],'checksPassed':sum(x['pass'] for x in report['checks']),'checksTotal':len(report['checks'])},ensure_ascii=False),flush=True)
+          if report['errors']:raise SystemExit(1)
+          PY
+      - name: Preserve test report and screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ipd-pr15-native-safari-consent-zoom
+          path: /tmp/ipd-pr15-safari/
+          retention-days: 7
+          if-no-files-found: warn
