@@ -99,7 +99,7 @@ jobs:
                                           cta=document.querySelector('.cta a'), eyebrow=document.querySelector('section.cluster .eyebrow');
                                     const rect= el => {const r=el.getBoundingClientRect();return {left:r.left,right:r.right,width:r.width};};
                                     return {
-                                      title:document.title, links:document.querySelectorAll('a').length,
+                                      title:document.title, links:document.querySelectorAll('a').length, coreLinks:document.querySelectorAll('header a, main a, footer a').length,
                                       docWidth:h.scrollWidth, clientWidth:h.clientWidth,
                                       bodyWidth:body.scrollWidth, ctaRect:rect(cta), headerRect:rect(document.querySelector('.top .book')),
                                       ctaColor:getComputedStyle(cta).color, ctaBg:getComputedStyle(cta).backgroundColor,
@@ -113,7 +113,7 @@ jobs:
                                   case['layout']=layout
                                   case['fonts']=responses
                                   case['blocked_requests_count']=len(blocked)
-                                  case['checks']['document_is_complete']=resp.status==200 and layout['links']==57
+                                  case['checks']['document_is_complete']=resp.status==200 and layout['coreLinks']==57 and layout['links']>=57
                                   case['checks']['font_family_css_applied']='Cormorant' in layout['headingFont'] and 'Manrope' in layout['bodyFont']
                                   face=layout['fontFaces']
                                   case['checks']['actual_font_face_loaded']=all(any(n in f['family'] and f['status']=='loaded' for f in face) for n in ('Cormorant','Manrope'))
@@ -148,6 +148,78 @@ jobs:
               (outdir / 'cross-browser-report.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
           print(json.dumps({'cases':len(report['cases']),'failures':report['failures'],'note':'Real native browser zoom is NOT tested in this job'},ensure_ascii=False))
           if report['failures']: raise SystemExit(1)
+          
+          PY
+      - name: Install keyboard and virtual-display test tools
+        run: sudo apt-get update -qq && sudo apt-get install -y xdotool xvfb
+      - name: Verify REAL Chromium browser zoom at 200 percent (not CSS zoom)
+        run: |
+          xvfb-run -a --server-args="-screen 0 1920x1080x24" python - <<'PY'
+          import hashlib, http.server, json, pathlib, subprocess, threading
+          from urllib.parse import urlparse
+          from playwright.sync_api import sync_playwright
+          
+          blobdata=pathlib.Path('services/index.html').read_bytes()
+          blob=hashlib.sha1(b'blob '+str(len(blobdata)).encode()+b'\0'+blobdata).hexdigest()
+          assert blob=='57a11a3a50a486b95c2981d4bd65f873b82728cd'
+          class Quiet(http.server.SimpleHTTPRequestHandler):
+              def log_message(self,*_): pass
+          server=http.server.ThreadingHTTPServer(('127.0.0.1',0),Quiet)
+          threading.Thread(target=server.serve_forever,daemon=True).start()
+          out=pathlib.Path('qa-services-result')
+          out.mkdir(exist_ok=True)
+          report={'candidate_blob':blob,'method':'Chromium headful on Xvfb; OS keyboard ctrl+plus; browser devicePixelRatio ratio','status':'PENDING','attempt_ratios':[]}
+          try:
+              with sync_playwright() as p:
+                  b=p.chromium.launch(headless=False)
+                  try:
+                      ctx=b.new_context(viewport={'width':640,'height':900},device_scale_factor=1)
+                      def intercept(route):
+                          u=urlparse(route.request.url)
+                          if route.request.method=='GET' and u.hostname=='127.0.0.1' and u.port==server.server_port:
+                              route.continue_()
+                          elif route.request.method=='GET' and u.hostname in ('fonts.googleapis.com','fonts.gstatic.com'):
+                              route.continue_()
+                          else: route.abort()
+                      ctx.route('**/*',intercept)
+                      pg=ctx.new_page()
+                      pg.add_init_script("document.addEventListener('click', e => { e.preventDefault(); e.stopImmediatePropagation(); }, true);")
+                      pg.goto(f'http://127.0.0.1:{server.server_port}/services/',wait_until='load',timeout=30000)
+                      pg.evaluate('() => document.fonts.ready')
+                      pg.bring_to_front()
+                      subprocess.run(['xdotool','key','--clearmodifiers','ctrl+0'],check=True)
+                      pg.wait_for_timeout(350)
+                      initial=pg.evaluate('devicePixelRatio')
+                      report['initial_dpr']=initial
+                      ratio=1
+                      for _ in range(12):
+                          subprocess.run(['xdotool','key','--clearmodifiers','ctrl+plus'],check=True)
+                          pg.wait_for_timeout(320)
+                          ratio=pg.evaluate('devicePixelRatio')/initial
+                          report['attempt_ratios'].append(round(ratio,3))
+                          if abs(ratio-2)<.025 or ratio>2.025: break
+                      pg.evaluate('window.scrollTo(0,0)')
+                      layout=pg.evaluate("""() => {
+                        const d=document.documentElement;
+                        const rect=sel=>{const r=document.querySelector(sel).getBoundingClientRect();return {left:r.left,right:r.right};};
+                        return {devicePixelRatio,innerWidth,clientWidth:d.clientWidth,scrollWidth:d.scrollWidth,
+                               cta:rect('.cta a'),header:rect('.top .book')};
+                      }""")
+                      report.update({'final_ratio':ratio,'layout':layout,
+                        'native_zoom_200_reached':abs(ratio-2)<.025,
+                        'equivalent_320px_reflow':290<=layout['clientWidth']<=350 and layout['scrollWidth']<=layout['clientWidth']+2,
+                        'cta_visible_horizontally':layout['cta']['left']>=-2 and layout['cta']['right']<=layout['clientWidth']+2,
+                        'header_visible_horizontally':layout['header']['left']>=-2 and layout['header']['right']<=layout['clientWidth']+2})
+                      pg.screenshot(path=str(out/'chromium-native200.png'),full_page=True)
+                      assert all(report[k] for k in ('native_zoom_200_reached','equivalent_320px_reflow','cta_visible_horizontally','header_visible_horizontally')),report
+                      report['status']='PASS'
+                      ctx.close()
+                  finally:
+                      b.close()
+          finally:
+              server.shutdown()
+              (out/'chromium-native200.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
+          print('NATIVE_ZOOM_RESULT',json.dumps(report,ensure_ascii=False))
           
           PY
       - name: Store technical results (not production release evidence)
