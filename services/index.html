@@ -109,8 +109,47 @@ gtag('config','G-BB9SWKE384');
 .cta a { color: var(--ink); }
 section:not(.hero) .eyebrow { color: var(--muted); }
   </style>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&amp;family=Manrope:wght@400;500;600&amp;display=swap" rel="stylesheet"><link rel="stylesheet" href="/assets/ivm-typography.css?v=1"></head>
-<body>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&amp;family=Manrope:wght@400;500;600&amp;display=swap" rel="stylesheet"><link rel="stylesheet" href="/assets/ivm-typography.css?v=1">
+<style>
+/* Services only: lighter editorial headings and calmer spacing; no shared styles changed. */
+body.ipd-services .top .brand { font-weight: 600; letter-spacing: -.012em; }
+body.ipd-services h1, body.ipd-services h2, body.ipd-services h3 {
+  font-weight: 400 !important;
+  letter-spacing: -.018em !important;
+  line-height: 1.10 !important;
+}
+body.ipd-services .hero h1 { font-size: clamp(3rem, 5.8vw, 5rem) !important; max-width: 860px; }
+body.ipd-services h2 { font-size: clamp(2.25rem, 4.2vw, 3.6rem) !important; line-height: 1.12 !important; }
+body.ipd-services .card h3, body.ipd-services .cluster-card h3 {
+  font-size: clamp(1.55rem, 2.4vw, 1.85rem) !important;
+  line-height: 1.18 !important;
+}
+body.ipd-services .hero { padding: 68px 0 60px; }
+body.ipd-services .hero p { max-width: 730px; }
+body.ipd-services section:not(.hero) { padding-top: 58px; padding-bottom: 58px; }
+body.ipd-services .grid, body.ipd-services .cluster-grid { gap: 18px; }
+body.ipd-services .card { padding: 26px; }
+body.ipd-services .cluster-card { padding: 28px; }
+@media (max-width: 600px) {
+  body.ipd-services .top { padding: 18px 0; }
+  body.ipd-services .top .wrap { gap: 12px; }
+  body.ipd-services .top .brand { font-size: 1.05rem; line-height: 1.25; }
+  body.ipd-services .top .book { font-size: .81rem; line-height: 1.35; padding: 10px 12px; text-align: center; }
+  body.ipd-services .hero { padding: 54px 0 48px; }
+  body.ipd-services .hero h1 {
+    font-size: clamp(2.85rem, 12.5vw, 3.3rem) !important;
+    line-height: 1.08 !important;
+  }
+  body.ipd-services h2 { font-size: clamp(2.15rem, 8.8vw, 2.6rem) !important; line-height: 1.14 !important; }
+  body.ipd-services .card h3, body.ipd-services .cluster-card h3 { font-size: 1.65rem !important; }
+  body.ipd-services section:not(.hero) { padding-top: 46px; padding-bottom: 46px; }
+  body.ipd-services .card, body.ipd-services .cluster-card { padding: 22px; }
+}
+@media (max-width: 320px) {
+  body.ipd-services .top .book { width: 100%; max-width: 100%; }
+}
+</style></head>
+<body class="ipd-services">
   <header class="top"><div class="wrap"><a class="brand" href="/">Ibiza Private Drivers</a><a class="book" href="https://wa.me/34613756211?text=Hello%2C%20I%20would%20like%20to%20plan%20private%20transport%20in%20Ibiza.%0ADate%3A%0APickup%3A%0ADestination%20or%20itinerary%3A%0APassengers%3A" target="_blank" rel="noopener">Book via WhatsApp</a></div></header>
   <main>
     <section class="hero"><div class="wrap"><p class="eyebrow">Private transportation · Ibiza</p><h1>Private driver, chauffeur and premium transport services in Ibiza</h1><p>Choose a specialist service for chauffeur hire, multi-day stays, private aviation, professional guest coordination, airport transfers, luxury hotels, villas, yachts, marinas, nightlife and tailored itineraries.</p></div></section>
