@@ -1,0 +1,174 @@
+name: PR18 Home editorial local-only browser QA
+on:
+  push:
+    branches:
+      - qa/pr18-home-editorial-20261103
+    paths:
+      - .github/workflows/qa-pr18-home-editorial-20261103.yml
+permissions:
+  contents: write
+jobs:
+  real-browsers:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install browser QA dependencies
+        run: |
+          python -m pip install --disable-pip-version-check playwright==1.57.0
+          python -m playwright install --with-deps chromium firefox webkit
+      - name: Test exact PR18 candidate with intercepted external requests
+        id: browserqa
+        continue-on-error: true
+        run: |
+          python - <<'PY'
+          import hashlib,html,json,re,traceback,threading,urllib.request
+          from pathlib import Path
+          from http.server import SimpleHTTPRequestHandler,ThreadingHTTPServer
+          from urllib.parse import urlparse
+          from playwright.sync_api import sync_playwright
+          root=Path.cwd(); raw=(root/'index.html').read_bytes()
+          blob=hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\\0'+raw).hexdigest()
+          report={'candidate_blob':blob,'expected_blob':'9866e814f492b5297692e8395e55265d9b895982','checks':[],'failures':[],'interceptedExternal':{},'note':'Actual full page and local real assets; Browser GETs to all offsite hosts fulfilled from downloaded font cache or aborted. No contacts, forms or analytics sent.'}
+          def check(name,condition,details=None):
+            passed=bool(condition);report['checks'].append({'name':name,'passed':passed,'details':str(details)[:250] if details is not None else None})
+            print(('PASS ' if passed else 'FAIL ')+name+' '+str(details)[:120],flush=True)
+            if not passed:report['failures'].append(name)
+          try:
+            check('candidate HTML exact Git blob',blob==report['expected_blob'])
+            source=raw.decode('utf-8')
+            check('Home-only design class', '<body class="ipd-home-editorial">' in source)
+            check('original H1 unchanged', '<h1>Private Driver<br><em>Ibiza</em> & Chauffeur<br>Service</h1>' in source)
+            check('editorial CSS scoped', 'id="ipd-home-editorial-typography"' in source)
+            check('Home JSON-LD still present', 'application/ld+json' in source)
+            orig=__import__('subprocess').check_output(['git','show','1b5d6ce967a74fc590a2f63d01326b5c492bfb80:index.html']).decode()
+            links=lambda v:[x for x in re.findall(r'\\bhref="([^"]+)"',v) if not x.startswith('https://fonts.googleapis.com/')]
+            check('all original navigation/contact destinations',links(orig)==links(source),len(links(source)))
+            scripts=lambda v:re.findall(r'<script\\b[^>]*>[\\s\\S]*?</script>',v,re.I)
+            check('all original scripts identical',scripts(orig)==scripts(source))
+            linkswa=re.findall(r'href="(https://wa\\.me/[^"]+)"',source)
+            check('WhatsApp URLs retained unchanged',linkswa==re.findall(r'href="(https://wa\\.me/[^"]+)"',orig),len(linkswa))
+            font_link=re.search(r'https://fonts\\.googleapis\\.com/[^"]+',source)
+            assert font_link,'Google Fonts link missing'
+            font_url=html.unescape(font_link.group())
+            ua='Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            def download(url):
+              with urllib.request.urlopen(urllib.request.Request(url,headers={'User-Agent':ua}),timeout=30) as r:
+                assert r.status==200,(url,r.status)
+                return r.read()
+            font_css=download(font_url)
+            font_cache={font_url:(font_css,'text/css')}
+            for url in dict.fromkeys(re.findall(rb'url\\((https://fonts\\.gstatic\\.com/[^)]+)\\)',font_css)):
+              u=url.decode()
+              font_cache[u]=(download(u),'font/woff2')
+            check('real Google font files cached for local QA',len(font_cache)>2,len(font_cache))
+            class SilentHandler(SimpleHTTPRequestHandler):
+              def __init__(self,*args,**kwargs):super().__init__(*args,directory=str(root),**kwargs)
+              def log_message(self,*args):pass
+            server=ThreadingHTTPServer(('127.0.0.1',0),SilentHandler)
+            threading.Thread(target=server.serve_forever,daemon=True).start()
+            base='http://127.0.0.1:'+str(server.server_port)+'/'
+            with sync_playwright() as p:
+              for browser_name in ('chromium','firefox','webkit'):
+                browser=getattr(p,browser_name).launch(headless=True)
+                for width in (320,375,440,768,1280):
+                  key=browser_name+' '+str(width)
+                  ctx=browser.new_context(viewport={'width':width,'height':900},device_scale_factor=1,accept_downloads=False)
+                  intercepts=[]
+                  def route_handler(route):
+                    url=route.request.url
+                    if url.startswith(base):
+                      route.continue_()
+                    elif url in font_cache:
+                      body,mime=font_cache[url]
+                      route.fulfill(status=200,body=body,content_type=mime,headers={'Access-Control-Allow-Origin':'*'})
+                    else:
+                      intercepts.append(url)
+                      route.abort('blockedbyclient')
+                  ctx.route('**/*',route_handler)
+                  page=ctx.new_page()
+                  page.on('popup',lambda popup:popup.close())
+                  try:
+                    resp=page.goto(base,wait_until='domcontentloaded',timeout=30000)
+                    page.evaluate('document.fonts.ready')
+                    page.wait_for_timeout(230)
+                    metrics=page.evaluate('''() => {
+                      const h1=document.querySelector('h1'),h2=document.querySelector('h2'),sub=document.querySelector('.hero-sub'),im=document.querySelector('.hero-media img');
+                      const cs=e=>e?getComputedStyle(e):null;
+                      return {w:innerWidth,client:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth,
+                        h1:cs(h1)?{family:cs(h1).fontFamily,weight:cs(h1).fontWeight,size:cs(h1).fontSize}:null,
+                        h2:cs(h2)?{family:cs(h2).fontFamily,weight:cs(h2).fontWeight}:null,
+                        sub:cs(sub)?{family:cs(sub).fontFamily,weight:cs(sub).fontWeight,color:cs(sub).color}:null,
+                        image:!!im&&im.complete&&im.naturalWidth>0,
+                        fonts:[...document.fonts].filter(f=>f.status==='loaded').map(f=>f.family),
+                        style:!!document.querySelector('#ipd-home-editorial-typography'),
+                        bodyClass:document.body.classList.contains('ipd-home-editorial'),
+                        faq:document.querySelectorAll('.faq-q').length,
+                        h1text:h1?.textContent.trim()}}
+                    ''')
+                    check(key+' HTTP local 200',resp is not None and resp.status==200)
+                    check(key+' no horizontal overflow',metrics['scroll']<=metrics['client']+1,metrics['scroll']-metrics['client'])
+                    check(key+' H1 Cormorant weight 400',bool(metrics['h1']) and 'Cormorant Garamond' in metrics['h1']['family'] and metrics['h1']['weight']=='400',metrics['h1'])
+                    check(key+' H2 Cormorant weight 400',bool(metrics['h2']) and 'Cormorant Garamond' in metrics['h2']['family'] and metrics['h2']['weight']=='400')
+                    check(key+' Manrope subheading weight 400',bool(metrics['sub']) and 'Manrope' in metrics['sub']['family'] and metrics['sub']['weight']=='400')
+                    check(key+' actual loaded font faces',any('Cormorant' in s for s in metrics['fonts']) and any('Manrope' in s for s in metrics['fonts']),metrics['fonts'][:8])
+                    check(key+' car photo local loaded',metrics['image'])
+                    check(key+' FAQ and scoped CSS loaded',metrics['faq']>=1 and metrics['style'] and metrics['bodyClass'])
+                    check(key+' booking CTAs still present',page.locator('a[href^="https://wa.me/"]').count()>=3)
+                    if width in (320,440):
+                      toggle=page.locator('#navToggle')
+                      toggle.focus()
+                      page.keyboard.press('Enter')
+                      check(key+' menu keyboard opens',toggle.get_attribute('aria-expanded')=='true')
+                      page.keyboard.press('Tab')
+                      check(key+' Tab reaches open menu',page.evaluate("document.activeElement.closest('#navLinks')!==null"))
+                      page.keyboard.press('Escape')
+                      check(key+' Escape closes and focuses toggle',toggle.get_attribute('aria-expanded')=='false' and page.evaluate("document.activeElement.id==='navToggle'"))
+                      page.keyboard.press('Tab')
+                      check(key+' hidden mobile menu not keyboard focused',page.evaluate("document.activeElement.closest('#navLinks')===null"))
+                    faq=page.locator('.faq-q').first
+                    faq.click()
+                    check(key+' FAQ interactive',page.locator('.faq-item.open').count()>=1)
+                    report['interceptedExternal'][key]=sorted(set(intercepts))[:25]
+                  except Exception as e:
+                    check(key+' browser execution',False,repr(e))
+                    print(traceback.format_exc()[-2400:],flush=True)
+                  finally:
+                    ctx.close()
+                browser.close()
+            server.shutdown()
+          except Exception as e:
+            check('harness setup',False,repr(e))
+            print(traceback.format_exc()[-4800:],flush=True)
+          finally:
+            report['passed']=not report['failures']
+            path=root/'qa-results/pr18-home-20261103.json';path.parent.mkdir(exist_ok=True)
+            path.write_text(json.dumps(report,ensure_ascii=False,indent=2))
+            print('RESULT '+json.dumps({'passed':report['passed'],'check_count':len(report['checks']),'fail_count':len(report['failures']),'failures':report['failures'],'blob':blob},ensure_ascii=False),flush=True)
+          if not report['passed']:raise SystemExit(1)
+          PY
+      - name: Preserve report in isolated QA branch without changing PR18 or main
+        if: always()
+        run: |
+          if [ ! -f qa-results/pr18-home-20261103.json ]; then
+            mkdir -p qa-results
+            printf '{"passed":false,"failures":["QA runner did not create report"]}' > qa-results/pr18-home-20261103.json
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add qa-results/pr18-home-20261103.json
+          git commit -m 'qa: record PR18 full browser evidence (local only)' || true
+          git push origin HEAD:qa/pr18-home-editorial-20261103
+      - name: Fail job if QA assertions were not passed
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          report=json.loads(Path('qa-results/pr18-home-20261103.json').read_text())
+          assert report.get('passed') is True,'PR18 QA incomplete/failure; do NOT merge'
+          PY
