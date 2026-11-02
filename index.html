@@ -237,8 +237,46 @@ footer{background:#111008;color:rgba(242,237,228,.5);padding:4rem 2rem 2rem}.foo
 <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32.png">
 <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
 <meta name="theme-color" content="#1a1814">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&amp;family=Manrope:wght@400;500;600&amp;display=swap" rel="stylesheet"><link rel="stylesheet" href="/assets/ivm-typography.css?v=1"></head>
-<body>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&amp;family=Manrope:wght@400;500;600&amp;display=swap" rel="stylesheet"><link rel="stylesheet" href="/assets/ivm-typography.css?v=1">
+<style id="ipd-home-editorial-typography">
+/* Home-only type refinement; all SEO copy, links, contact and shared styles remain unchanged. */
+body.ipd-home-editorial { font-weight:400; }
+body.ipd-home-editorial h1,
+body.ipd-home-editorial h2,
+body.ipd-home-editorial h3 {
+  font-weight:400 !important;
+  letter-spacing:-.022em !important;
+  line-height:1.13 !important;
+}
+body.ipd-home-editorial .hero h1 {
+  font-size:clamp(3rem, 6.5vw, 5.25rem) !important;
+  line-height:1.075 !important;
+}
+body.ipd-home-editorial h2 {
+  font-size:clamp(2.05rem, 3.65vw, 3.1rem) !important;
+}
+body.ipd-home-editorial h3 {
+  font-size:clamp(1.45rem, 2.15vw, 1.75rem) !important;
+  line-height:1.2 !important;
+}
+body.ipd-home-editorial .hero-sub {
+  font-weight:400 !important;
+  line-height:1.75 !important;
+  color:rgba(242,237,228,.78) !important;
+}
+@media (max-width:600px) {
+  body.ipd-home-editorial .hero h1 {
+    font-size:clamp(2.55rem, 13vw, 3.05rem) !important;
+    line-height:1.09 !important;
+  }
+  body.ipd-home-editorial h2 {
+    font-size:clamp(2.08rem, 10vw, 2.5rem) !important;
+  }
+  body.ipd-home-editorial h3 { font-size:1.5rem !important; }
+}
+</style>
+</head>
+<body class="ipd-home-editorial">
 <nav aria-label="Main navigation">
   <a class="nav-logo" href="/" aria-label="Ibiza Private Drivers home">Ibiza <span>Private</span> Drivers</a>
   <button class="nav-toggle" id="navToggle" aria-label="Open navigation menu" aria-expanded="false" aria-controls="navLinks"><span></span><span></span><span></span></button>
