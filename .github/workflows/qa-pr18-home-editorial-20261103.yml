@@ -33,7 +33,7 @@ jobs:
           from urllib.parse import urlparse
           from playwright.sync_api import sync_playwright
           root=Path.cwd(); raw=(root/'index.html').read_bytes()
-          blob=hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\\0'+raw).hexdigest()
+          blob=hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest()
           report={'candidate_blob':blob,'expected_blob':'9866e814f492b5297692e8395e55265d9b895982','checks':[],'failures':[],'interceptedExternal':{},'note':'Actual full page and local real assets; Browser GETs to all offsite hosts fulfilled from downloaded font cache or aborted. No contacts, forms or analytics sent.'}
           def check(name,condition,details=None):
             passed=bool(condition);report['checks'].append({'name':name,'passed':passed,'details':str(details)[:250] if details is not None else None})
@@ -47,13 +47,13 @@ jobs:
             check('editorial CSS scoped', 'id="ipd-home-editorial-typography"' in source)
             check('Home JSON-LD still present', 'application/ld+json' in source)
             orig=__import__('subprocess').check_output(['git','show','1b5d6ce967a74fc590a2f63d01326b5c492bfb80:index.html']).decode()
-            links=lambda v:[x for x in re.findall(r'\\bhref="([^"]+)"',v) if not x.startswith('https://fonts.googleapis.com/')]
+            links=lambda v:[x for x in re.findall(r'\bhref="([^"]+)"',v) if not x.startswith('https://fonts.googleapis.com/')]
             check('all original navigation/contact destinations',links(orig)==links(source),len(links(source)))
-            scripts=lambda v:re.findall(r'<script\\b[^>]*>[\\s\\S]*?</script>',v,re.I)
+            scripts=lambda v:re.findall(r'<script\b[^>]*>[\s\S]*?</script>',v,re.I)
             check('all original scripts identical',scripts(orig)==scripts(source))
-            linkswa=re.findall(r'href="(https://wa\\.me/[^"]+)"',source)
-            check('WhatsApp URLs retained unchanged',linkswa==re.findall(r'href="(https://wa\\.me/[^"]+)"',orig),len(linkswa))
-            font_link=re.search(r'https://fonts\\.googleapis\\.com/[^"]+',source)
+            linkswa=re.findall(r'href="(https://wa\.me/[^"]+)"',source)
+            check('WhatsApp URLs retained unchanged',linkswa==re.findall(r'href="(https://wa\.me/[^"]+)"',orig),len(linkswa))
+            font_link=re.search(r'https://fonts\.googleapis\.com/[^"]+',source)
             assert font_link,'Google Fonts link missing'
             font_url=html.unescape(font_link.group())
             ua='Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
@@ -63,7 +63,7 @@ jobs:
                 return r.read()
             font_css=download(font_url)
             font_cache={font_url:(font_css,'text/css')}
-            for url in dict.fromkeys(re.findall(rb'url\\((https://fonts\\.gstatic\\.com/[^)]+)\\)',font_css)):
+            for url in dict.fromkeys(re.findall(rb'url\((https://fonts\.gstatic\.com/[^)]+)\)',font_css)):
               u=url.decode()
               font_cache[u]=(download(u),'font/woff2')
             check('real Google font files cached for local QA',len(font_cache)>2,len(font_cache))
