@@ -1,0 +1,385 @@
+{
+  "method": "actual macOS Safari via LaunchServices + Quartz, local-only strict CSP; no WebDriver",
+  "blob": "9866e814f492b5297692e8395e55265d9b895982",
+  "checks": [
+    {
+      "name": "native keyboard access",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Safari LaunchServices opened local page",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "banner appears before consent",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "pre-consent is not granted",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "original CTA preserved",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Home H1 editorial Cormorant 400",
+      "pass": true,
+      "detail": {
+        "family": "\"Cormorant Garamond\", Georgia, serif",
+        "weight": "400"
+      }
+    },
+    {
+      "name": "Home H2 editorial Cormorant 400",
+      "pass": true,
+      "detail": {
+        "family": "\"Cormorant Garamond\", Georgia, serif",
+        "weight": "400"
+      }
+    },
+    {
+      "name": "Home subheading Manrope 400",
+      "pass": true,
+      "detail": {
+        "family": "Manrope, -apple-system, BlinkMacSystemFont, \"Helvetica Neue\", Arial, sans-serif",
+        "weight": "400"
+      }
+    },
+    {
+      "name": "Mercedes hero photo loaded",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Home FAQ interactive in native Safari",
+      "pass": true,
+      "detail": 1
+    },
+    {
+      "name": "essential only dismisses banner",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "visible native Safari window",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "native Safari active",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "CTA unobscured after dismissal at 100%",
+      "pass": true,
+      "detail": {
+        "found": true,
+        "focused": true,
+        "text": "Book a Transfer",
+        "rect": {
+          "x": 32,
+          "y": 398,
+          "w": 194.03125,
+          "h": 51.78125
+        },
+        "hit": true,
+        "inViewport": true,
+        "outline": "auto"
+      }
+    },
+    {
+      "name": "no overflow at 100%",
+      "pass": true,
+      "detail": [
+        751,
+        751
+      ]
+    },
+    {
+      "name": "visible native Safari window",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "native Safari active",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "native Safari active",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "native Safari active",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "native Safari active",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "native Safari active",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "genuine native Safari zoom 200%",
+      "pass": true,
+      "detail": {
+        "ratio": 2.0,
+        "before": 768,
+        "after": 384,
+        "dprBefore": 1,
+        "dprAfter": 2
+      }
+    },
+    {
+      "name": "no horizontal overflow at 200%",
+      "pass": true,
+      "detail": [
+        376,
+        376
+      ]
+    },
+    {
+      "name": "CTA unobscured after Essential only at 200%",
+      "pass": true,
+      "detail": {
+        "found": true,
+        "focused": true,
+        "text": "Book a Transfer",
+        "rect": {
+          "x": 20,
+          "y": 186.5,
+          "w": 335.5,
+          "h": 50.296875
+        },
+        "hit": true,
+        "inViewport": true,
+        "outline": "auto"
+      }
+    },
+    {
+      "name": "no external browser resource requests",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "name": "privacy choice stays denied",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "no embedded instrumentation errors",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "name": "visible native Safari window",
+      "pass": true,
+      "detail": null
+    }
+  ],
+  "errors": [],
+  "screenshots": [
+    {
+      "name": "after-essential-100",
+      "code": 0,
+      "size": 922432
+    },
+    {
+      "name": "after-essential-native200",
+      "code": 0,
+      "size": 693091
+    }
+  ],
+  "result": "NATIVE_SAFARI_CONSENT_ZOOM_PASS_NOT_RELEASE_APPROVAL",
+  "lastTelemetry": {
+    "h1": {
+      "family": "\"Cormorant Garamond\", Georgia, serif",
+      "weight": "400"
+    },
+    "h2": {
+      "family": "\"Cormorant Garamond\", Georgia, serif",
+      "weight": "400"
+    },
+    "sub": {
+      "family": "Manrope, -apple-system, BlinkMacSystemFont, \"Helvetica Neue\", Arial, sans-serif",
+      "weight": "400"
+    },
+    "carLoaded": true,
+    "faqOpen": 1,
+    "ack": "2347942054486",
+    "ua": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.6 Safari/605.1.15",
+    "iw": 384,
+    "ih": 424,
+    "dpr": 2,
+    "client": 376,
+    "scroll": 376,
+    "consent": false,
+    "consentValue": "denied",
+    "cta": {
+      "found": true,
+      "focused": true,
+      "text": "Book a Transfer",
+      "rect": {
+        "x": 20,
+        "y": 186.5,
+        "w": 335.5,
+        "h": 50.296875
+      },
+      "hit": true,
+      "inViewport": true,
+      "outline": "auto"
+    },
+    "fonts": [
+      {
+        "family": "Cormorant Garamond",
+        "status": "unloaded"
+      },
+      {
+        "family": "Cormorant Garamond",
+        "status": "unloaded"
+      },
+      {
+        "family": "Cormorant Garamond",
+        "status": "unloaded"
+      },
+      {
+        "family": "Cormorant Garamond",
+        "status": "unloaded"
+      },
+      {
+        "family": "Cormorant Garamond",
+        "status": "loaded"
+      },
+      {
+        "family": "Cormorant Garamond",
+        "status": "unloaded"
+      },
+      {
+        "family": "Cormorant Garamond",
+        "status": "unloaded"
+      },
+      {
+        "family": "Cormorant Garamond",
+        "status": "unloaded"
+      },
+      {
+        "family": "Cormorant Garamond",
+        "status": "unloaded"
+      },
+      {
+        "family": "Cormorant Garamond",
+        "status": "unloaded"
+      },
+      {
+        "family": "Cormorant Garamond",
+        "status": "unloaded"
+      },
+      {
+        "family": "Cormorant Garamond",
+        "status": "unloaded"
+      },
+      {
+        "family": "Cormorant Garamond",
+        "status": "unloaded"
+      },
+      {
+        "family": "Cormorant Garamond",
+        "status": "unloaded"
+      },
+      {
+        "family": "Cormorant Garamond",
+        "status": "loaded"
+      },
+      {
+        "family": "Manrope",
+        "status": "unloaded"
+      },
+      {
+        "family": "Manrope",
+        "status": "unloaded"
+      },
+      {
+        "family": "Manrope",
+        "status": "unloaded"
+      },
+      {
+        "family": "Manrope",
+        "status": "unloaded"
+      },
+      {
+        "family": "Manrope",
+        "status": "unloaded"
+      },
+      {
+        "family": "Manrope",
+        "status": "loaded"
+      },
+      {
+        "family": "Manrope",
+        "status": "unloaded"
+      },
+      {
+        "family": "Manrope",
+        "status": "unloaded"
+      },
+      {
+        "family": "Manrope",
+        "status": "unloaded"
+      },
+      {
+        "family": "Manrope",
+        "status": "unloaded"
+      },
+      {
+        "family": "Manrope",
+        "status": "unloaded"
+      },
+      {
+        "family": "Manrope",
+        "status": "loaded"
+      },
+      {
+        "family": "Manrope",
+        "status": "unloaded"
+      },
+      {
+        "family": "Manrope",
+        "status": "unloaded"
+      },
+      {
+        "family": "Manrope",
+        "status": "unloaded"
+      },
+      {
+        "family": "Manrope",
+        "status": "unloaded"
+      },
+      {
+        "family": "Manrope",
+        "status": "unloaded"
+      },
+      {
+        "family": "Manrope",
+        "status": "loaded"
+      }
+    ],
+    "external": [],
+    "testErrors": []
+  },
+  "telemetryCount": 66,
+  "passed": true,
+  "source": "native macOS Safari + Quartz local CSP isolation"
+}
