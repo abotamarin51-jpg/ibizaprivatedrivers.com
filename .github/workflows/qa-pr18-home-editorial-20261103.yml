@@ -18,12 +18,35 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Install browser QA dependencies
+      - name: Diagnostics before browser installation (never fake pass)
+        id: preflight
         run: |
+          python - <<'PY'
+          import json,os,platform,subprocess,sys,hashlib
+          from pathlib import Path
+          candidate=Path('index.html').read_bytes()
+          sha=hashlib.sha1(b'blob '+str(len(candidate)).encode()+b'\\0'+candidate).hexdigest()
+          p=Path('qa-results/pr18-home-20261103.json');p.parent.mkdir(parents=True,exist_ok=True)
+          report={'passed':False,'checks':[],'failures':['Browser QA not yet run'],'stage':'preflight',
+                  'candidate_blob':sha,'expected_blob':'9866e814f492b5297692e8395e55265d9b895982',
+                  'python':sys.version.split()[0],'platform':platform.platform(),
+                  'root_files':len(list(Path('.').iterdir())),
+                  'media_exists':Path('images/private-driver-ibiza-v-class-coast.webp').is_file(),
+                  'shared_css_exists':Path('assets/ivm-typography.css').is_file(),
+                  'branch':os.environ.get('GITHUB_REF_NAME')}
+          p.write_text(json.dumps(report,indent=2))
+          assert sha==report['expected_blob'],'QA branch HTML differs from approved PR18 candidate'
+          PY
+      - name: Install browser QA dependencies and record outcome
+        id: deps
+        continue-on-error: true
+        run: |
+          set -euxo pipefail
           python -m pip install --disable-pip-version-check playwright==1.57.0
           python -m playwright install --with-deps chromium firefox webkit
       - name: Test exact PR18 candidate with intercepted external requests
         id: browserqa
+        if: steps.deps.outcome == 'success'
         continue-on-error: true
         run: |
           python - <<'PY'
@@ -154,11 +177,27 @@ jobs:
           PY
       - name: Preserve report in isolated QA branch without changing PR18 or main
         if: always()
+        env:
+          DEPS_OUTCOME: ${{ steps.deps.outcome }}
+          BROWSER_OUTCOME: ${{ steps.browserqa.outcome }}
         run: |
-          if [ ! -f qa-results/pr18-home-20261103.json ]; then
-            mkdir -p qa-results
-            printf '{"passed":false,"failures":["QA runner did not create report"]}' > qa-results/pr18-home-20261103.json
-          fi
+          python - <<'PY'
+          import json,os
+          from pathlib import Path
+          p=Path('qa-results/pr18-home-20261103.json')
+          try: report=json.loads(p.read_text())
+          except Exception: report={'passed':False,'failures':['Preflight did not run'],'stage':'checkout_or_setup'}
+          deps=os.environ.get('DEPS_OUTCOME','unknown')
+          browser=os.environ.get('BROWSER_OUTCOME','unknown')
+          report['ci_dependency_outcome']=deps
+          report['ci_browser_outcome']=browser
+          if not isinstance(report.get('checks'),list) or not report.get('checks'):
+            report['passed']=False
+            report['stage']='dependency_install_or_browser_start'
+            report.setdefault('failures',[]).append('No completed browser assertions; inspect CI dependency and browser-step outcomes')
+          p.parent.mkdir(parents=True,exist_ok=True)
+          p.write_text(json.dumps(report,ensure_ascii=False,indent=2))
+          PY
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add qa-results/pr18-home-20261103.json
