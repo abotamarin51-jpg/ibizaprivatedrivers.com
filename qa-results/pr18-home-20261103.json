@@ -1,1 +1,19 @@
-{"passed":false,"failures":["QA runner did not create report"]}
+{
+  "passed": false,
+  "checks": [],
+  "failures": [
+    "Browser QA not yet run",
+    "No completed browser assertions; inspect CI dependency and browser-step outcomes"
+  ],
+  "stage": "dependency_install_or_browser_start",
+  "candidate_blob": "313d173ff93ed8bbd5af37fbcb3900373c7455dd",
+  "expected_blob": "9866e814f492b5297692e8395e55265d9b895982",
+  "python": "3.12.15",
+  "platform": "Linux-7.0.0-1017-azure-x86_64-with-glibc2.43",
+  "root_files": 74,
+  "media_exists": true,
+  "shared_css_exists": true,
+  "branch": "qa/pr18-home-editorial-20261103",
+  "ci_dependency_outcome": "skipped",
+  "ci_browser_outcome": "skipped"
+}
