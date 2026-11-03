@@ -103,12 +103,32 @@
       "details": null
     },
     {
+      "name": "chromium 320 Shift+Tab returns to menu toggle",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "chromium 320 forward Tab re-enters menu",
+      "passed": true,
+      "details": null
+    },
+    {
       "name": "chromium 320 Escape closes and focuses toggle",
       "passed": true,
       "details": null
     },
     {
       "name": "chromium 320 hidden mobile menu not keyboard focused",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "chromium 320 reopened menu for link test",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "chromium 320 menu closes after internal link click",
       "passed": true,
       "details": null
     },
@@ -223,12 +243,32 @@
       "details": null
     },
     {
+      "name": "chromium 440 Shift+Tab returns to menu toggle",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "chromium 440 forward Tab re-enters menu",
+      "passed": true,
+      "details": null
+    },
+    {
       "name": "chromium 440 Escape closes and focuses toggle",
       "passed": true,
       "details": null
     },
     {
       "name": "chromium 440 hidden mobile menu not keyboard focused",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "chromium 440 reopened menu for link test",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "chromium 440 menu closes after internal link click",
       "passed": true,
       "details": null
     },
@@ -393,12 +433,32 @@
       "details": null
     },
     {
+      "name": "firefox 320 Shift+Tab returns to menu toggle",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "firefox 320 forward Tab re-enters menu",
+      "passed": true,
+      "details": null
+    },
+    {
       "name": "firefox 320 Escape closes and focuses toggle",
       "passed": true,
       "details": null
     },
     {
       "name": "firefox 320 hidden mobile menu not keyboard focused",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "firefox 320 reopened menu for link test",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "firefox 320 menu closes after internal link click",
       "passed": true,
       "details": null
     },
@@ -513,12 +573,32 @@
       "details": null
     },
     {
+      "name": "firefox 440 Shift+Tab returns to menu toggle",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "firefox 440 forward Tab re-enters menu",
+      "passed": true,
+      "details": null
+    },
+    {
       "name": "firefox 440 Escape closes and focuses toggle",
       "passed": true,
       "details": null
     },
     {
       "name": "firefox 440 hidden mobile menu not keyboard focused",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "firefox 440 reopened menu for link test",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "firefox 440 menu closes after internal link click",
       "passed": true,
       "details": null
     },
@@ -683,12 +763,32 @@
       "details": null
     },
     {
+      "name": "webkit 320 Shift+Tab returns to menu toggle",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "webkit 320 forward Tab re-enters menu",
+      "passed": true,
+      "details": null
+    },
+    {
       "name": "webkit 320 Escape closes and focuses toggle",
       "passed": true,
       "details": null
     },
     {
       "name": "webkit 320 hidden mobile menu not keyboard focused",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "webkit 320 reopened menu for link test",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "webkit 320 menu closes after internal link click",
       "passed": true,
       "details": null
     },
@@ -803,12 +903,32 @@
       "details": null
     },
     {
+      "name": "webkit 440 Shift+Tab returns to menu toggle",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "webkit 440 forward Tab re-enters menu",
+      "passed": true,
+      "details": null
+    },
+    {
       "name": "webkit 440 Escape closes and focuses toggle",
       "passed": true,
       "details": null
     },
     {
       "name": "webkit 440 hidden mobile menu not keyboard focused",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "webkit 440 reopened menu for link test",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "webkit 440 menu closes after internal link click",
       "passed": true,
       "details": null
     },
