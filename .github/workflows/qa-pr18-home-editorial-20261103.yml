@@ -2,7 +2,7 @@ name: PR18 Home editorial local-only browser QA
 on:
   push:
     branches:
-      - qa/pr18-home-editorial-20261103
+      - qa/pr18-shift-tab-check-20261103
     paths:
       - .github/workflows/qa-pr18-home-editorial-20261103.yml
 permissions:
@@ -213,7 +213,7 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add qa-results/pr18-home-20261103.json
           git commit -m 'qa: record PR18 full browser evidence (local only)' || true
-          git push origin HEAD:qa/pr18-home-editorial-20261103
+          git push origin HEAD:qa/pr18-shift-tab-check-20261103
       - name: Fail job if QA assertions were not passed
         run: |
           python - <<'PY'
