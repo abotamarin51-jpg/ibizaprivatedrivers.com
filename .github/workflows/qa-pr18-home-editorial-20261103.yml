@@ -25,7 +25,7 @@ jobs:
           import json,os,platform,subprocess,sys,hashlib
           from pathlib import Path
           candidate=Path('index.html').read_bytes()
-          sha=hashlib.sha1(b'blob '+str(len(candidate)).encode()+b'\\0'+candidate).hexdigest()
+          sha=hashlib.sha1(b'blob '+str(len(candidate)).encode()+b'\0'+candidate).hexdigest()
           p=Path('qa-results/pr18-home-20261103.json');p.parent.mkdir(parents=True,exist_ok=True)
           report={'passed':False,'checks':[],'failures':['Browser QA not yet run'],'stage':'preflight',
                   'candidate_blob':sha,'expected_blob':'9866e814f492b5297692e8395e55265d9b895982',
