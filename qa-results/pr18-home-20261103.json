@@ -1,19 +1,973 @@
 {
-  "passed": false,
-  "checks": [],
-  "failures": [
-    "Browser QA not yet run",
-    "No completed browser assertions; inspect CI dependency and browser-step outcomes"
-  ],
-  "stage": "dependency_install_or_browser_start",
   "candidate_blob": "9866e814f492b5297692e8395e55265d9b895982",
   "expected_blob": "9866e814f492b5297692e8395e55265d9b895982",
-  "python": "3.12.15",
-  "platform": "Linux-7.0.0-1017-azure-x86_64-with-glibc2.43",
-  "root_files": 74,
-  "media_exists": true,
-  "shared_css_exists": true,
-  "branch": "qa/pr18-home-editorial-20261103",
-  "ci_dependency_outcome": "failure",
-  "ci_browser_outcome": "skipped"
+  "checks": [
+    {
+      "name": "candidate HTML exact Git blob",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "Home-only design class",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "original H1 unchanged",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "editorial CSS scoped",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "Home JSON-LD still present",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "all original navigation/contact destinations",
+      "passed": true,
+      "details": "86"
+    },
+    {
+      "name": "all original scripts identical",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "WhatsApp URLs retained unchanged",
+      "passed": true,
+      "details": "7"
+    },
+    {
+      "name": "real Google font files cached for local QA",
+      "passed": true,
+      "details": "12"
+    },
+    {
+      "name": "chromium 320 HTTP local 200",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "chromium 320 no horizontal overflow",
+      "passed": true,
+      "details": "0"
+    },
+    {
+      "name": "chromium 320 H1 Cormorant weight 400",
+      "passed": true,
+      "details": "{'family': '\"Cormorant Garamond\", Georgia, serif', 'weight': '400', 'size': '41.6px'}"
+    },
+    {
+      "name": "chromium 320 H2 Cormorant weight 400",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "chromium 320 Manrope subheading weight 400",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "chromium 320 actual loaded font faces",
+      "passed": true,
+      "details": "['Cormorant Garamond', 'Cormorant Garamond', 'Manrope', 'Manrope', 'Manrope']"
+    },
+    {
+      "name": "chromium 320 car photo local loaded",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "chromium 320 FAQ and scoped CSS loaded",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "chromium 320 booking CTAs still present",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "chromium 320 menu keyboard opens",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "chromium 320 Tab reaches open menu",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "chromium 320 Escape closes and focuses toggle",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "chromium 320 hidden mobile menu not keyboard focused",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "chromium 320 FAQ interactive",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "chromium 375 HTTP local 200",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "chromium 375 no horizontal overflow",
+      "passed": true,
+      "details": "0"
+    },
+    {
+      "name": "chromium 375 H1 Cormorant weight 400",
+      "passed": true,
+      "details": "{'family': '\"Cormorant Garamond\", Georgia, serif', 'weight': '400', 'size': '48.75px'}"
+    },
+    {
+      "name": "chromium 375 H2 Cormorant weight 400",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "chromium 375 Manrope subheading weight 400",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "chromium 375 actual loaded font faces",
+      "passed": true,
+      "details": "['Cormorant Garamond', 'Cormorant Garamond', 'Manrope', 'Manrope', 'Manrope']"
+    },
+    {
+      "name": "chromium 375 car photo local loaded",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "chromium 375 FAQ and scoped CSS loaded",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "chromium 375 booking CTAs still present",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "chromium 375 FAQ interactive",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "chromium 440 HTTP local 200",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "chromium 440 no horizontal overflow",
+      "passed": true,
+      "details": "0"
+    },
+    {
+      "name": "chromium 440 H1 Cormorant weight 400",
+      "passed": true,
+      "details": "{'family': '\"Cormorant Garamond\", Georgia, serif', 'weight': '400', 'size': '48.8px'}"
+    },
+    {
+      "name": "chromium 440 H2 Cormorant weight 400",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "chromium 440 Manrope subheading weight 400",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "chromium 440 actual loaded font faces",
+      "passed": true,
+      "details": "['Cormorant Garamond', 'Cormorant Garamond', 'Manrope', 'Manrope', 'Manrope']"
+    },
+    {
+      "name": "chromium 440 car photo local loaded",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "chromium 440 FAQ and scoped CSS loaded",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "chromium 440 booking CTAs still present",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "chromium 440 menu keyboard opens",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "chromium 440 Tab reaches open menu",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "chromium 440 Escape closes and focuses toggle",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "chromium 440 hidden mobile menu not keyboard focused",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "chromium 440 FAQ interactive",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "chromium 768 HTTP local 200",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "chromium 768 no horizontal overflow",
+      "passed": true,
+      "details": "0"
+    },
+    {
+      "name": "chromium 768 H1 Cormorant weight 400",
+      "passed": true,
+      "details": "{'family': '\"Cormorant Garamond\", Georgia, serif', 'weight': '400', 'size': '49.92px'}"
+    },
+    {
+      "name": "chromium 768 H2 Cormorant weight 400",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "chromium 768 Manrope subheading weight 400",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "chromium 768 actual loaded font faces",
+      "passed": true,
+      "details": "['Cormorant Garamond', 'Cormorant Garamond', 'Manrope', 'Manrope', 'Manrope']"
+    },
+    {
+      "name": "chromium 768 car photo local loaded",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "chromium 768 FAQ and scoped CSS loaded",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "chromium 768 booking CTAs still present",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "chromium 768 FAQ interactive",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "chromium 1280 HTTP local 200",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "chromium 1280 no horizontal overflow",
+      "passed": true,
+      "details": "0"
+    },
+    {
+      "name": "chromium 1280 H1 Cormorant weight 400",
+      "passed": true,
+      "details": "{'family': '\"Cormorant Garamond\", Georgia, serif', 'weight': '400', 'size': '83.2px'}"
+    },
+    {
+      "name": "chromium 1280 H2 Cormorant weight 400",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "chromium 1280 Manrope subheading weight 400",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "chromium 1280 actual loaded font faces",
+      "passed": true,
+      "details": "['Cormorant Garamond', 'Cormorant Garamond', 'Manrope', 'Manrope', 'Manrope']"
+    },
+    {
+      "name": "chromium 1280 car photo local loaded",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "chromium 1280 FAQ and scoped CSS loaded",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "chromium 1280 booking CTAs still present",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "chromium 1280 FAQ interactive",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "firefox 320 HTTP local 200",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "firefox 320 no horizontal overflow",
+      "passed": true,
+      "details": "0"
+    },
+    {
+      "name": "firefox 320 H1 Cormorant weight 400",
+      "passed": true,
+      "details": "{'family': '\"Cormorant Garamond\", Georgia, serif', 'weight': '400', 'size': '41.6px'}"
+    },
+    {
+      "name": "firefox 320 H2 Cormorant weight 400",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "firefox 320 Manrope subheading weight 400",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "firefox 320 actual loaded font faces",
+      "passed": true,
+      "details": "['\"Cormorant Garamond\"', '\"Cormorant Garamond\"', '\"Manrope\"', '\"Manrope\"', '\"Manrope\"']"
+    },
+    {
+      "name": "firefox 320 car photo local loaded",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "firefox 320 FAQ and scoped CSS loaded",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "firefox 320 booking CTAs still present",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "firefox 320 menu keyboard opens",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "firefox 320 Tab reaches open menu",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "firefox 320 Escape closes and focuses toggle",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "firefox 320 hidden mobile menu not keyboard focused",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "firefox 320 FAQ interactive",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "firefox 375 HTTP local 200",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "firefox 375 no horizontal overflow",
+      "passed": true,
+      "details": "0"
+    },
+    {
+      "name": "firefox 375 H1 Cormorant weight 400",
+      "passed": true,
+      "details": "{'family': '\"Cormorant Garamond\", Georgia, serif', 'weight': '400', 'size': '48.75px'}"
+    },
+    {
+      "name": "firefox 375 H2 Cormorant weight 400",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "firefox 375 Manrope subheading weight 400",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "firefox 375 actual loaded font faces",
+      "passed": true,
+      "details": "['\"Cormorant Garamond\"', '\"Cormorant Garamond\"', '\"Manrope\"', '\"Manrope\"', '\"Manrope\"']"
+    },
+    {
+      "name": "firefox 375 car photo local loaded",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "firefox 375 FAQ and scoped CSS loaded",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "firefox 375 booking CTAs still present",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "firefox 375 FAQ interactive",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "firefox 440 HTTP local 200",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "firefox 440 no horizontal overflow",
+      "passed": true,
+      "details": "0"
+    },
+    {
+      "name": "firefox 440 H1 Cormorant weight 400",
+      "passed": true,
+      "details": "{'family': '\"Cormorant Garamond\", Georgia, serif', 'weight': '400', 'size': '48.8px'}"
+    },
+    {
+      "name": "firefox 440 H2 Cormorant weight 400",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "firefox 440 Manrope subheading weight 400",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "firefox 440 actual loaded font faces",
+      "passed": true,
+      "details": "['\"Cormorant Garamond\"', '\"Cormorant Garamond\"', '\"Manrope\"', '\"Manrope\"', '\"Manrope\"']"
+    },
+    {
+      "name": "firefox 440 car photo local loaded",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "firefox 440 FAQ and scoped CSS loaded",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "firefox 440 booking CTAs still present",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "firefox 440 menu keyboard opens",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "firefox 440 Tab reaches open menu",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "firefox 440 Escape closes and focuses toggle",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "firefox 440 hidden mobile menu not keyboard focused",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "firefox 440 FAQ interactive",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "firefox 768 HTTP local 200",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "firefox 768 no horizontal overflow",
+      "passed": true,
+      "details": "0"
+    },
+    {
+      "name": "firefox 768 H1 Cormorant weight 400",
+      "passed": true,
+      "details": "{'family': '\"Cormorant Garamond\", Georgia, serif', 'weight': '400', 'size': '49.9167px'}"
+    },
+    {
+      "name": "firefox 768 H2 Cormorant weight 400",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "firefox 768 Manrope subheading weight 400",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "firefox 768 actual loaded font faces",
+      "passed": true,
+      "details": "['\"Cormorant Garamond\"', '\"Cormorant Garamond\"', '\"Manrope\"', '\"Manrope\"', '\"Manrope\"']"
+    },
+    {
+      "name": "firefox 768 car photo local loaded",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "firefox 768 FAQ and scoped CSS loaded",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "firefox 768 booking CTAs still present",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "firefox 768 FAQ interactive",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "firefox 1280 HTTP local 200",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "firefox 1280 no horizontal overflow",
+      "passed": true,
+      "details": "0"
+    },
+    {
+      "name": "firefox 1280 H1 Cormorant weight 400",
+      "passed": true,
+      "details": "{'family': '\"Cormorant Garamond\", Georgia, serif', 'weight': '400', 'size': '83.2px'}"
+    },
+    {
+      "name": "firefox 1280 H2 Cormorant weight 400",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "firefox 1280 Manrope subheading weight 400",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "firefox 1280 actual loaded font faces",
+      "passed": true,
+      "details": "['\"Cormorant Garamond\"', '\"Cormorant Garamond\"', '\"Manrope\"', '\"Manrope\"', '\"Manrope\"']"
+    },
+    {
+      "name": "firefox 1280 car photo local loaded",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "firefox 1280 FAQ and scoped CSS loaded",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "firefox 1280 booking CTAs still present",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "firefox 1280 FAQ interactive",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "webkit 320 HTTP local 200",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "webkit 320 no horizontal overflow",
+      "passed": true,
+      "details": "0"
+    },
+    {
+      "name": "webkit 320 H1 Cormorant weight 400",
+      "passed": true,
+      "details": "{'family': '\"Cormorant Garamond\", Georgia, serif', 'weight': '400', 'size': '41.600002px'}"
+    },
+    {
+      "name": "webkit 320 H2 Cormorant weight 400",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "webkit 320 Manrope subheading weight 400",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "webkit 320 actual loaded font faces",
+      "passed": true,
+      "details": "['Cormorant Garamond', 'Cormorant Garamond', 'Cormorant Garamond', 'Manrope', 'Manrope', 'Manrope']"
+    },
+    {
+      "name": "webkit 320 car photo local loaded",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "webkit 320 FAQ and scoped CSS loaded",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "webkit 320 booking CTAs still present",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "webkit 320 menu keyboard opens",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "webkit 320 Tab reaches open menu",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "webkit 320 Escape closes and focuses toggle",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "webkit 320 hidden mobile menu not keyboard focused",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "webkit 320 FAQ interactive",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "webkit 375 HTTP local 200",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "webkit 375 no horizontal overflow",
+      "passed": true,
+      "details": "0"
+    },
+    {
+      "name": "webkit 375 H1 Cormorant weight 400",
+      "passed": true,
+      "details": "{'family': '\"Cormorant Garamond\", Georgia, serif', 'weight': '400', 'size': '48.75px'}"
+    },
+    {
+      "name": "webkit 375 H2 Cormorant weight 400",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "webkit 375 Manrope subheading weight 400",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "webkit 375 actual loaded font faces",
+      "passed": true,
+      "details": "['Cormorant Garamond', 'Cormorant Garamond', 'Cormorant Garamond', 'Manrope', 'Manrope', 'Manrope']"
+    },
+    {
+      "name": "webkit 375 car photo local loaded",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "webkit 375 FAQ and scoped CSS loaded",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "webkit 375 booking CTAs still present",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "webkit 375 FAQ interactive",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "webkit 440 HTTP local 200",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "webkit 440 no horizontal overflow",
+      "passed": true,
+      "details": "0"
+    },
+    {
+      "name": "webkit 440 H1 Cormorant weight 400",
+      "passed": true,
+      "details": "{'family': '\"Cormorant Garamond\", Georgia, serif', 'weight': '400', 'size': '48.799999px'}"
+    },
+    {
+      "name": "webkit 440 H2 Cormorant weight 400",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "webkit 440 Manrope subheading weight 400",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "webkit 440 actual loaded font faces",
+      "passed": true,
+      "details": "['Cormorant Garamond', 'Cormorant Garamond', 'Cormorant Garamond', 'Manrope', 'Manrope', 'Manrope']"
+    },
+    {
+      "name": "webkit 440 car photo local loaded",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "webkit 440 FAQ and scoped CSS loaded",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "webkit 440 booking CTAs still present",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "webkit 440 menu keyboard opens",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "webkit 440 Tab reaches open menu",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "webkit 440 Escape closes and focuses toggle",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "webkit 440 hidden mobile menu not keyboard focused",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "webkit 440 FAQ interactive",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "webkit 768 HTTP local 200",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "webkit 768 no horizontal overflow",
+      "passed": true,
+      "details": "0"
+    },
+    {
+      "name": "webkit 768 H1 Cormorant weight 400",
+      "passed": true,
+      "details": "{'family': '\"Cormorant Garamond\", Georgia, serif', 'weight': '400', 'size': '49.919998px'}"
+    },
+    {
+      "name": "webkit 768 H2 Cormorant weight 400",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "webkit 768 Manrope subheading weight 400",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "webkit 768 actual loaded font faces",
+      "passed": true,
+      "details": "['Cormorant Garamond', 'Cormorant Garamond', 'Cormorant Garamond', 'Manrope', 'Manrope', 'Manrope']"
+    },
+    {
+      "name": "webkit 768 car photo local loaded",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "webkit 768 FAQ and scoped CSS loaded",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "webkit 768 booking CTAs still present",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "webkit 768 FAQ interactive",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "webkit 1280 HTTP local 200",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "webkit 1280 no horizontal overflow",
+      "passed": true,
+      "details": "0"
+    },
+    {
+      "name": "webkit 1280 H1 Cormorant weight 400",
+      "passed": true,
+      "details": "{'family': '\"Cormorant Garamond\", Georgia, serif', 'weight': '400', 'size': '83.200005px'}"
+    },
+    {
+      "name": "webkit 1280 H2 Cormorant weight 400",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "webkit 1280 Manrope subheading weight 400",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "webkit 1280 actual loaded font faces",
+      "passed": true,
+      "details": "['Cormorant Garamond', 'Cormorant Garamond', 'Cormorant Garamond', 'Manrope', 'Manrope', 'Manrope']"
+    },
+    {
+      "name": "webkit 1280 car photo local loaded",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "webkit 1280 FAQ and scoped CSS loaded",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "webkit 1280 booking CTAs still present",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "webkit 1280 FAQ interactive",
+      "passed": true,
+      "details": null
+    }
+  ],
+  "failures": [],
+  "interceptedExternal": {
+    "chromium 320": [
+      "https://www.googletagmanager.com/gtag/js?id=G-BB9SWKE384"
+    ],
+    "chromium 375": [
+      "https://www.googletagmanager.com/gtag/js?id=G-BB9SWKE384"
+    ],
+    "chromium 440": [
+      "https://www.googletagmanager.com/gtag/js?id=G-BB9SWKE384"
+    ],
+    "chromium 768": [
+      "https://www.googletagmanager.com/gtag/js?id=G-BB9SWKE384"
+    ],
+    "chromium 1280": [
+      "https://www.googletagmanager.com/gtag/js?id=G-BB9SWKE384"
+    ],
+    "firefox 320": [
+      "https://www.googletagmanager.com/gtag/js?id=G-BB9SWKE384"
+    ],
+    "firefox 375": [
+      "https://www.googletagmanager.com/gtag/js?id=G-BB9SWKE384"
+    ],
+    "firefox 440": [
+      "https://www.googletagmanager.com/gtag/js?id=G-BB9SWKE384"
+    ],
+    "firefox 768": [
+      "https://www.googletagmanager.com/gtag/js?id=G-BB9SWKE384"
+    ],
+    "firefox 1280": [
+      "https://www.googletagmanager.com/gtag/js?id=G-BB9SWKE384"
+    ],
+    "webkit 320": [
+      "https://www.googletagmanager.com/gtag/js?id=G-BB9SWKE384"
+    ],
+    "webkit 375": [
+      "https://www.googletagmanager.com/gtag/js?id=G-BB9SWKE384"
+    ],
+    "webkit 440": [
+      "https://www.googletagmanager.com/gtag/js?id=G-BB9SWKE384"
+    ],
+    "webkit 768": [
+      "https://www.googletagmanager.com/gtag/js?id=G-BB9SWKE384"
+    ],
+    "webkit 1280": [
+      "https://www.googletagmanager.com/gtag/js?id=G-BB9SWKE384"
+    ]
+  },
+  "note": "Actual full page and local real assets; Browser GETs to all offsite hosts fulfilled from downloaded font cache or aborted. No contacts, forms or analytics sent.",
+  "passed": true,
+  "ci_dependency_outcome": "success",
+  "ci_browser_outcome": "success"
 }
