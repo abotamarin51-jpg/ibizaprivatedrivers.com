@@ -1,4 +1,4 @@
-name: Chauffeur copy QA with exact static and dynamic link invariants
+name: Chauffeur native Safari isolated desktop QA
 on:
   push:
     branches: [qa/chauffeur-copy-local-20261104]
@@ -6,9 +6,9 @@ on:
 permissions:
   contents: read
 jobs:
-  browser-qa:
+  native-safari:
     runs-on: macos-26-intel
-    timeout-minutes: 15
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
         with:
@@ -16,11 +16,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Install isolated QA dependencies
-        run: python -m pip install --quiet playwright==1.56.0 beautifulsoup4 pyyaml pyobjc-framework-Quartz pyobjc-framework-Cocoa
-      - name: Install remaining browser engine
-        run: python -m playwright install webkit
-      - name: Complete WebKit with macOS keyboard navigation and native Safari
+      - name: Install native QA dependencies only
+        run: python -m pip install --quiet beautifulsoup4 pyyaml pyobjc-framework-Quartz pyobjc-framework-Cocoa
+      - name: Complete genuine Safari zoom on a fresh desktop without headless engines
         run: |
           python - <<'PY'
           import hashlib, pathlib, subprocess, sys, yaml
@@ -32,29 +30,29 @@ jobs:
           command=next(s['run'] for s in workflow['jobs']['browser-qa']['steps'] if s.get('name')=='Check exact copy candidate in three engines and native Safari')
           assert command.startswith("python - <<'PY'\n")
           script=command.split('\n',1)[1].rsplit('\nPY',1)[0]
-          old="check(label+' canonical and anchor count unchanged',page.locator('link[rel=\"canonical\"]').get_attribute('href')=='https://ibizaprivatedrivers.com/chauffeur-service/' and page.locator('a').count()==47)"
-          new="check(label+' original 47 links plus existing floating WhatsApp preserved',page.locator('link[rel=\"canonical\"]').get_attribute('href')=='https://ibizaprivatedrivers.com/chauffeur-service/' and page.eval_on_selector_all('a:not(#ipd-whatsapp-float)', '(els)=>els.map(e=>e.getAttribute(\"href\"))')==[t.get('href') for t in b.select('a')] and page.locator('a').count()==48 and page.locator('#ipd-whatsapp-float').count()==1 and page.locator('#ipd-whatsapp-float').get_attribute('href').startswith('https://wa.me/34613756211?'), {'runtime_anchors':page.locator('a').count(),'source_anchors':len(b.select('a'))})"
+          old="cross_browser();native_safari();report['result']='PASS_BROWSER_QA_ONLY_NOT_RELEASE_APPROVAL'"
+          new="native_safari();report['result']='PASS_NATIVE_SAFARI_ONLY_NOT_RELEASE_APPROVAL'"
           assert script.count(old)==1
           script=script.replace(old,new,1)
-          # Chromium and Firefox already passed all five widths on this exact blob in run 41848566343.
-          # Complete missing engines only. Do not repeat successful unchanged cases.
-          engines="for engine in ('chromium','firefox','webkit'):"
-          assert script.count(engines)==1
-          script=script.replace(engines,"for engine in ('webkit',):",1)
-          # Apple documents Option-Tab to include links when plain Tab skips them on macOS.
-          # https://support.apple.com/guide/safari/keyboard-shortcuts-and-gestures-cpsh003/mac
-          keys="page.keyboard.press('Tab');page.keyboard.press('Shift+Tab');"
-          assert script.count(keys)==1
-          script=script.replace(keys,"page.keyboard.press('Alt+Tab');page.keyboard.press('Alt+Shift+Tab');",1)
-          compile(script,'remaining-chauffeur-browser-qa','exec')
-          print('Same candidate; complete WebKit using macOS Option-Tab / Option-Shift-Tab, then actual Safari 200% zoom. Preserve all original focus visibility checks. No page changes.',flush=True)
+          # Do not rerun the 15 completed responsive cases. No Playwright process is launched.
+          # Explicit LaunchServices/AppleEvent activation replaces the failed AppKit-only foreground attempt.
+          old="apps[0].activateWithOptions_(AppKit.NSApplicationActivateIgnoringOtherApps)"
+          new="subprocess.run(['open','-a','Safari'],check=True,timeout=10); subprocess.run(['osascript','-e','tell application \"Safari\" to activate'],check=True,timeout=10); apps[0].activateWithOptions_(AppKit.NSApplicationActivateAllWindows | AppKit.NSApplicationActivateIgnoringOtherApps)"
+          assert script.count(old)==1
+          script=script.replace(old,new,1)
+          old="else:raise RuntimeError('Safari is not foreground')"
+          new="else:\n            subprocess.run(['screencapture','-x',str(OUT/'native-foreground-failure.png')],timeout=10)\n            front=AppKit.NSWorkspace.sharedWorkspace().frontmostApplication()\n            report['foreground_failure']={'frontmost':str(front.bundleIdentifier()) if front else None,'telemetry':dict(latest)}\n            raise RuntimeError('Safari is not foreground after explicit LaunchServices/AppleEvent activation')"
+          assert script.count(old)==1
+          script=script.replace(old,new,1)
+          compile(script,'native-only-chauffeur-browser-qa','exec')
+          print('Native-only fresh desktop, explicit Safari activation. Candidate and real zoom assertions remain unchanged. No page edits, no deployment, no system security setting changes.',flush=True)
           subprocess.run([sys.executable,'-c',script],check=True)
           PY
-      - name: Upload reports and screenshots only
+      - name: Upload native report and screenshots only
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: chauffeur-copy-browser-qa-20261104
+          name: chauffeur-copy-native-safari-20261104
           path: /tmp/ipd-chauffeur-copy-qa-20261104/
           retention-days: 7
           if-no-files-found: warn
