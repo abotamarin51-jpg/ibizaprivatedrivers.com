@@ -167,7 +167,7 @@ jobs:
               check('heading uses Cormorant',d['h1'] and 'Cormorant Garamond' in d['h1']['family'],d['h1'])
               check('body uses Manrope',d['body'] and 'Manrope' in d['body']['family'],d['body'])
               q=command('faq');check('FAQ expands via local script',q['faq']>=1,q['faq'])
-              im=command('photo');check('original real V-Class photo loads',im['photo'],im['photo'])
+              im=command('photo');im=wait_for(lambda x:x.get('photo') is True,15);check('original real V-Class photo loads',im['photo'],im['photo'])
               key(29,Quartz.kCGEventFlagMaskCommand)
               base=command('focus')
               check('booking CTA unobscured and focused at 100%',base['cta']['hit'] and base['cta']['focused'] and base['cta']['inViewport'],base['cta'])
