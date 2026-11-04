@@ -1,0 +1,187 @@
+name: PR19 Airport transfer isolated cross-browser QA
+on:
+  push:
+    branches:
+      - qa/airport-pr19-cross-browser-20261104
+    paths:
+      - .github/workflows/qa-pr19-airport-cross-browser-20261104.yml
+
+permissions:
+  contents: read
+
+jobs:
+  real-browser-qa:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Chromium, Firefox and WebKit in isolated runner
+        run: |
+          python -m pip install --disable-pip-version-check playwright==1.57.0
+          python -m playwright install --with-deps chromium firefox webkit
+      - name: Test exact PR19 airport candidate, original assets and real loaded fonts
+        run: |
+          python - <<'PY'
+          import hashlib,html,json,re,subprocess,threading,traceback,urllib.request
+          from http.server import SimpleHTTPRequestHandler,ThreadingHTTPServer
+          from pathlib import Path
+          from playwright.sync_api import sync_playwright
+          
+          root=Path.cwd()
+          path=root/'airport-transfers/index.html'
+          raw=path.read_bytes()
+          candidate=raw.decode('utf-8')
+          blob=hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest()
+          expected_blob='9ab03fbb6a4657ade95c94d3c6ade2db3e4bcf82'
+          baseline='4ddda1b2870cb97fd76bfefdae75fa720ca02d02'
+          original=subprocess.check_output(['git','show',baseline+':airport-transfers/index.html'],text=True)
+          report={'candidate_blob':blob,'expected_blob':expected_blob,'checks':[],'failures':[],'browserRequestsBlocked':{},'description':'PR19 exact Home-linked airport candidate on isolated QA branch. No external browser requests, contact messages, form submissions or analytics events.'}
+          out=root/'qa-results/pr19-airport-browser-20261104.json'
+          out.parent.mkdir(exist_ok=True)
+          def check(name,condition,details=None):
+              good=bool(condition)
+              report['checks'].append({'name':name,'passed':good,'details':str(details)[:240] if details is not None else None})
+              if not good:report['failures'].append(name)
+              print(('PASS ' if good else 'FAIL ')+name+' '+str(details)[:110],flush=True)
+          substitutions=[
+            ('<title>Ibiza Airport Transfer | Private Transfers from IBZ</title>','<title>Airport Transfer Ibiza | Private Driver &amp; Mercedes V-Class</title>'),
+            ('<meta name="description" content="Pre-book an Ibiza Airport transfer from IBZ to hotels, villas, marinas and destinations across the island. Flight, luggage and pickup details confirmed.">','<meta name="description" content="Request a private airport transfer in Ibiza with a driver and Mercedes-Benz V-Class. Confirm IBZ flight, luggage and destination details before pickup.">'),
+            ('<meta property="og:title" content="Ibiza Airport Transfer | Private Transfers from IBZ">','<meta property="og:title" content="Airport Transfer Ibiza | Private Driver &amp; Mercedes V-Class">'),
+            ('<meta name="twitter:title" content="Ibiza Airport Transfer | Private Transfers from IBZ">','<meta name="twitter:title" content="Airport Transfer Ibiza | Private Driver &amp; Mercedes V-Class">'),
+            ('<h1>Ibiza Airport Transfer — Private Pickup from IBZ</h1>','<h1>Private Ibiza Airport Transfer — Mercedes-Benz V-Class Pickup</h1>'),
+            ('<p>Pre-book an Ibiza Airport transfer with a private driver to your confirmed hotel, villa, marina or destination across the island. Flight, passenger, luggage and pickup details are reviewed before travel.</p>','<p>Pre-book a private Ibiza Airport transfer with a driver and request a Mercedes-Benz V-Class for your hotel, villa, marina or other confirmed destination. Flight, passenger, luggage and pickup details are reviewed before travel.</p>'),
+            ('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght;500;600&amp;family=Manrope:wght;400;500;600&amp;display=swap','https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&amp;family=Manrope:wght@400;500;600&amp;display=swap')
+          ]
+          try:
+              check('exact candidate blob unchanged',blob==expected_blob)
+              check('QA branch HEAD parent exact PR19 candidate',subprocess.check_output(['git','rev-parse','HEAD^'],text=True).strip()=='dc7c1fee3759ca5e3085c64a069007a9565b6663')
+              expected=original
+              for old,new in substitutions:
+                  check('expected unique replacement '+str(len(expected)),expected.count(old)==1)
+                  expected=expected.replace(old,new)
+              check('entire candidate is exact reversible patch',candidate==expected)
+              files=set(subprocess.check_output(['git','diff','--name-only',baseline,'HEAD'],text=True).splitlines())
+              check('only airport page and isolated QA workflow changed',files=={'airport-transfers/index.html','.github/workflows/qa-pr19-airport-cross-browser-20261104.yml'},sorted(files))
+              scripts=lambda s:re.findall(r'<script\b[^>]*>[\s\S]*?</script>',s,re.I)
+              attrs=lambda s:re.findall(r'\b(?:href|src|action)="[^"]*"',s)
+              def non_font_attributes(s):return [x for x in attrs(s) if not x.startswith('href="https://fonts.googleapis.com/')]
+              check('existing links, WhatsApp, scripts and images unchanged',non_font_attributes(original)==non_font_attributes(candidate) and scripts(original)==scripts(candidate))
+              check('one H1 and preserved meta canonical',len(re.findall(r'<h1\b',candidate))==1 and '<link rel="canonical" href="https://ibizaprivatedrivers.com/airport-transfers/">' in candidate)
+              check('alternate language links preserved',re.findall(r'<link rel="alternate"[^>]+>',original)==re.findall(r'<link rel="alternate"[^>]+>',candidate))
+              check('original FAQ JSON-LD and consent unchanged','FAQPage' in candidate and scripts(original)==scripts(candidate))
+              check('local images and CSS files exist',all((root/x).exists() for x in ['images/private-driver-ibiza-v-class-coast.webp','images/mercedes-v-class-ibiza-marina.webp','assets/multilingual.css','assets/photo-proof.css','assets/ivm-typography.css']))
+              m=re.search(r'href="(https://fonts\.googleapis\.com/css2[^"]+)"',candidate)
+              if not m:raise RuntimeError('Google Fonts request URL missing')
+              font_url=html.unescape(m.group(1))
+              ua='Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36'
+              def download(url):
+                  req=urllib.request.Request(url,headers={'User-Agent':ua})
+                  with urllib.request.urlopen(req,timeout=30) as r:
+                      if r.status!=200:raise RuntimeError('Font download '+str(r.status))
+                      return r.read()
+              css=download(font_url)
+              check('valid Google Fonts response',b'@font-face' in css,css[:120])
+              font_cache={font_url:(css,'text/css')}
+              for f in dict.fromkeys(re.findall(rb'url\((https://fonts\.gstatic\.com/[^)]+)\)',css)):
+                  u=f.decode()
+                  font_cache[u]=(download(u),'font/woff2')
+              check('real fonts downloaded for offline browser test',len(font_cache)>2,len(font_cache))
+              class NoWriteHandler(SimpleHTTPRequestHandler):
+                  def __init__(self,*a,**kw):super().__init__(*a,directory=str(root),**kw)
+                  def do_POST(self):self.send_error(405,'Test server is read only')
+                  def log_message(self,*a):pass
+              server=ThreadingHTTPServer(('127.0.0.1',0),NoWriteHandler)
+              threading.Thread(target=server.serve_forever,daemon=True).start()
+              base='http://127.0.0.1:'+str(server.server_port)+'/'
+              try:
+                  with sync_playwright() as p:
+                      for browser_name in ('chromium','firefox','webkit'):
+                          browser=getattr(p,browser_name).launch(headless=True)
+                          for width in (320,375,440,768,1280):
+                              label=browser_name+' '+str(width)
+                              ctx=browser.new_context(viewport={'width':width,'height':900},accept_downloads=False,service_workers='block')
+                              intercepted=[]
+                              def guard(route):
+                                  u=route.request.url
+                                  if u.startswith(base):route.continue_()
+                                  elif u in font_cache:
+                                      payload,ctype=font_cache[u]
+                                      route.fulfill(status=200,body=payload,content_type=ctype,headers={'Access-Control-Allow-Origin':'*'})
+                                  else:
+                                      intercepted.append(u)
+                                      route.abort('blockedbyclient')
+                              ctx.route('**/*',guard)
+                              ctx.add_init_script('''() => {
+                                  navigator.sendBeacon=()=>false;
+                                  window.open=()=>null;
+                                  HTMLFormElement.prototype.submit=function(){};
+                              }''')
+                              page=ctx.new_page()
+                              page.on('popup',lambda q:q.close())
+                              try:
+                                  res=page.goto(base+'airport-transfers/',wait_until='domcontentloaded',timeout=30000)
+                                  page.evaluate('document.fonts.ready.then(()=>true)')
+                                  page.wait_for_timeout(200)
+                                  metrics=page.evaluate('''() => ({
+                                      w:innerWidth,client:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth,
+                                      title:document.title,h1:document.querySelector('h1')?.textContent.trim(),
+                                      headings:document.querySelectorAll('h1').length,
+                                      canonical:document.querySelector('link[rel="canonical"]')?.href,
+                                      fontH1:getComputedStyle(document.querySelector('h1')).fontFamily,
+                                      fontBody:getComputedStyle(document.body).fontFamily,
+                                      loadedFonts:[...document.fonts].filter(x=>x.status==='loaded').map(x=>x.family),
+                                      details:document.querySelectorAll('#faq details').length,
+                                      anchors:document.querySelectorAll('a[href^="https://wa.me/"]').length
+                                  })''')
+                                  check(label+' local HTTP 200',res and res.status==200)
+                                  check(label+' no horizontal clipping',metrics['scroll']<=metrics['client']+1,(metrics['scroll'],metrics['client']))
+                                  check(label+' canonical + headings correct',metrics['headings']==1 and metrics['canonical']=='https://ibizaprivatedrivers.com/airport-transfers/' and metrics['h1']=='Private Ibiza Airport Transfer — Mercedes-Benz V-Class Pickup')
+                                  check(label+' SEO title rendered correctly',metrics['title']=='Airport Transfer Ibiza | Private Driver & Mercedes V-Class')
+                                  check(label+' Google fonts actually loaded',any('Cormorant' in x for x in metrics['loadedFonts']) and any('Manrope' in x for x in metrics['loadedFonts']),metrics['loadedFonts'][:10])
+                                  check(label+' FAQ and CTA available',metrics['details']>=4 and metrics['anchors']>=2)
+                                  primary=page.locator('header.hero .actions a[href^="https://wa.me/"]').first
+                                  check(label+' airport booking button visible',primary.count()==1 and primary.is_visible())
+                                  primary.focus()
+                                  check(label+' airport booking keyboard focus',primary.evaluate('(e)=>document.activeElement===e'))
+                                  summary=page.locator('#faq details summary').first
+                                  summary.click(timeout=10000)
+                                  check(label+' FAQ opens and stays on local page',page.locator('#faq details[open]').count()==1)
+                                  route_link=page.locator('header.hero .actions a[href="#routes"]')
+                                  route_link.click(timeout=10000)
+                                  check(label+' routes internal link works',page.url.endswith('/airport-transfers/#routes'))
+                                  image=page.locator('.ipd-photo-proof img').first
+                                  image.scroll_into_view_if_needed(timeout=10000)
+                                  image.evaluate('(e)=>e.decode().catch(()=>{})')
+                                  check(label+' original V-Class photo loads',image.evaluate('(e)=>e.complete&&e.naturalWidth>0'))
+                                  report['browserRequestsBlocked'][label]=len(intercepted)
+                              except Exception as e:
+                                  check(label+' browser test completed',False,repr(e))
+                                  print(traceback.format_exc()[-2000:],flush=True)
+                              finally:
+                                  ctx.close()
+                          browser.close()
+              finally:
+                  server.shutdown()
+                  server.server_close()
+          except Exception as e:
+              check('QA harness completed',False,repr(e))
+              print(traceback.format_exc()[-5000:],flush=True)
+          finally:
+              report['passed']=len(report['failures'])==0
+              out.write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
+              print('RESULT '+json.dumps({'passed':report['passed'],'checks':len(report['checks']),'failures':report['failures'][:20],'candidate_blob':blob}),flush=True)
+          if report['failures']:raise SystemExit(1)
+          PY
+      - name: Upload isolated read-only test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: airport-pr19-browser-qa
+          path: qa-results/pr19-airport-browser-20261104.json
+          if-no-files-found: warn
