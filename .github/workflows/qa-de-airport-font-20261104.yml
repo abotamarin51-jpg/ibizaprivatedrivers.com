@@ -1,0 +1,197 @@
+name: German airport font repair isolated QA - no deployment
+on:
+  push:
+    branches: [qa/de-airport-font-20261104]
+    paths: [.github/workflows/qa-de-airport-font-20261104.yml]
+permissions:
+  contents: read
+jobs:
+  isolated-qa:
+    runs-on: macos-26-intel
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install test dependencies
+        run: python -m pip install --quiet playwright==1.56.0 beautifulsoup4 pyobjc-framework-Quartz pyobjc-framework-Cocoa
+      - name: Install browser engines
+        run: python -m playwright install chromium firefox webkit
+      - name: Verify exact font-only candidate without production requests
+        run: |
+          python - <<'PY'
+          import hashlib, html, json, re, subprocess, threading, time, traceback, urllib.request, urllib.error, difflib
+          from pathlib import Path
+          from urllib.parse import urlsplit, parse_qs
+          from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
+          from bs4 import BeautifulSoup
+          ROOT=Path.cwd(); OUT=Path('/tmp/ipd-de-airport-font-20261104'); OUT.mkdir(exist_ok=True)
+          path='de/flughafentransfer-ibiza/index.html'; route='/de/flughafentransfer-ibiza/'
+          def blob(data): return hashlib.sha1(b'blob '+str(len(data)).encode()+b'\0'+data).hexdigest()
+          raw=(ROOT/path).read_bytes(); source=raw.decode('utf-8')
+          assert blob(raw)=='4efcc9bb9b463ab55f86b43d06096ba7a1eb8ade','Baseline changed; stop'
+          old='https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght;500;600&amp;family=Manrope:wght;400;500;600&amp;display=swap'
+          new=old.replace('wght;','wght@'); assert source.count(old)==1
+          candidate=source.replace(old,new,1); a=BeautifulSoup(source,'html.parser'); b=BeautifulSoup(candidate,'html.parser')
+          assert candidate.replace(new,old,1)==source and sum(x!=y for x,y in zip(source,candidate))==2
+          assert str(a.body)==str(b.body)
+          assert [str(t) for t in a.select('script,meta,title,style')]==[str(t) for t in b.select('script,meta,title,style')]
+          expected_hrefs=[t.get('href') for t in a.select('a')]
+          expected_faq=len(a.select('details')); assert expected_faq==4
+          report={'baseline_blob':blob(raw),'candidate_blob':blob(candidate.encode()),'candidate_sha256':hashlib.sha256(candidate.encode()).hexdigest(),'changed_file':path,'changed_characters':2,'published':False,'checks':[],'errors':[],'matrix':[],'resource_http':{},'limitations':['Isolated candidate only, not production or release approval','Browser interception and local font cache preserve source bytes separately','Focus tests do not constitute a full accessibility certification']}
+          (OUT/'baseline.html').write_bytes(raw);(OUT/'candidate.html').write_text(candidate)
+          (OUT/'font-only.patch').write_text(''.join(difflib.unified_diff(source.splitlines(True),candidate.splitlines(True),fromfile='a/'+path,tofile='b/'+path)))
+          def check(name,passed,detail=None):
+              report['checks'].append({'name':name,'passed':bool(passed),'detail':detail});print(('PASS ' if passed else 'FAIL ')+name+' '+str(detail)[:220],flush=True)
+              return bool(passed)
+          check('Only two font URL separator characters changed; body and scripts preserved',True,{'links':len(expected_hrefs),'faqs':expected_faq})
+          assets={};latest={};queue=[];http_errors=[]
+          ua='Mozilla/5.0 (Macintosh; Intel Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0 Safari/605.1.15'
+          def get(url):
+              assert urlsplit(url).hostname in ('fonts.googleapis.com','fonts.gstatic.com')
+              try:
+                  with urllib.request.urlopen(urllib.request.Request(url,headers={'User-Agent':ua}),timeout=25) as r:return r.status,r.read(),r.headers.get('Content-Type','')
+              except urllib.error.HTTPError as e:return e.code,e.read(),e.headers.get('Content-Type','')
+          server=None
+          try:
+              for label,u in [('original',html.unescape(old)),('corrected',html.unescape(new))]:
+                  status,data,mime=get(u);report['resource_http'][label]={'url':u,'status':status,'bytes':len(data),'mime':mime,'sha256':hashlib.sha256(data).hexdigest()}
+                  if label=='original':old_status,old_data,old_mime=status,data,mime
+                  else:css=data.decode('utf-8');assert status==200 and '@font-face' in css,'Corrected font CSS not available'
+              check('Corrected Google Fonts URL returns CSS HTTP 200',report['resource_http']['corrected']['status']==200)
+              for i,u in enumerate(dict.fromkeys(re.findall(r'url\((https://fonts.gstatic.com/[^)]+)\)',css))):
+                  status,data,mime=get(u);assert status==200,'Font file unavailable';local='/__fonts/'+str(i)+'.woff2';assets[local]=(200,data,mime);css=css.replace(u,local)
+              assets['/__fonts.css']=(200,css.encode(),'text/css');assets['/__original-fonts.css']=(old_status,old_data,old_mime)
+              safety="<script>localStorage.setItem('ipd_google_consent_v1','denied');document.addEventListener('click',e=>{if(e.target.closest('a')){e.preventDefault();e.stopImmediatePropagation();}},true);document.addEventListener('submit',e=>{e.preventDefault();e.stopImmediatePropagation();},true);</script>"
+              telemetry=r'''<script>
+              window.__errors=[];window.__violations=[];window.__ack='';
+              addEventListener('error',e=>__errors.push(String(e.message)));
+              addEventListener('securitypolicyviolation',e=>__violations.push({uri:e.blockedURI,directive:e.effectiveDirective}));
+              window.__metrics=()=>{let c=document.querySelector('.hero .actions a[href^="https://wa.me/"]'),r=c.getBoundingClientRect(),h=document.elementFromPoint(r.left+r.width/2,r.top+r.height/2);let hs=[...document.querySelectorAll('h1,h2,h3')].map(e=>{let z=document.createRange();z.selectNodeContents(e);let q=z.getBoundingClientRect();return {text:e.textContent.trim(),left:q.left,right:q.right};});return {ua:navigator.userAgent,ack:__ack,iw:innerWidth,ih:innerHeight,dpr:devicePixelRatio,client:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth,fonts:[...document.fonts].filter(f=>f.status==='loaded').map(f=>({family:f.family,weight:f.weight})),h1Family:getComputedStyle(document.querySelector('h1')).fontFamily,bodyFamily:getComputedStyle(document.body).fontFamily,cta:{focused:c===document.activeElement,hit:!!h&&(h===c||c.contains(h)),visible:r.top>=0&&r.bottom<=innerHeight},headings:hs,faq:document.querySelectorAll('details[open]').length,external:performance.getEntriesByType('resource').filter(e=>!e.name.startsWith(location.origin)).map(e=>e.name),errors:__errors,violations:__violations};};
+              async function poll(){try{let c=await fetch('/__command').then(r=>r.json());if(c.op==='focus'){let a=document.querySelector('.hero .actions a[href^="https://wa.me/"]');a.scrollIntoView({block:'center',behavior:'instant'});a.focus();}if(c.op==='faq')document.querySelector('details summary').click();if(c.op==='top')scrollTo({top:0,left:0,behavior:'instant'});__ack=c.id||__ack;await document.fonts.ready;await fetch('/__metrics',{method:'POST',body:JSON.stringify(__metrics())});}catch(e){__errors.push(String(e));}setTimeout(poll,150);}poll();
+              </script>'''
+              def instrument(src,font_link):
+                  d=src.replace(old,'/__original-fonts.css').replace(new,font_link)
+                  d=re.sub(r'<script\b[^>]*src="https://www\.googletagmanager\.com/[^\"]+"[^>]*></script>','',d,flags=re.I)
+                  d=re.sub(r'<link\b[^>]*rel="preconnect"[^>]*>','',d,flags=re.I)
+                  return d.replace('<head>','<head>'+safety,1).replace('</body>',telemetry+'</body>')
+              documents={'candidate':instrument(candidate,'/__fonts.css').encode(),'baseline':instrument(source,'/__original-fonts.css').encode()}
+              policy="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; form-action 'none'; frame-src 'none'; object-src 'none'; base-uri 'self'"
+              class Handler(SimpleHTTPRequestHandler):
+                  def __init__(self,*args,**kw):super().__init__(*args,directory=str(ROOT),**kw)
+                  def log_message(self,*args):pass
+                  def end_headers(self):self.send_header('Content-Security-Policy',policy);self.send_header('Cache-Control','no-store');super().end_headers()
+                  def send(self,status,data,mime):self.send_response(status);self.send_header('Content-Type',mime);self.send_header('Content-Length',str(len(data)));self.end_headers();self.wfile.write(data)
+                  def do_GET(self):
+                      u=urlsplit(self.path);p=u.path
+                      if p==route:return self.send(200,documents['baseline' if parse_qs(u.query).get('baseline') else 'candidate'],'text/html; charset=utf-8')
+                      if p=='/__command':return self.send(200,json.dumps(queue.pop(0) if queue else {}).encode(),'application/json')
+                      if p in assets:return self.send(*assets[p])
+                      if p=='/analytics.js' or p=='/favicon.ico' or p.startswith(('/assets/','/images/')):return super().do_GET()
+                      self.send_error(404)
+                  def do_POST(self):
+                      if self.path!='/__metrics':return self.send_error(405)
+                      d=json.loads(self.rfile.read(int(self.headers.get('Content-Length','0'))));latest.clear();latest.update(d);self.send(200,b'{}','application/json')
+              server=ThreadingHTTPServer(('127.0.0.1',0),Handler);threading.Thread(target=server.serve_forever,daemon=True).start();origin='http://127.0.0.1:'+str(server.server_port);url=origin+route
+              def fonts_loaded(d):return all(any(f in x['family'] for x in d['fonts']) for f in ('Cormorant','Manrope'))
+              # Native Safari first, on a fresh desktop; do not mix with headless WebKit sessions.
+              try:
+                  import AppKit,Quartz
+                  def wait(pred,seconds=35):
+                      end=time.monotonic()+seconds
+                      while time.monotonic()<end:
+                          if latest and pred(latest):return dict(latest)
+                          time.sleep(.15)
+                      raise TimeoutError('Native Safari telemetry: '+str(latest)[:250])
+                  def command(op):
+                      ident=str(time.monotonic_ns());queue.append({'op':op,'id':ident});return wait(lambda x:x.get('ack')==ident)
+                  def key(code):
+                      subprocess.run(['osascript','-e','tell application "Safari" to activate'],check=True,timeout=10)
+                      apps=AppKit.NSRunningApplication.runningApplicationsWithBundleIdentifier_('com.apple.Safari');assert apps
+                      apps[0].activateWithOptions_(AppKit.NSApplicationActivateIgnoringOtherApps)
+                      end=time.monotonic()+6
+                      while time.monotonic()<end:
+                          front=AppKit.NSWorkspace.sharedWorkspace().frontmostApplication()
+                          if front and front.bundleIdentifier()=='com.apple.Safari':break
+                          time.sleep(.1)
+                      else:raise RuntimeError('Safari foreground unavailable')
+                      def emit(c,down,flags):
+                          e=Quartz.CGEventCreateKeyboardEvent(None,c,down);Quartz.CGEventSetFlags(e,flags);Quartz.CGEventPost(Quartz.kCGHIDEventTap,e);time.sleep(.08)
+                      flag=Quartz.kCGEventFlagMaskCommand
+                      emit(55,True,flag);emit(code,True,flag);emit(code,False,flag);emit(55,False,0);time.sleep(.4)
+                  def capture(name):
+                      wins=[dict(w) for w in Quartz.CGWindowListCopyWindowInfo(Quartz.kCGWindowListOptionOnScreenOnly,Quartz.kCGNullWindowID) if w.get('kCGWindowOwnerName')=='Safari' and w.get('kCGWindowLayer')==0 and w.get('kCGWindowBounds',{}).get('Width',0)>300]
+                      if wins:subprocess.run(['screencapture','-x','-l',str(wins[0]['kCGWindowNumber']),str(OUT/(name+'.png'))],check=True,timeout=10)
+                  assert Quartz.CGPreflightPostEventAccess(),'Native keyboard permission unavailable'
+                  subprocess.run(['open','-a','Safari',url],check=True,timeout=12)
+                  d=wait(lambda x:'Safari/' in x.get('ua','') and fonts_loaded(x),45)
+                  check('Native Safari actual Cormorant and Manrope loaded',fonts_loaded(d),d['fonts'])
+                  key(29);base=command('focus');capture('safari-100pct')
+                  check('Native Safari 100 percent booking CTA visible and focused',all(base['cta'].values()),base['cta'])
+                  check('Native Safari 100 percent no overflow',base['scroll']<=base['client']+1,[base['client'],base['scroll']])
+                  for _ in range(8):
+                      key(24);z=command('focus')
+                      if base['iw']/z['iw']>=1.98:break
+                  ratio=base['iw']/z['iw']
+                  check('Native Safari true 200 percent browser zoom',1.98<=ratio<=2.04 and 1.98<=z['dpr']/base['dpr']<=2.04,{'before':base['iw'],'after':z['iw'],'beforeDpr':base['dpr'],'afterDpr':z['dpr']})
+                  check('Native Safari 200 percent no overflow',z['scroll']<=z['client']+1,[z['client'],z['scroll']])
+                  check('Native Safari 200 percent booking CTA visible and focused',all(z['cta'].values()),z['cta'])
+                  capture('safari-200pct');d=command('faq');check('Native Safari FAQ interaction works',d['faq']==1)
+                  check('Native Safari no offsite resources or script errors',not d['external'] and not d['errors'] and not d['violations'],{'external':d['external'],'errors':d['errors'],'violations':d['violations']})
+                  report['native_safari']={'telemetry100':base,'telemetry200':z,'zoomRatio':ratio}
+              except Exception as e:report['errors'].append('native: '+str(e));report['native_traceback']=traceback.format_exc()
+              finally:subprocess.run(['osascript','-e','tell application "Safari" to quit'],capture_output=True,timeout=12)
+              latest.clear();queue.clear()
+              from playwright.sync_api import sync_playwright
+              with sync_playwright() as pw:
+                  for engine in ('chromium','firefox','webkit'):
+                      browser=getattr(pw,engine).launch();report.setdefault('versions',{})[engine]=browser.version
+                      for width in (320,375,440,768,1280):
+                          label=engine+'-'+str(width);start=len(report['checks']);blocked=[]
+                          ctx=browser.new_context(viewport={'width':width,'height':900},service_workers='block')
+                          def intercept(r):
+                              if urlsplit(r.request.url).netloc==urlsplit(origin).netloc:r.continue_()
+                              else:blocked.append(r.request.url);r.abort()
+                          ctx.route('**/*',intercept);page=ctx.new_page()
+                          try:
+                              page.goto(url,wait_until='domcontentloaded');page.evaluate('document.fonts.ready');page.wait_for_function('document.querySelector("#ipd-whatsapp-float")')
+                              d=page.evaluate('__metrics()');check(label+' real fonts loaded',fonts_loaded(d),d['fonts'])
+                              flow=check(label+' page no horizontal overflow',d['scroll']<=d['client']+1,[d['client'],d['scroll']])
+                              heads=check(label+' heading text fits viewport',all(h['left']>=-1 and h['right']<=d['client']+1 for h in d['headings']),d['headings'])
+                              check(label+' original links preserved',page.eval_on_selector_all('a:not(#ipd-whatsapp-float)','els=>els.map(e=>e.getAttribute("href"))')==expected_hrefs)
+                              check(label+' canonical and hreflang preserved',page.locator('link[rel="canonical"]').get_attribute('href')=='https://ibizaprivatedrivers.com'+route and page.locator('link[hreflang]').count()==5)
+                              for i in range(expected_faq):
+                                  el=page.locator('details').nth(i);sm=el.locator('summary');sm.focus();page.keyboard.press('Enter');opened=el.evaluate('e=>e.open');page.keyboard.press('Enter');check(label+' FAQ '+str(i+1)+' opens and closes',opened and not el.evaluate('e=>e.open'))
+                              for i in range(page.locator('a[href^="https://wa.me/"]:not(#ipd-whatsapp-float)').count()):
+                                  c=page.locator('a[href^="https://wa.me/"]:not(#ipd-whatsapp-float)').nth(i);c.evaluate('e=>{e.scrollIntoView({block:"center",behavior:"instant"});e.focus();}')
+                                  state=c.evaluate('e=>{let r=e.getBoundingClientRect(),h=document.elementFromPoint(r.left+r.width/2,r.top+r.height/2);return {focused:document.activeElement===e,hit:!!h&&(h===e||e.contains(h)),inside:r.left>=0&&r.right<=innerWidth&&r.top>=0&&r.bottom<=innerHeight};}')
+                                  check(label+' booking button '+str(i+1)+' visible and focusable',all(state.values()),state)
+                              page.evaluate('scrollTo({top:0,left:0,behavior:"instant"})')
+                              if width in (320,375,1280):page.screenshot(path=str(OUT/(label+'-candidate.png')),full_page=True)
+                              d=page.evaluate('__metrics()');check(label+' no external requests or script errors',not blocked and not d['external'] and not d['errors'] and not d['violations'],{'blocked':blocked,'external':d['external'],'errors':d['errors'],'violations':d['violations']})
+                              if not flow or not heads:
+                                  page.goto(url+'?baseline=1',wait_until='domcontentloaded');page.evaluate('document.fonts.ready');baseline=page.evaluate('__metrics()');report.setdefault('baseline_comparisons',[]).append({'case':label,'baseline':baseline,'candidate':d});page.screenshot(path=str(OUT/(label+'-baseline.png')),full_page=True)
+                              report['matrix'].append({'browser':engine,'width':width,'passed':all(c['passed'] for c in report['checks'][start:])})
+                          except Exception as e:report['errors'].append(label+': '+str(e));report['matrix'].append({'browser':engine,'width':width,'error':str(e)})
+                          finally:ctx.close()
+                      browser.close()
+          except Exception as e:report['errors'].append(str(e));report['traceback']=traceback.format_exc()
+          finally:
+              if server:server.shutdown()
+              report['passed']=sum(c['passed'] for c in report['checks']);report['total']=len(report['checks'])
+              report['result']='PASS_ISOLATED_ONLY_NOT_RELEASE' if not report['errors'] and all(c['passed'] for c in report['checks']) and len(report['matrix'])==15 and 'native_safari' in report else 'NOT_RELEASE_READY'
+              (OUT/'report.json').write_text(json.dumps(report,indent=2,ensure_ascii=False))
+              print('QA_RESULT',json.dumps({k:report[k] for k in ('result','baseline_blob','candidate_blob','passed','total','errors')}),flush=True)
+          if report['result']!='PASS_ISOLATED_ONLY_NOT_RELEASE':raise SystemExit(1)
+          PY
+      - name: Upload evidence only - no font files
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: de-airport-font-qa-20261104
+          path: /tmp/ipd-de-airport-font-20261104/
+          retention-days: 14
+          if-no-files-found: warn
