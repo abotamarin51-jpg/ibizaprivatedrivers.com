@@ -1,4 +1,4 @@
-name: German airport V3 - focused desktop and native zoom follow-up
+name: German airport V3 - complete scoped tests and native zoom
 on:
   push:
     branches: [qa/de-airport-font-20261104]
@@ -29,78 +29,46 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Common binary test dependencies
+      - name: Common binary dependencies
         timeout-minutes: 2
         run: |
           python -m pip install --only-binary=:all: --retries 1 beautifulsoup4==4.13.4 PyYAML==6.0.2
-      - name: Browser engines only
+      - name: Missing desktop engine only
         if: matrix.mode == 'browsers'
         timeout-minutes: 4
         run: |
           python -m pip install --only-binary=:all: --retries 1 playwright==1.56.0
           python -m playwright install --with-deps firefox
-      - name: Native Safari dependencies only
+      - name: Native Safari binary dependencies
         if: matrix.mode == 'native'
         timeout-minutes: 2
         run: |
           python -m pip install --only-binary=:all: --retries 1 pyobjc-core==12.2.2 pyobjc-framework-Cocoa==12.2.2 pyobjc-framework-Quartz==12.2.2
-      - name: Complete missing exact V3 checks with corrected scope and native method
+      - name: Recover exact harness without altering nested call literal
         timeout-minutes: 4
         run: |
           python - <<'PY'
-          import hashlib, os, subprocess, sys, yaml
-          mode=os.environ['QA_MODE']; assert mode in ('browsers','native')
+          import hashlib, subprocess, yaml
           path='.github/workflows/qa-de-airport-mobile-title-v3-20261104.yml'
-          raw=subprocess.check_output(['git','show','9d71ba1b2f6e8ee6a1ec6112a567b7d17fbc4696:'+path])
-          assert hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest()=='60302b4e27e129ef2e2f3c625d3f342327fd8f5a'
+          raw=subprocess.check_output(['git','show','a19cd0de0bb0dc814d4b2e714549e06985735948:'+path])
+          assert hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest()=='8299510dd165d90c727c676208e0843aa816d295'
           data=yaml.safe_load(raw)
-          command=next(s['run'] for s in data['jobs']['isolated-qa']['steps'] if s.get('name')=='Validate exact V3 including intact mobile headline')
+          command=next(s['run'] for s in data['jobs']['isolated-qa']['steps'] if s.get('name')=='Complete missing exact V3 checks with corrected scope and native method')
           wrapper=command.split('\n',1)[1].rsplit('\nPY',1)[0]
-          call="subprocess.run([sys.executable,'-c',script],check=True)"
-          assert wrapper.count(call)==1
-          ns={};exec(compile(wrapper.replace(call,'pass',1),'verified-v3-wrapper','exec'),ns)
-          script=ns['script']
-          def replace(old,new):
-              global script
-              assert script.count(old)==1,(old[:90],script.count(old))
-              script=script.replace(old,new,1)
-          if mode=='browsers':
-              replace("for engine in ('chromium','firefox','webkit'):","for engine in ('firefox',):")
-              replace('for width in (320,375,440,600,601,768,1280):','for width in (601,1280):')
-              replace("check(label+' Flughafen word remains whole',d['titleWord']['lines']==1,d['titleWord'])","if width<=600:check(label+' mobile Flughafen word remains whole',d['titleWord']['lines']==1,d['titleWord'])")
-              replace("len(report['matrix'])==21","len(report['matrix'])==2")
-              print('Only two Firefox desktop cases. Original 19 passing combinations are not repeated. Auto-hyphenation outside mobile is existing behaviour, not a V3 change.',flush=True)
-          else:
-              remove="        subprocess.run(['osascript','-e','tell application \"Safari\" to set bounds of front window to {20, 40, 788, 940}'],check=True,timeout=12)\n"
-              replace(remove,'')
-              replace(" and 700<=x['iw']<=800",'')
-              remove="        check('Native Safari 200 percent reaches mobile CSS',320<=z['iw']<=400,z['iw'])\n        check('Native Safari 200 percent Flughafen word whole',z['titleWord']['lines']==1,z['titleWord'])\n"
-              replace(remove,'')
-              old="        capture('safari-200pct');d=command('faq');check('Native Safari FAQ interaction works',d['faq']==1)"
-              new="""        capture('safari-200pct')
-                  for _ in range(8):
-                      key(24);mobile=command('focus')
-                      if base['iw']/mobile['iw']>=3.98:break
-                  mobile_ratio=base['iw']/mobile['iw']
-                  check('Native Safari true 400 percent browser zoom',3.98<=mobile_ratio<=4.04 and 3.98<=mobile['dpr']/base['dpr']<=4.04,{'before':base['iw'],'after':mobile['iw'],'dpr':mobile['dpr']})
-                  check('Native Safari 400 percent enters mobile CSS',320<=mobile['iw']<=400,mobile['iw'])
-                  check('Native Safari 400 percent no overflow',mobile['scroll']<=mobile['client']+1,[mobile['client'],mobile['scroll']])
-                  check('Native Safari 400 percent CTA visible and focused',all(mobile['cta'].values()),mobile['cta'])
-                  check('Native Safari mobile Flughafen word remains whole',mobile['titleWord']['lines']==1,mobile['titleWord'])
-                  report['native_mobile400']=mobile
-                  capture('safari-400pct');command('top');capture('safari-mobile-title-400pct')
-                  d=command('faq');check('Native Safari FAQ interaction works',d['faq']==1)"""
-              replace(old,new)
-              print('Different native method: original window; genuine keyboard 200% and 400% zoom. No window-resize automation. Same candidate, no page changes.',flush=True)
-          replace("report['variant']='V3 mobile title';","report['variant']='V3 mobile title';report['followup']='Correct desktop-only expectation / native keyboard zoom without window resizing';")
-          compile(script,'v3-focused-followup','exec')
-          subprocess.run([sys.executable,'-c',script],check=True)
+          old='assert wrapper.count(call)==1'
+          assert wrapper.count(old)==1
+          wrapper=wrapper.replace(old,'assert wrapper.count(call)==2',1)
+          old="wrapper.replace(call,'pass',1)"
+          assert wrapper.count(old)==1
+          wrapper=wrapper.replace(old,"'pass'.join(wrapper.rsplit(call,1))",1)
+          print('Correct recovery of nested harness: preserve its inner call literal and replace only the final execution. Candidate and page checks unchanged.',flush=True)
+          exec(compile(wrapper,'verified-scoped-v3-followup','exec'),{})
           PY
-      - name: Evidence only - never upload font files
+      - name: Evidence only - no font files
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: de-airport-v3-followup-${{ matrix.mode }}-20261104
+          name: de-airport-v3-final-${{ matrix.mode }}-20261104
           path: /tmp/ipd-de-airport-v3-20261104/
           retention-days: 14
           if-no-files-found: warn
