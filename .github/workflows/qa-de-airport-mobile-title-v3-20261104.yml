@@ -1,0 +1,110 @@
+name: German airport mobile title V3 - isolated QA only
+on:
+  push:
+    branches: [qa/de-airport-font-20261104]
+    paths: [.github/workflows/qa-de-airport-mobile-title-v3-20261104.yml]
+permissions:
+  contents: read
+jobs:
+  isolated-qa:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - mode: browsers
+            os: ubuntu-24.04
+          - mode: native
+            os: macos-26-intel
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    env:
+      QA_MODE: ${{ matrix.mode }}
+      PIP_DISABLE_PIP_VERSION_CHECK: '1'
+      PIP_DEFAULT_TIMEOUT: '20'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Common binary test dependencies
+        timeout-minutes: 2
+        run: |
+          python -m pip install --only-binary=:all: --retries 1 beautifulsoup4==4.13.4 PyYAML==6.0.2
+      - name: Browser engines only
+        if: matrix.mode == 'browsers'
+        timeout-minutes: 4
+        run: |
+          python -m pip install --only-binary=:all: --retries 1 playwright==1.56.0
+          python -m playwright install --with-deps chromium firefox webkit
+      - name: Native Safari dependencies only
+        if: matrix.mode == 'native'
+        timeout-minutes: 2
+        run: |
+          python -m pip install --only-binary=:all: --retries 1 pyobjc-core==12.2.2 pyobjc-framework-Cocoa==12.2.2 pyobjc-framework-Quartz==12.2.2
+      - name: Validate exact V3 including intact mobile headline
+        timeout-minutes: 4
+        run: |
+          python - <<'PY'
+          import hashlib, os, subprocess, sys, yaml
+          mode=os.environ['QA_MODE']; assert mode in ('browsers','native')
+          path='.github/workflows/qa-de-airport-font-20261104.yml'
+          raw=subprocess.check_output(['git','show','0b9e967f9af1ca1baed8eb28488754ffcf09c284:'+path])
+          digest=hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest()
+          assert digest=='b6190d71ef2103be5f9f4261c6974d0bdd55243b','V2 harness changed'
+          data=yaml.safe_load(raw)
+          command=next(s['run'] for s in data['jobs']['isolated-qa']['steps'] if s.get('name')=='Test changed candidate and correct intentionally hidden-control assumptions')
+          wrapper=command.split('\n',1)[1].rsplit('\nPY',1)[0]
+          call="subprocess.run([sys.executable,'-c',script],check=True)"
+          assert wrapper.count(call)==1
+          ns={};exec(compile(wrapper.replace(call,'pass',1),'verified-v2-wrapper','exec'),ns)
+          script=ns['script']
+          def replace(old,new):
+              global script
+              assert script.count(old)==1, (old[:90],script.count(old))
+              script=script.replace(old,new,1)
+          css=ns['css']
+          mobile='\n@media(max-width:600px){\n  .hero h1{font-size:clamp(2.5rem,13.125vw,3.6875rem)!important;line-height:1.06!important;hyphens:none}\n}\n'
+          needle='.hero h1,.section h2{overflow-wrap:anywhere;hyphens:auto}\n'
+          assert css.count(needle)==1
+          v3css=css.replace(needle,needle+mobile,1)
+          replace('page_css='+repr(css),'page_css='+repr(v3css))
+          replace("report={'baseline_blob':","assert blob(candidate.encode())=='f7cef46615f6ef92ec4b913a6df2f7bb660bee46','Exact V3 candidate changed'\nreport={'baseline_blob':")
+          replace("Path('/tmp/ipd-de-airport-font-reflow-20261104')","Path('/tmp/ipd-de-airport-v3-20261104')")
+          replace('for width in (320,375,440,768,1280):','for width in (320,375,440,600,601,768,1280):')
+          word_js="(()=>{let h=document.querySelector('h1'),n=h.firstChild,s=n.textContent.indexOf('Flughafentransfer'),r=document.createRange();r.setStart(n,s);r.setEnd(n,s+17);let rs=[...r.getClientRects()];return {lines:new Set(rs.map(q=>Math.round(q.top))).size,fontSize:getComputedStyle(h).fontSize,hyphens:getComputedStyle(h).hyphens,rects:rs.map(q=>({left:q.left,right:q.right,top:q.top}))};})()"
+          replace('return {ua:navigator.userAgent','return {titleWord:'+word_js+',ua:navigator.userAgent')
+          needle="d=page.evaluate('__metrics()');check(label+' real fonts loaded',fonts_loaded(d),d['fonts'])"
+          replace(needle,needle+"\n                    check(label+' Flughafen word remains whole',d['titleWord']['lines']==1,d['titleWord'])\n                    if width>600:check(label+' desktop headline sizing unchanged',abs(float(d['titleWord']['fontSize'].replace('px',''))-min(118,max(58,width*.084)))<.1,d['titleWord'])")
+          needle="page.evaluate('scrollTo({top:0,left:0,behavior:\"instant\"})')"
+          replace(needle,needle+"\n                    page.wait_for_timeout(250)\n                    if width in (320,375,440,1280):page.screenshot(path=str(OUT/(label+'-candidate-top.png')),full_page=False)")
+          needle="subprocess.run(['open','-a','Safari',url],check=True,timeout=12)"
+          replace(needle,needle+"\n        subprocess.run(['osascript','-e','tell application \"Safari\" to set bounds of front window to {20, 40, 788, 940}'],check=True,timeout=12)")
+          replace("d=wait(lambda x:'Safari/' in x.get('ua','') and fonts_loaded(x),45)","d=wait(lambda x:'Safari/' in x.get('ua','') and fonts_loaded(x) and 700<=x['iw']<=800,45)")
+          needle="check('Native Safari 200 percent booking CTA visible and focused',all(z['cta'].values()),z['cta'])"
+          replace(needle,needle+"\n        check('Native Safari 200 percent reaches mobile CSS',320<=z['iw']<=400,z['iw'])\n        check('Native Safari 200 percent Flughafen word whole',z['titleWord']['lines']==1,z['titleWord'])")
+          native_start=script.index('    # Native Safari first,')
+          browser_start=script.index('    from playwright.sync_api import sync_playwright')
+          browser_end=script.index("\nexcept Exception as e:report['errors'].append(str(e));report['traceback']=traceback.format_exc()",browser_start)
+          if mode=='browsers':
+              script=script[:native_start]+script[browser_start:]
+              gate="len(report['matrix'])==21"
+          else:
+              script=script[:browser_start]+script[browser_end:]
+              gate="'native_safari' in report"
+          replace("len(report['matrix'])==15 and 'native_safari' in report",gate)
+          replace("report['passed']=sum(c['passed'] for c in report['checks']);","report['engine_group']="+repr(mode)+";report['variant']='V3 mobile title';report['passed']=sum(c['passed'] for c in report['checks']);")
+          compile(script,'de-airport-v3-qa','exec')
+          print('New V3 mobile-title candidate; all original safety and integrity checks retained. No page edits or deployment.',flush=True)
+          subprocess.run([sys.executable,'-c',script],check=True)
+          PY
+      - name: Evidence only - never upload font files
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: de-airport-v3-${{ matrix.mode }}-20261104
+          path: /tmp/ipd-de-airport-v3-20261104/
+          retention-days: 14
+          if-no-files-found: warn
