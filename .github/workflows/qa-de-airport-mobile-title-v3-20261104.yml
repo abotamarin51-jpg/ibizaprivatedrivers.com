@@ -1,4 +1,4 @@
-name: German airport mobile title V3 - isolated QA only
+name: German airport V3 - focused desktop and native zoom follow-up
 on:
   push:
     branches: [qa/de-airport-font-20261104]
@@ -38,73 +38,69 @@ jobs:
         timeout-minutes: 4
         run: |
           python -m pip install --only-binary=:all: --retries 1 playwright==1.56.0
-          python -m playwright install --with-deps chromium firefox webkit
+          python -m playwright install --with-deps firefox
       - name: Native Safari dependencies only
         if: matrix.mode == 'native'
         timeout-minutes: 2
         run: |
           python -m pip install --only-binary=:all: --retries 1 pyobjc-core==12.2.2 pyobjc-framework-Cocoa==12.2.2 pyobjc-framework-Quartz==12.2.2
-      - name: Validate exact V3 including intact mobile headline
+      - name: Complete missing exact V3 checks with corrected scope and native method
         timeout-minutes: 4
         run: |
           python - <<'PY'
           import hashlib, os, subprocess, sys, yaml
           mode=os.environ['QA_MODE']; assert mode in ('browsers','native')
-          path='.github/workflows/qa-de-airport-font-20261104.yml'
-          raw=subprocess.check_output(['git','show','0b9e967f9af1ca1baed8eb28488754ffcf09c284:'+path])
-          digest=hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest()
-          assert digest=='b6190d71ef2103be5f9f4261c6974d0bdd55243b','V2 harness changed'
+          path='.github/workflows/qa-de-airport-mobile-title-v3-20261104.yml'
+          raw=subprocess.check_output(['git','show','9d71ba1b2f6e8ee6a1ec6112a567b7d17fbc4696:'+path])
+          assert hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest()=='60302b4e27e129ef2e2f3c625d3f342327fd8f5a'
           data=yaml.safe_load(raw)
-          command=next(s['run'] for s in data['jobs']['isolated-qa']['steps'] if s.get('name')=='Test changed candidate and correct intentionally hidden-control assumptions')
+          command=next(s['run'] for s in data['jobs']['isolated-qa']['steps'] if s.get('name')=='Validate exact V3 including intact mobile headline')
           wrapper=command.split('\n',1)[1].rsplit('\nPY',1)[0]
           call="subprocess.run([sys.executable,'-c',script],check=True)"
           assert wrapper.count(call)==1
-          ns={};exec(compile(wrapper.replace(call,'pass',1),'verified-v2-wrapper','exec'),ns)
+          ns={};exec(compile(wrapper.replace(call,'pass',1),'verified-v3-wrapper','exec'),ns)
           script=ns['script']
           def replace(old,new):
               global script
-              assert script.count(old)==1, (old[:90],script.count(old))
+              assert script.count(old)==1,(old[:90],script.count(old))
               script=script.replace(old,new,1)
-          css=ns['css']
-          mobile='\n@media(max-width:600px){\n  .hero h1{font-size:clamp(2.5rem,13.125vw,3.6875rem)!important;line-height:1.06!important;hyphens:none}\n}\n'
-          needle='.hero h1,.section h2{overflow-wrap:anywhere;hyphens:auto}\n'
-          assert css.count(needle)==1
-          v3css=css.replace(needle,needle+mobile,1)
-          replace('page_css='+repr(css),'page_css='+repr(v3css))
-          replace("report={'baseline_blob':","assert blob(candidate.encode())=='f7cef46615f6ef92ec4b913a6df2f7bb660bee46','Exact V3 candidate changed'\nreport={'baseline_blob':")
-          replace("Path('/tmp/ipd-de-airport-font-reflow-20261104')","Path('/tmp/ipd-de-airport-v3-20261104')")
-          replace('for width in (320,375,440,768,1280):','for width in (320,375,440,600,601,768,1280):')
-          word_js="(()=>{let h=document.querySelector('h1'),n=h.firstChild,s=n.textContent.indexOf('Flughafentransfer'),r=document.createRange();r.setStart(n,s);r.setEnd(n,s+17);let rs=[...r.getClientRects()];return {lines:new Set(rs.map(q=>Math.round(q.top))).size,fontSize:getComputedStyle(h).fontSize,hyphens:getComputedStyle(h).hyphens,rects:rs.map(q=>({left:q.left,right:q.right,top:q.top}))};})()"
-          replace('return {ua:navigator.userAgent','return {titleWord:'+word_js+',ua:navigator.userAgent')
-          needle="d=page.evaluate('__metrics()');check(label+' real fonts loaded',fonts_loaded(d),d['fonts'])"
-          replace(needle,needle+"\n                    check(label+' Flughafen word remains whole',d['titleWord']['lines']==1,d['titleWord'])\n                    if width>600:check(label+' desktop headline sizing unchanged',abs(float(d['titleWord']['fontSize'].replace('px',''))-min(118,max(58,width*.084)))<.1,d['titleWord'])")
-          needle="page.evaluate('scrollTo({top:0,left:0,behavior:\"instant\"})')"
-          replace(needle,needle+"\n                    page.wait_for_timeout(250)\n                    if width in (320,375,440,1280):page.screenshot(path=str(OUT/(label+'-candidate-top.png')),full_page=False)")
-          needle="subprocess.run(['open','-a','Safari',url],check=True,timeout=12)"
-          replace(needle,needle+"\n        subprocess.run(['osascript','-e','tell application \"Safari\" to set bounds of front window to {20, 40, 788, 940}'],check=True,timeout=12)")
-          replace("d=wait(lambda x:'Safari/' in x.get('ua','') and fonts_loaded(x),45)","d=wait(lambda x:'Safari/' in x.get('ua','') and fonts_loaded(x) and 700<=x['iw']<=800,45)")
-          needle="check('Native Safari 200 percent booking CTA visible and focused',all(z['cta'].values()),z['cta'])"
-          replace(needle,needle+"\n        check('Native Safari 200 percent reaches mobile CSS',320<=z['iw']<=400,z['iw'])\n        check('Native Safari 200 percent Flughafen word whole',z['titleWord']['lines']==1,z['titleWord'])")
-          native_start=script.index('    # Native Safari first,')
-          browser_start=script.index('    from playwright.sync_api import sync_playwright')
-          browser_end=script.index("\nexcept Exception as e:report['errors'].append(str(e));report['traceback']=traceback.format_exc()",browser_start)
           if mode=='browsers':
-              script=script[:native_start]+script[browser_start:]
-              gate="len(report['matrix'])==21"
+              replace("for engine in ('chromium','firefox','webkit'):","for engine in ('firefox',):")
+              replace('for width in (320,375,440,600,601,768,1280):','for width in (601,1280):')
+              replace("check(label+' Flughafen word remains whole',d['titleWord']['lines']==1,d['titleWord'])","if width<=600:check(label+' mobile Flughafen word remains whole',d['titleWord']['lines']==1,d['titleWord'])")
+              replace("len(report['matrix'])==21","len(report['matrix'])==2")
+              print('Only two Firefox desktop cases. Original 19 passing combinations are not repeated. Auto-hyphenation outside mobile is existing behaviour, not a V3 change.',flush=True)
           else:
-              script=script[:browser_start]+script[browser_end:]
-              gate="'native_safari' in report"
-          replace("len(report['matrix'])==15 and 'native_safari' in report",gate)
-          replace("report['passed']=sum(c['passed'] for c in report['checks']);","report['engine_group']="+repr(mode)+";report['variant']='V3 mobile title';report['passed']=sum(c['passed'] for c in report['checks']);")
-          compile(script,'de-airport-v3-qa','exec')
-          print('New V3 mobile-title candidate; all original safety and integrity checks retained. No page edits or deployment.',flush=True)
+              remove="        subprocess.run(['osascript','-e','tell application \"Safari\" to set bounds of front window to {20, 40, 788, 940}'],check=True,timeout=12)\n"
+              replace(remove,'')
+              replace(" and 700<=x['iw']<=800",'')
+              remove="        check('Native Safari 200 percent reaches mobile CSS',320<=z['iw']<=400,z['iw'])\n        check('Native Safari 200 percent Flughafen word whole',z['titleWord']['lines']==1,z['titleWord'])\n"
+              replace(remove,'')
+              old="        capture('safari-200pct');d=command('faq');check('Native Safari FAQ interaction works',d['faq']==1)"
+              new="""        capture('safari-200pct')
+                  for _ in range(8):
+                      key(24);mobile=command('focus')
+                      if base['iw']/mobile['iw']>=3.98:break
+                  mobile_ratio=base['iw']/mobile['iw']
+                  check('Native Safari true 400 percent browser zoom',3.98<=mobile_ratio<=4.04 and 3.98<=mobile['dpr']/base['dpr']<=4.04,{'before':base['iw'],'after':mobile['iw'],'dpr':mobile['dpr']})
+                  check('Native Safari 400 percent enters mobile CSS',320<=mobile['iw']<=400,mobile['iw'])
+                  check('Native Safari 400 percent no overflow',mobile['scroll']<=mobile['client']+1,[mobile['client'],mobile['scroll']])
+                  check('Native Safari 400 percent CTA visible and focused',all(mobile['cta'].values()),mobile['cta'])
+                  check('Native Safari mobile Flughafen word remains whole',mobile['titleWord']['lines']==1,mobile['titleWord'])
+                  report['native_mobile400']=mobile
+                  capture('safari-400pct');command('top');capture('safari-mobile-title-400pct')
+                  d=command('faq');check('Native Safari FAQ interaction works',d['faq']==1)"""
+              replace(old,new)
+              print('Different native method: original window; genuine keyboard 200% and 400% zoom. No window-resize automation. Same candidate, no page changes.',flush=True)
+          replace("report['variant']='V3 mobile title';","report['variant']='V3 mobile title';report['followup']='Correct desktop-only expectation / native keyboard zoom without window resizing';")
+          compile(script,'v3-focused-followup','exec')
           subprocess.run([sys.executable,'-c',script],check=True)
           PY
       - name: Evidence only - never upload font files
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: de-airport-v3-${{ matrix.mode }}-20261104
+          name: de-airport-v3-followup-${{ matrix.mode }}-20261104
           path: /tmp/ipd-de-airport-v3-20261104/
           retention-days: 14
           if-no-files-found: warn
