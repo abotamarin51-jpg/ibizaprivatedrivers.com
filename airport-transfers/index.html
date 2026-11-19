@@ -120,7 +120,34 @@ gtag('config', 'G-BB9SWKE384');
     ]
   }
   </script>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&amp;family=Manrope:wght@400;500;600&amp;display=swap" rel="stylesheet"><link rel="stylesheet" href="/assets/ivm-typography.css?v=1"></head>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&amp;family=Manrope:wght@400;500;600&amp;display=swap" rel="stylesheet"><link rel="stylesheet" href="/assets/ivm-typography.css?v=1">
+<style>
+/* Airport quote form: scoped styles, preserving the existing site's SEO and layout. */
+.ipd-quote{max-width:960px;margin:0 auto;background:#fff;color:#1b2730;border:1px solid #d9ddd9;border-radius:15px;padding:clamp(18px,4vw,34px);box-shadow:0 9px 28px rgba(17,33,41,.08)}
+.ipd-quote .ipd-quote-intro{color:#53616c;margin:0 0 20px}
+.ipd-quote .ipd-quote-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.ipd-quote .ipd-quote-wide{grid-column:1/-1}
+.ipd-quote label{display:block;font-size:14px;font-weight:650;margin:0 0 6px}
+.ipd-quote .ipd-quote-options{display:flex;flex-wrap:wrap;gap:14px 22px}
+.ipd-quote .ipd-quote-options label{display:flex;gap:8px;align-items:center;font-weight:500;margin:0}
+.ipd-quote .ipd-quote-options input{width:auto;min-height:auto}
+.ipd-quote fieldset{border:0;padding:0;margin:0;min-width:0}
+.ipd-quote legend{font-size:15px;font-weight:700;margin:0 0 10px}
+.ipd-quote input:not([type="radio"]),.ipd-quote select,.ipd-quote textarea{display:block;box-sizing:border-box;width:100%;min-height:46px;padding:11px 12px;border:1px solid #cbd1d0;border-radius:7px;background:#fff;color:#19262e;font:inherit}
+.ipd-quote textarea{min-height:100px;resize:vertical}
+.ipd-quote input:focus-visible,.ipd-quote select:focus-visible,.ipd-quote textarea:focus-visible{outline:2px solid #b99764;outline-offset:1px}
+.ipd-quote .ipd-quote-hint{color:#657079;display:block;font-size:12px;margin-top:4px}
+.ipd-quote .ipd-quote-action{border-top:1px solid #e3e5e2;margin-top:22px;padding-top:20px;display:flex;align-items:center;flex-wrap:wrap;gap:14px}
+.ipd-quote .ipd-quote-button{border:0;border-radius:7px;cursor:pointer;background:#112129;color:#fff;font:700 15px/1.3 inherit;padding:15px 20px}
+.ipd-quote .ipd-quote-button:hover,.ipd-quote .ipd-quote-button:focus-visible{background:#203c49}
+.ipd-quote .ipd-quote-action p,.ipd-quote .ipd-quote-note{font-size:13px;color:#53616c;margin:0}
+.ipd-quote .ipd-quote-action p{flex:1;min-width:220px}
+.ipd-quote .ipd-quote-fallback{font-size:14px;display:inline-block;margin-top:12px;text-decoration:underline}
+.ipd-quote .ipd-quote-fallback[hidden]{display:none}
+@media(max-width:640px){.ipd-quote .ipd-quote-fields{grid-template-columns:1fr}.ipd-quote{padding:18px}}
+</style>
+
+</head>
 <body>
   <a class="skip" href="#content">Skip to content</a>
   <div class="topbar">Ibiza Airport transfer service · IBZ arrivals & departures · By confirmed reservation · +34 613 75 62 11</div>
@@ -210,6 +237,43 @@ gtag('config', 'G-BB9SWKE384');
       </div>
     </section>
 
+
+    <section class="section light" id="airport-quote">
+      <div class="wrap">
+        <p class="eyebrow">Airport transfer enquiry</p>
+        <h2>Request your private airport transfer quote</h2>
+        <div class="ipd-quote">
+          <p class="ipd-quote-intro">Share your journey details with Ibiza Private Drivers. Our team will review availability and send you a tailored quote before any booking is confirmed.</p>
+          <form id="ipd-airport-quote-form" aria-label="Request an Ibiza Airport transfer quote">
+            <div class="ipd-quote-fields">
+              <fieldset class="ipd-quote-wide">
+                <legend>Journey type *</legend>
+                <div class="ipd-quote-options">
+                  <label><input type="radio" name="journey" value="Airport arrival" checked required> Arriving at Ibiza Airport</label>
+                  <label><input type="radio" name="journey" value="Airport departure" required> Going to Ibiza Airport</label>
+                </div>
+              </fieldset>
+              <div><label for="ipd-quote-date">Travel date *</label><input id="ipd-quote-date" name="travelDate" type="date" required></div>
+              <div><label for="ipd-quote-time">Flight arrival / departure time *</label><input id="ipd-quote-time" name="travelTime" type="time" required><small class="ipd-quote-hint">Local Ibiza time</small></div>
+              <div><label for="ipd-quote-flight">Airline and flight number *</label><input id="ipd-quote-flight" name="flight" type="text" maxlength="70" placeholder="e.g. IB1234" required></div>
+              <div><label for="ipd-quote-passengers">Passengers *</label><input id="ipd-quote-passengers" name="passengers" type="number" min="1" max="60" value="2" required></div>
+              <div><label for="ipd-quote-pickup">Pickup location *</label><input id="ipd-quote-pickup" name="pickup" type="text" maxlength="150" placeholder="Airport, hotel, villa or exact address" required></div>
+              <div><label for="ipd-quote-destination">Drop-off destination *</label><input id="ipd-quote-destination" name="destination" type="text" maxlength="150" placeholder="Hotel, villa, marina or exact address" required></div>
+              <div><label for="ipd-quote-luggage">Luggage *</label><select id="ipd-quote-luggage" name="luggage" required><option value="" selected disabled>Select luggage quantity</option><option>Hand luggage only</option><option>1–2 bags</option><option>3–4 bags</option><option>5–6 bags</option><option>7+ bags</option></select></div>
+              <div><label for="ipd-quote-seats">Child seats</label><select id="ipd-quote-seats" name="seats"><option value="None" selected>None</option><option>1 child seat</option><option>2 child seats</option><option>3+ child seats (please specify)</option></select></div>
+              <div class="ipd-quote-wide"><label for="ipd-quote-notes">Additional details (optional)</label><textarea id="ipd-quote-notes" name="notes" maxlength="700" placeholder="Extra stops, accessibility needs, villa gate access, preferred vehicle or other details"></textarea></div>
+            </div>
+            <div class="ipd-quote-action">
+              <button class="ipd-quote-button" type="submit">Send enquiry via WhatsApp ↗</button>
+              <p>Opens a pre-filled message to Ibiza Private Drivers. Sending a request does not confirm a price, driver or reservation.</p>
+            </div>
+            <a class="ipd-quote-fallback" id="ipd-quote-fallback" href="#" target="_blank" rel="noopener noreferrer" hidden>Open the prepared WhatsApp message</a>
+            <p class="ipd-quote-note">Your details are used only to prepare your WhatsApp message in your browser. You choose whether to send it.</p>
+          </form>
+        </div>
+      </div>
+    </section>
+
     <section class="section light" id="faq">
       <div class="wrap">
         <p class="eyebrow">Frequently asked questions</p>
@@ -231,5 +295,62 @@ gtag('config', 'G-BB9SWKE384');
   <section class="cta"><h2>Book a private transfer from Ibiza Airport</h2><p>Send your flight, date and time, exact pickup or destination, passengers and luggage for confirmed availability and a tailored quote.</p><a class="button" href="https://wa.me/34613756211?text=Hello%2C%20I%20would%20like%20an%20Ibiza%20Airport%20transfer.%0AFlight%3A%0AArrival%20or%20departure%20date%3A%0ATime%3A%0APickup%20or%20destination%3A%0APassengers%3A%0ALuggage%3A" target="_blank" rel="noopener">Request Airport Transfer</a></section>
 
   <footer><div class="footer-grid"><div><div class="footer-title">Ibiza Private Drivers</div><p>Private airport transfer and chauffeur service in Ibiza by confirmed reservation.</p><p style="margin-top:14px"><a href="tel:+34613756211">+34 613 75 62 11</a><br><a href="mailto:info@ibizaprivatedrivers.com">info@ibizaprivatedrivers.com</a></p></div><div><strong>Airport & Driver</strong><div class="footer-links"><a href="/airport-transfers/">Ibiza Airport Transfers</a><a href="/">Private Driver Ibiza</a><a href="/services/private-driver-ibiza.html">Personal Driver Details</a><a href="/mercedes-v-class-ibiza/">Mercedes V-Class</a><a href="/chauffeur-service/">Chauffeur Ibiza</a><a href="/multi-day-chauffeur-ibiza/">Multi-Day Chauffeur</a><a href="/private-aviation-chauffeur-ibiza/">Private Aviation</a></div></div><div><strong>Planning</strong><div class="footer-links"><a href="/luxury-hotel-transfers-ibiza/">Luxury Hotels</a><a href="/villa-transfers/">Villa Transfers</a><a href="/yacht-transfers/">Yacht Transfers</a><a href="/travel-advisors-concierge-ibiza/">Travel Advisors & Concierges</a><a href="/contact/">Contact</a></div></div></div><small>© 2026 Ibiza Private Drivers · Ibiza, Balearic Islands, Spain</small></footer>
+
+<script>
+/* Airport quote to WhatsApp; no payment, automated confirmation or server-side collection. */
+(() => {
+  const form = document.getElementById('ipd-airport-quote-form');
+  if (!form) return;
+  const date = document.getElementById('ipd-quote-date');
+  const pickup = document.getElementById('ipd-quote-pickup');
+  const destination = document.getElementById('ipd-quote-destination');
+  const fallback = document.getElementById('ipd-quote-fallback');
+  const today = new Date();
+  date.min = [today.getFullYear(), String(today.getMonth()+1).padStart(2,'0'), String(today.getDate()).padStart(2,'0')].join('-');
+  const airport = 'Ibiza Airport (IBZ)';
+  const syncJourney = () => {
+    const isArrival = form.elements.journey.value === 'Airport arrival';
+    if (isArrival) {
+      if (destination.value === airport) destination.value = '';
+      if (pickup.value === '') pickup.value = airport;
+    } else {
+      if (pickup.value === airport) pickup.value = '';
+      if (destination.value === '') destination.value = airport;
+    }
+  };
+  form.querySelectorAll('input[name="journey"]').forEach(radio => radio.addEventListener('change', syncJourney));
+  syncJourney();
+  form.addEventListener('submit', event => {
+    event.preventDefault();
+    if (!form.reportValidity()) return;
+    const data = new FormData(form);
+    const field = name => String(data.get(name) || '').trim();
+    const lines = [
+      'Hello Ibiza Private Drivers, I would like a quote for a private airport transfer.',
+      'Journey: ' + field('journey'),
+      'Travel date: ' + field('travelDate'),
+      'Flight time (Ibiza local): ' + field('travelTime'),
+      'Flight: ' + field('flight'),
+      'Pickup: ' + field('pickup'),
+      'Destination: ' + field('destination'),
+      'Passengers: ' + field('passengers'),
+      'Luggage: ' + field('luggage'),
+      'Child seats: ' + field('seats'),
+      'Additional details: ' + (field('notes') || 'None'),
+      '',
+      'Please confirm availability and the price. Thank you.'
+    ];
+    const url = 'https://wa.me/34613756211?text=' + encodeURIComponent(lines.join('\n'));
+    fallback.href = url;
+    fallback.hidden = false;
+    const link = document.createElement('a');
+    link.href = url;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.click();
+  });
+})();
+</script>
+
 </body>
 </html>
