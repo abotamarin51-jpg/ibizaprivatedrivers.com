@@ -7,6 +7,11 @@ lang: es
 locale: es_ES
 ---
 
+<script>
+  // Correct the browser language for this Spanish-only page before the deferred UI script runs.
+  document.documentElement.setAttribute('lang', 'es');
+</script>
+
 ## Conductor Privado en Ibiza
 
 **Ibiza Private Drivers** ofrece transporte privado con reserva previa para viajeros que necesitan un conductor en Ibiza para traslados directos o itinerarios con varias paradas.
