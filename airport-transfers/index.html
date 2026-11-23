@@ -343,6 +343,19 @@ gtag('config', 'G-BB9SWKE384');
     const url = 'https://wa.me/34613756211?text=' + encodeURIComponent(lines.join('\n'));
     fallback.href = url;
     fallback.hidden = false;
+    // Form completed and WhatsApp opening attempted: NOT proof that a message
+    // was sent or that a reservation was made. Never transmit form values to GA4.
+    try {
+      if (window.localStorage.getItem('ipd_google_consent_v1') === 'granted' &&
+          typeof window.gtag === 'function') {
+        window.gtag('event', 'airport_quote_whatsapp_open', {
+          service_intent: 'airport_transfer',
+          page_path: window.location.pathname,
+          form_id: 'ipd-airport-quote-form',
+          transport_type: 'beacon'
+        });
+      }
+    } catch (error) {}
     const link = document.createElement('a');
     link.href = url;
     link.target = '_blank';
