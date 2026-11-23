@@ -293,15 +293,8 @@
     };
 
     window.gtag('event', eventName, params);
-    window.gtag('event', 'generate_lead', {
-      currency: 'EUR',
-      value: 0,
-      lead_type: leadType,
-      service_intent: serviceIntent,
-      page_path: window.location.pathname,
-      page_title: document.title,
-      transport_type: 'beacon'
-    });
+    // These are contact-intent clicks, not verified inquiries or confirmed bookings.
+    // Keep the specific click events; qualified leads should be recorded separately.
   }
 
   document.addEventListener('click', function (event) {
