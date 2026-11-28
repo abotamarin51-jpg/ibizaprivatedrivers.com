@@ -20,6 +20,7 @@ jobs:
         env:
           JEKYLL_ENV: production
           PAGES_REPO_NWO: abotamarin51-jpg/ibizaprivatedrivers.com
+          JEKYLL_GITHUB_TOKEN: ${{ github.token }}
         run: |
           git worktree add --detach /tmp/ipd-baseline 4ae88feccee62b552eea58210ff5a097882cc75d
           cp /tmp/ipd-baseline/conductor-privado-ibiza.md /tmp/original.md
@@ -29,13 +30,13 @@ jobs:
           bundle install --jobs 4 --retry 2
           printf 'theme: jekyll-theme-primer\nurl: https://ibizaprivatedrivers.com\ntitle: ibizaprivatedrivers.com\nrepository: abotamarin51-jpg/ibizaprivatedrivers.com\n' > /tmp/ipd-test-config.yml
           bundle exec jekyll --version
-          bundle exec jekyll build --source /tmp/ipd-baseline --destination /tmp/ipd-base-out --config /tmp/ipd-test-config.yml
+          (cd /tmp/ipd-baseline && bundle exec jekyll build --destination /tmp/ipd-base-out --config /tmp/ipd-test-config.yml)
           mkdir -p /tmp/ipd-candidate
           cp -a /tmp/ipd-baseline/. /tmp/ipd-candidate/
           mkdir -p /tmp/ipd-candidate/_layouts
           cp _layouts/ipd-spanish.html /tmp/ipd-candidate/_layouts/
           cp conductor-privado-ibiza.md /tmp/ipd-candidate/
-          bundle exec jekyll build --source /tmp/ipd-candidate --destination /tmp/ipd-candidate-out --config /tmp/ipd-test-config.yml
+          (cd /tmp/ipd-candidate && bundle exec jekyll build --destination /tmp/ipd-candidate-out --config /tmp/ipd-test-config.yml)
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -53,7 +54,8 @@ jobs:
           candidate=Path('/tmp/ipd-candidate-out')
           path='conductor-privado-ibiza/index.html'
           a,b=[BeautifulSoup((d/path).read_text(),'html.parser') for d in (baseline,candidate)]
-          assert b.html['lang']=='es', b.html
+          assert a.html and b.html, (str(a)[:400],str(b)[:400])
+          assert b.html['lang']=='es', b.html.get('lang')
           assert [x.get_text(strip=True) for x in b.select('h1')]==['Conductor Privado en Ibiza']
           assert a.title.get_text()==b.title.get_text()
           for selector in ['link[rel=canonical]','meta[name=description]','meta[property="og:locale"]','meta[name=robots]','script[type="application/ld+json"]']:
@@ -84,4 +86,7 @@ jobs:
         if: always()
         with:
           name: spanish-layout-qa
-          path: /tmp/ipd-*-out-*.png
+          path: |
+            /tmp/ipd-*-out-*.png
+            /tmp/ipd-base-out/conductor-privado-ibiza/index.html
+            /tmp/ipd-candidate-out/conductor-privado-ibiza/index.html
