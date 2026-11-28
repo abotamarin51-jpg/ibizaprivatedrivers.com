@@ -1,5 +1,5 @@
 ---
-layout: default
+layout: ipd-spanish
 title: "Conductor Privado Ibiza"
 description: "Reserva conductor privado en Ibiza para aeropuerto, hoteles, villas, marinas y vida nocturna, con servicio de chófer en Mercedes-Benz V-Class."
 permalink: /conductor-privado-ibiza/
@@ -7,7 +7,7 @@ lang: es
 locale: es_ES
 ---
 
-## Conductor Privado en Ibiza
+# Conductor Privado en Ibiza
 
 **Ibiza Private Drivers** ofrece transporte privado con reserva previa para viajeros que necesitan un conductor en Ibiza para traslados directos o itinerarios con varias paradas.
 
