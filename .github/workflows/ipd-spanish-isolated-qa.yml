@@ -1,0 +1,87 @@
+name: Spanish layout isolated QA
+on:
+  push:
+    branches: [qa/spanish-layout-20261128]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.1'
+      - name: Build current production baseline and candidate using GitHub Pages gems
+        env:
+          JEKYLL_ENV: production
+          PAGES_REPO_NWO: abotamarin51-jpg/ibizaprivatedrivers.com
+        run: |
+          git worktree add --detach /tmp/ipd-baseline 4ae88feccee62b552eea58210ff5a097882cc75d
+          cp /tmp/ipd-baseline/conductor-privado-ibiza.md /tmp/original.md
+          diff -u /tmp/original.md conductor-privado-ibiza.md || true
+          printf 'source "https://rubygems.org"\ngem "github-pages", group: :jekyll_plugins\n' > /tmp/Gemfile
+          export BUNDLE_GEMFILE=/tmp/Gemfile
+          bundle install --jobs 4 --retry 2
+          printf 'theme: jekyll-theme-primer\nurl: https://ibizaprivatedrivers.com\ntitle: ibizaprivatedrivers.com\nrepository: abotamarin51-jpg/ibizaprivatedrivers.com\n' > /tmp/ipd-test-config.yml
+          bundle exec jekyll --version
+          bundle exec jekyll build --source /tmp/ipd-baseline --destination /tmp/ipd-base-out --config /tmp/ipd-test-config.yml
+          mkdir -p /tmp/ipd-candidate
+          cp -a /tmp/ipd-baseline/. /tmp/ipd-candidate/
+          mkdir -p /tmp/ipd-candidate/_layouts
+          cp _layouts/ipd-spanish.html /tmp/ipd-candidate/_layouts/
+          cp conductor-privado-ibiza.md /tmp/ipd-candidate/
+          bundle exec jekyll build --source /tmp/ipd-candidate --destination /tmp/ipd-candidate-out --config /tmp/ipd-test-config.yml
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate source HTML and browser layouts
+        run: |
+          pip install beautifulsoup4 playwright
+          python -m playwright install --with-deps chromium
+          python - <<'PY'
+          from bs4 import BeautifulSoup
+          from pathlib import Path
+          from playwright.sync_api import sync_playwright
+          import threading, functools
+          from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
+          baseline=Path('/tmp/ipd-base-out')
+          candidate=Path('/tmp/ipd-candidate-out')
+          path='conductor-privado-ibiza/index.html'
+          a,b=[BeautifulSoup((d/path).read_text(),'html.parser') for d in (baseline,candidate)]
+          assert b.html['lang']=='es', b.html
+          assert [x.get_text(strip=True) for x in b.select('h1')]==['Conductor Privado en Ibiza']
+          assert a.title.get_text()==b.title.get_text()
+          for selector in ['link[rel=canonical]','meta[name=description]','meta[property="og:locale"]','meta[name=robots]','script[type="application/ld+json"]']:
+              assert [str(x) for x in a.select(selector)]==[str(x) for x in b.select(selector)], selector
+          assert b.select_one('link[rel=canonical]')['href']=='https://ibizaprivatedrivers.com/conductor-privado-ibiza/'
+          assert [x.get('href') for x in a.select('a[href]')]==[x.get('href') for x in b.select('a[href]')]
+          assert a.body.get_text(' ',strip=True)==b.body.get_text(' ',strip=True)
+          assert (baseline/'index.html').read_bytes()==(candidate/'index.html').read_bytes()
+          print('HTML SEO checks passed')
+          for root in [baseline,candidate]:
+              server=ThreadingHTTPServer(('127.0.0.1',0),functools.partial(SimpleHTTPRequestHandler,directory=str(root)))
+              threading.Thread(target=server.serve_forever,daemon=True).start()
+              with sync_playwright() as p:
+                  browser=p.chromium.launch()
+                  for width in [320,390,1440]:
+                      page=browser.new_page(viewport={'width':width,'height':900})
+                      page.route('**/*',lambda route: route.continue_() if route.request.url.startswith('http://127.0.0.1:') else route.abort())
+                      page.goto(f'http://127.0.0.1:{server.server_port}/conductor-privado-ibiza/',wait_until='load')
+                      assert page.evaluate('document.documentElement.scrollWidth <= window.innerWidth + 1'), (root,width)
+                      assert page.locator('a[href^="https://wa.me/"]').first.is_visible()
+                      assert page.locator('h1').first.is_visible()
+                      page.screenshot(path=f'/tmp/{root.name}-{width}.png',full_page=True)
+                      print(root.name,width,'layout OK')
+                  browser.close()
+              server.shutdown()
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: spanish-layout-qa
+          path: /tmp/ipd-*-out-*.png
